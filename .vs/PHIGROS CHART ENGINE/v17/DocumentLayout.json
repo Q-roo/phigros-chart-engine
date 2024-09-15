@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\Godot_Projects\\phigros-chart-engine\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F78ADD53-4667-4741-BE59-7C717DBEA42D}|Phigros Chart Engine.csproj|e:\\godot_projects\\phigros-chart-engine\\scripts\\scenes\\mainmenu\\mainmenucontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F78ADD53-4667-4741-BE59-7C717DBEA42D}|Phigros Chart Engine.csproj|solutionrelative:scripts\\scenes\\mainmenu\\mainmenucontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainMenuController.cs",
+              "DocumentMoniker": "E:\\Godot_Projects\\phigros-chart-engine\\Scripts\\Scenes\\MainMenu\\MainMenuController.cs",
+              "RelativeDocumentMoniker": "Scripts\\Scenes\\MainMenu\\MainMenuController.cs",
+              "ToolTip": "E:\\Godot_Projects\\phigros-chart-engine\\Scripts\\Scenes\\MainMenu\\MainMenuController.cs",
+              "RelativeToolTip": "Scripts\\Scenes\\MainMenu\\MainMenuController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAABUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-31T22:39:06.298Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

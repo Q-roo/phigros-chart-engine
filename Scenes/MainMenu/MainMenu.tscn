@@ -1,0 +1,307 @@
+[gd_scene load_steps=9 format=3 uid="uid://cb43s7mpo42dp"]
+
+[ext_resource type="Script" path="res://Scripts/Scenes/MainMenu/MainMenuController.cs" id="1_kyff2"]
+[ext_resource type="Texture2D" uid="uid://xke63uh4jrch" path="res://icon.svg" id="2_0xsr6"]
+[ext_resource type="Script" path="res://Scripts/Scenes/MainMenu/ProjectPreview.cs" id="2_84aus"]
+[ext_resource type="Script" path="res://Scripts/Scenes/MainMenu/ImportFileDialog.cs" id="3_hrr3b"]
+[ext_resource type="Script" path="res://Scripts/Scenes/MainMenu/NewProjectPopup.cs" id="4_aryav"]
+[ext_resource type="PackedScene" uid="uid://dfjhosfpegjwk" path="res://Scenes/Common/TextInput.tscn" id="5_35lbn"]
+[ext_resource type="PackedScene" uid="uid://dh20qxfp37rj" path="res://Scenes/Common/PathSelect.tscn" id="5_xny5b"]
+[ext_resource type="PackedScene" uid="uid://dnyhh70xaqup2" path="res://Scenes/Common/Dropdown.tscn" id="7_fe3pl"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_kyff2")
+
+[node name="BG" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HSplitContainer" type="HSplitContainer" parent="BG"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+split_offset = 797
+dragger_visibility = 1
+
+[node name="Projects" type="Panel" parent="BG/HSplitContainer"]
+layout_mode = 2
+
+[node name="Projects" type="ItemList" parent="BG/HSplitContainer/Projects"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 441.0
+grow_horizontal = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="BG/HSplitContainer/Projects"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -188.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="New" type="Button" parent="BG/HSplitContainer/Projects/VBoxContainer"]
+layout_mode = 2
+text = "New"
+
+[node name="Import" type="Button" parent="BG/HSplitContainer/Projects/VBoxContainer"]
+layout_mode = 2
+text = "Import"
+
+[node name="Settings" type="Button" parent="BG/HSplitContainer/Projects/VBoxContainer"]
+layout_mode = 2
+text = "Settings"
+
+[node name="Exit" type="Button" parent="BG/HSplitContainer/Projects/VBoxContainer"]
+layout_mode = 2
+text = "Exit"
+
+[node name="SelectedProject" type="Panel" parent="BG/HSplitContainer"]
+layout_mode = 2
+script = ExtResource("2_84aus")
+
+[node name="TextureRect" type="TextureRect" parent="BG/HSplitContainer/SelectedProject"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 50.0
+offset_right = 150.0
+offset_bottom = 350.0
+grow_horizontal = 2
+texture = ExtResource("2_0xsr6")
+
+[node name="SongPreview" type="Panel" parent="BG/HSplitContainer/SelectedProject"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 360.0
+offset_bottom = 426.0
+grow_horizontal = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="BG/HSplitContainer/SelectedProject/SongPreview"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="BG/HSplitContainer/SelectedProject/SongPreview/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 5
+alignment = 1
+
+[node name="GotoPreviewSrart" type="TextureButton" parent="BG/HSplitContainer/SelectedProject/SongPreview/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+texture_normal = ExtResource("2_0xsr6")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Play_Stop" type="TextureButton" parent="BG/HSplitContainer/SelectedProject/SongPreview/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+texture_normal = ExtResource("2_0xsr6")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="GotoPreviewEnd" type="TextureButton" parent="BG/HSplitContainer/SelectedProject/SongPreview/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+texture_normal = ExtResource("2_0xsr6")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="AudioPreviewController" type="HSlider" parent="BG/HSplitContainer/SelectedProject/SongPreview/VBoxContainer"]
+layout_mode = 2
+
+[node name="PreviewStartMarker" type="VSeparator" parent="BG/HSplitContainer/SelectedProject/SongPreview/VBoxContainer/AudioPreviewController"]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 80.0
+offset_right = 84.0
+grow_vertical = 2
+
+[node name="PreviewEndMarker" type="VSeparator" parent="BG/HSplitContainer/SelectedProject/SongPreview/VBoxContainer/AudioPreviewController"]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 130.0
+offset_right = 134.0
+grow_vertical = 2
+
+[node name="MetaData" type="ItemList" parent="BG/HSplitContainer/SelectedProject"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 437.0
+offset_bottom = 519.0
+grow_horizontal = 2
+item_count = 14
+max_columns = 2
+same_column_width = true
+item_0/text = "Name"
+item_1/text = "null"
+item_2/text = "Music"
+item_3/text = "null"
+item_4/text = "Charter"
+item_5/text = "unknown"
+item_6/text = "Difficulty"
+item_7/text = "unknown"
+item_8/text = "Level"
+item_9/text = "?"
+item_10/text = "Composer"
+item_11/text = "unknown"
+item_12/text = "Illustrator"
+item_13/text = "unknown"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="BG/HSplitContainer/SelectedProject"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -101.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Edit" type="Button" parent="BG/HSplitContainer/SelectedProject/VBoxContainer"]
+layout_mode = 2
+text = "Edit"
+
+[node name="Export" type="Button" parent="BG/HSplitContainer/SelectedProject/VBoxContainer"]
+layout_mode = 2
+text = "Export"
+
+[node name="Delete" type="Button" parent="BG/HSplitContainer/SelectedProject/VBoxContainer"]
+layout_mode = 2
+text = "Delete"
+
+[node name="ImportFileDialog" type="FileDialog" parent="."]
+title = "Open a Directory"
+initial_position = 2
+size = Vector2i(352, 180)
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+option_count = 1
+show_hidden_files = true
+use_native_dialog = true
+option_0/name = "Chart project"
+option_0/values = PackedStringArray(".pceproject")
+script = ExtResource("3_hrr3b")
+
+[node name="NewProjectPopup" type="PopupPanel" parent="."]
+initial_position = 2
+size = Vector2i(600, 400)
+script = ExtResource("4_aryav")
+
+[node name="Control" type="Control" parent="NewProjectPopup"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 596.0
+offset_bottom = 396.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="NewProjectPopup/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Name" parent="NewProjectPopup/Control/VBoxContainer" instance=ExtResource("5_35lbn")]
+layout_mode = 2
+PlaceholderText = "Unknown"
+Title = "Name"
+
+[node name="MusicPath" parent="NewProjectPopup/Control/VBoxContainer" instance=ExtResource("5_xny5b")]
+layout_mode = 2
+Title = "Music"
+allowedFileExtensions = PackedStringArray("*.mp3,*.ogg,*.wav")
+
+[node name="Composer" parent="NewProjectPopup/Control/VBoxContainer" instance=ExtResource("5_35lbn")]
+layout_mode = 2
+PlaceholderText = "Unknown"
+Title = "Composer"
+
+[node name="Background" parent="NewProjectPopup/Control/VBoxContainer" instance=ExtResource("5_xny5b")]
+layout_mode = 2
+Title = "Background"
+allowedFileExtensions = PackedStringArray("*.png,*.jpg")
+
+[node name="Illustrator" parent="NewProjectPopup/Control/VBoxContainer" instance=ExtResource("5_35lbn")]
+layout_mode = 2
+PlaceholderText = "Unknown"
+Title = "Illustrator"
+
+[node name="Difficulty" type="HBoxContainer" parent="NewProjectPopup/Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="Name" parent="NewProjectPopup/Control/VBoxContainer/Difficulty" instance=ExtResource("5_35lbn")]
+layout_mode = 2
+size_flags_horizontal = 3
+PlaceholderText = "Unknown"
+Title = "Difficulty"
+
+[node name="Level" parent="NewProjectPopup/Control/VBoxContainer/Difficulty" instance=ExtResource("5_35lbn")]
+layout_mode = 2
+size_flags_horizontal = 3
+PlaceholderText = "Unknown"
+Title = "Level"
+
+[node name="Target" type="HBoxContainer" parent="NewProjectPopup/Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="Platform" parent="NewProjectPopup/Control/VBoxContainer/Target" instance=ExtResource("7_fe3pl")]
+layout_mode = 2
+size_flags_horizontal = 3
+Title = "Platform"
+Options = PackedStringArray("Chart engine", "phira", "phigros")
+
+[node name="FormatVersion" parent="NewProjectPopup/Control/VBoxContainer/Target" instance=ExtResource("7_fe3pl")]
+layout_mode = 2
+size_flags_horizontal = 3
+Title = "Version"
+Options = PackedStringArray("Latest")
+
+[node name="CreateNewProject" type="Button" parent="NewProjectPopup/Control"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -77.5
+offset_top = -31.0
+offset_right = 77.5
+grow_horizontal = 2
+grow_vertical = 0
+text = "Create new project"

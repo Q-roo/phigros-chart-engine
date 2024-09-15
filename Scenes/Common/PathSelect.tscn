@@ -1,0 +1,60 @@
+[gd_scene load_steps=3 format=3 uid="uid://dh20qxfp37rj"]
+
+[ext_resource type="Texture2D" uid="uid://xke63uh4jrch" path="res://icon.svg" id="1_64bei"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Common/PathSelect.cs" id="1_k7vy0"]
+
+[node name="Panel" type="Panel"]
+custom_minimum_size = Vector2(0, 30)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_k7vy0")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "label"
+
+[node name="Panel" type="Panel" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Path" type="Label" parent="HBoxContainer/Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "path"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="OpenDialog" type="TextureButton" parent="HBoxContainer/Panel/HBoxContainer"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture_normal = ExtResource("1_64bei")
+ignore_texture_size = true
+stretch_mode = 4
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open a File"
+initial_position = 2
+size = Vector2i(324, 180)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+use_native_dialog = true

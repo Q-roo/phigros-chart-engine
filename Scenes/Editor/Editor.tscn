@@ -1,0 +1,172 @@
+[gd_scene load_steps=5 format=3 uid="uid://gusv6rnm1xsq"]
+
+[ext_resource type="Texture2D" uid="uid://xke63uh4jrch" path="res://icon.svg" id="1_4h052"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
+[ext_resource type="CodeHighlighter" uid="uid://bla2abm5ap8df" path="res://Themes/code_highlighter.tres" id="2_ohngm"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartBuildCodeEdit.cs" id="3_c2gp3"]
+
+[node name="Editor" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_bmyri")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TabContainer" type="TabContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+tab_alignment = 2
+current_tab = 0
+tabs_position = 1
+
+[node name="Chartbuild" type="Panel" parent="Panel/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/TabContainer/Chartbuild"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Toolbar" type="Panel" parent="Panel/TabContainer/Chartbuild/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="File" type="Button" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
+layout_mode = 2
+text = "File"
+
+[node name="Settings" type="Button" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
+layout_mode = 2
+text = "Settings"
+
+[node name="Run" type="Button" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
+layout_mode = 2
+text = "run"
+
+[node name="Debug" type="Button" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
+layout_mode = 2
+text = "Debug"
+
+[node name="Reload" type="Button" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
+layout_mode = 2
+text = "Reload"
+
+[node name="CodeEdit" type="CodeEdit" parent="Panel/TabContainer/Chartbuild/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+scroll_smooth = true
+scroll_past_end_of_file = true
+minimap_draw = true
+caret_blink = true
+syntax_highlighter = ExtResource("2_ohngm")
+highlight_all_occurrences = true
+highlight_current_line = true
+draw_control_chars = true
+draw_tabs = true
+draw_spaces = true
+symbol_lookup_on_click = true
+line_folding = true
+gutters_draw_line_numbers = true
+gutters_zero_pad_line_numbers = true
+gutters_draw_fold_gutter = true
+code_completion_enabled = true
+indent_automatic = true
+auto_brace_completion_enabled = true
+auto_brace_completion_highlight_matching = true
+script = ExtResource("3_c2gp3")
+
+[node name="GUI" type="Panel" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Logs" type="Panel" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="Undo-redo" type="Panel" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="Statusbar" type="Panel" parent="Panel"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -31.0
+offset_right = 835.0
+grow_vertical = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/Statusbar"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -31.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Label" type="Label" parent="Panel/Statusbar/HBoxContainer"]
+layout_mode = 2
+text = "Saved"
+
+[node name="Button" type="Button" parent="Panel/Statusbar/HBoxContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "0"
+icon = ExtResource("1_4h052")
+alignment = 0
+expand_icon = true
+
+[node name="Button2" type="Button" parent="Panel/Statusbar/HBoxContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "0"
+icon = ExtResource("1_4h052")
+alignment = 0
+expand_icon = true
+
+[node name="Button3" type="Button" parent="Panel/Statusbar/HBoxContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "0"
+icon = ExtResource("1_4h052")
+alignment = 0
+expand_icon = true
+
+[node name="CheckButton" type="CheckButton" parent="Panel/Statusbar/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="Panel/Statusbar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Ln 0; Col 0"
