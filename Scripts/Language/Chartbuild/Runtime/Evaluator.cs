@@ -13,7 +13,8 @@ public static class Evaluator {
     public static Either<ICBValue, ErrorType> EvaluateExpression(ExpressionNode expression, Scope scope) => expression switch {
         StringExpressionNode @string => new StringValue(@string.value),
         IntExpressionNode @int => new I32Value(@int.value),
-        FloatExpressionNode @float => new F32Value(@float.value),
+        DoubleExpressionNode @float => new F32Value(@float.value),
+        ValueExpressionNode<ICBValue> value => Either<ICBValue, ErrorType>.Left(value.value), // analyzer can produce these during constant folding
         BinaryExpressionNode binary => EvaluateBinaryOperation(binary, scope),
         AssignmentExpressionNode assignment => ErrorType.NotCompileTimeConstant, //EvaluateAssignmentOperation(assignment, scope),
         IdentifierExpressionNode identifier => scope.GetVariable(identifier.value).Case switch {

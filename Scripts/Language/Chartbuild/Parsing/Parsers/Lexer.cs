@@ -144,7 +144,7 @@ public static class Lexer
                 if (isInt)
                     tokens.Add(new IntLiteralToken(line, column, int.Parse(source[start..i])));
                 else
-                    tokens.Add(new FloatLiteralToken(line, column, double.Parse(source[start..i])));
+                    tokens.Add(new DoubleLiteralToken(line, column, double.Parse(source[start..i])));
 
                 i--; // i is at the next character
                 continue;

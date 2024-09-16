@@ -16,7 +16,6 @@ public interface ICBValue {
 
     // nothing is also an ICBValue
     public Either<ICBValue, ErrorType> Call(params ICBValue[] args) => ErrorType.NotSupported;
-    public Either<ICBValue, ErrorType> CallMember(ICBValue memberName, params ICBValue[] args) => ErrorType.MissingMember;
     public Either<ICBValue, ErrorType> GetMember(ICBValue memberName) => ErrorType.MissingMember;
 
     public Either<ICBValue, ErrorType> Clone() => ErrorType.NotSupported;

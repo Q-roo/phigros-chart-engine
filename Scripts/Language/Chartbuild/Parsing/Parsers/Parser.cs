@@ -212,7 +212,7 @@ public class Parser(BaseToken[] tokens)
 
             string argName = GetIdentifierName();
             Expect(TokenType.Colon);
-            FunctionArgumentType argType = new(ParseType(), paramsArg);
+            BaseType argType = ParseType();
             ExpressionNode defaultValue = null;
 
             if (CurrentType == TokenType.Assign)
@@ -242,7 +242,7 @@ public class Parser(BaseToken[] tokens)
             returnType = ParseType();
         }
 
-        return new(fnName, [.. arguments], ParseBlockStatement(), returnType);
+        return new(fnName, [.. arguments], paramsArg, ParseBlockStatement(), returnType);
     }
 
     private IfStatementNode ParseIfStatement()
@@ -490,13 +490,13 @@ public class Parser(BaseToken[] tokens)
                 }
 
                 string name = GetIdentifierName();
-                FunctionArgumentType type = null;
+                BaseType type = null;
                 ExpressionNode defaultValue = null;
 
                 if (CurrentType == TokenType.Colon)
                 {
                     Advance();
-                    type = new(ParseType(), paramsArg);
+                    type = ParseType();
                 }
 
                 parameters.Add(new(name, type, defaultValue));
@@ -580,7 +580,7 @@ public class Parser(BaseToken[] tokens)
         {
             // literals or identifiers
             TokenType.IntLiteral => new IntExpressionNode((Advance() as IntLiteralToken).value),
-            TokenType.FloatLiteral => new FloatExpressionNode((Advance() as FloatLiteralToken).value),
+            TokenType.FloatLiteral => new DoubleExpressionNode((Advance() as DoubleLiteralToken).value),
             TokenType.StringLiteral => new StringExpressionNode((Advance() as StringLiteralToken).value),
             TokenType.Identifier => new IdentifierExpressionNode((Advance() as IdentifierToken).name),
 

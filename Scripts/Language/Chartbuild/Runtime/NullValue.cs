@@ -9,6 +9,8 @@ public class NullValue : ICBValue {
         return ErrorType.NullValue;
     }
 
+    public Either<ICBValue, ErrorType> Call(params ICBValue[] args) => ErrorType.NullValue;
+
     public object GetValue() {
         return null;
     }

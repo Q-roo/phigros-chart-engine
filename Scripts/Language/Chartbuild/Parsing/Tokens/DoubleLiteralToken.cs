@@ -1,6 +1,6 @@
 namespace PCE.Chartbuild;
 
-public sealed class FloatLiteralToken(int lineNumber, int columnNumber, double value) : BaseToken(lineNumber, columnNumber)
+public sealed class DoubleLiteralToken(int lineNumber, int columnNumber, double value) : BaseToken(lineNumber, columnNumber)
 {
     public override TokenType Type => TokenType.FloatLiteral;
 

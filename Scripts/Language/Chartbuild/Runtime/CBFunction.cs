@@ -5,10 +5,10 @@ namespace PCE.Chartbuild.Runtime;
 
 public abstract class CBFunction {
     public BaseType returnType;
-    public List<BaseType> argumentTypes;
+    public BaseType[] argumentTypes;
     public string[] argumentNames;
     public bool isLastParams;
-    public BaseType Type => new FunctionType(returnType, isLastParams, [.. argumentTypes]);
+    public BaseType Type => new FunctionType(returnType, isLastParams, argumentTypes);
     public bool Callable => true;
     public bool IsReference => true;
     public bool IsPureCallable => pure;

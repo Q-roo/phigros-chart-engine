@@ -8,6 +8,5 @@ public class ClosureExpressionNode(FunctionParameter[] parameters, BaseType retu
     public readonly FunctionParameter[] parameters = parameters;
     public readonly StatementNode body = body;
 
-    // infer it
-    public BaseType returnType {get; private set;} = returnType;
+    public readonly BaseType returnType = returnType;
 }

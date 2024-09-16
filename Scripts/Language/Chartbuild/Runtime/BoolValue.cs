@@ -21,7 +21,7 @@ public struct BoolValue(bool value) : ICBValue {
         return ErrorType.InvalidType;
     }
 
-    public readonly Either<BoolValue, ErrorType> Clone() => (new BoolValue(value));
+    public readonly Either<BoolValue, ErrorType> Clone() => new BoolValue(value);
 
     public static implicit operator bool(BoolValue value) => value.value;
     public static implicit operator BoolValue(bool value) => new(value);
@@ -33,7 +33,7 @@ public struct BoolValue(bool value) : ICBValue {
     public override readonly bool Equals(object obj) => this == obj;
     public override readonly int GetHashCode() => value.GetHashCode();
 
-    public Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
+    public readonly Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
         return @operator switch {
             TokenType.Equal => new BoolValue(Equals(rhs)),
             TokenType.NotEqual => new BoolValue(!Equals(rhs)),

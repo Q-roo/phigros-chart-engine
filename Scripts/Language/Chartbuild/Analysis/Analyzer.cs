@@ -2,29 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
-// using System.Linq;
-// using DotNext;
-// using Godot;
 using LanguageExt;
 using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chartbuild;
 
+// TODO: type checking (IMPORTANT)
+
 // TODO
 /*
- * [ ] evaluate constant expressions: 1+1 AKA constant folding
  * [ ] infer type
- * [ ] infer return type
- * [ ] infer pure
- * [ ] delete pure functions with unused results
- * [ ] dead code
+ * [x] infer pure (hopefully, it works)
+ * [x] dead code
  * [ ] empty statemet warning
  * [ ] infinite loop waring
- * [ ] unknown type error
  * [ ] invalid type error
- * [ ] inline for/foreach loops with known cycles
- * [ ] file does not start with #version error
+ * [x] file does not start with #version error
  * [ ] invalid version error
 */
 
@@ -163,10 +156,22 @@ public class Analyzer {
                     break;
                 }
                 case ExpressionStatementNode expression: {
-                    switch (AnalyzeExpression(expression.expression, block.scope).Case) {
-
+                    expression.expression = AnalyzeExpression(expression.expression, block.scope);
+                    // remove expressions that don't do anything such as 1+2 or 1 + add(1,2);
+                    // leave it if there are non-pure function calls in the expression
+                    // leave assignment and prefix and postfix expressions
+                    switch (expression.expression) {
+                        case AssignmentExpressionNode or UnaryExpressionNode:
+                            break;
+                        default:
+                            switch (expression.Evaluate(block.scope).Case) {
+                                case not ErrorType.NotCompileTimeConstant:
+                                    block.body.RemoveAt(i);
+                                    i--;
+                                    break;
+                            }
+                            break;
                     }
-
                     break;
                 }
                 case IfStatementNode @if: {
@@ -233,16 +238,16 @@ public class Analyzer {
                         errors.Add(new(ErrorType.UnexpectedToken, "break and continue statements can only be used inside loops", -1, -1));
                         block.body.RemoveAt(i);
                         i--;
-                    } else if (i < block.body.Count - 1)
-                        block.body.RemoveRange(i + 1, block.body.Count - i);
+                    } else
+                        block.body.RemoveRange(i + 1, block.body.Count - (i + 1));
                     break;
                 case ReturnStatementNode:
                     if (!isFunctionBody) {
                         errors.Add(new(ErrorType.UnexpectedToken, "return statements can only be used inside functions", -1, -1));
                         block.body.RemoveAt(i);
                         i--;
-                    } else if (i < block.body.Count - 1)
-                        block.body.RemoveRange(i + 1, block.body.Count - i);
+                    } else
+                        block.body.RemoveRange(i + 1, block.body.Count - (i + 1));
                     break;
                 default:
                     break;
@@ -289,7 +294,6 @@ public class Analyzer {
         );
     }
 
-    // TODO: invalid return type
     private static DeclaredFunction AnalyzeFunctionDeclaration(List<Error> errors, FunctionDeclarationStatementNode functionDeclaration, Scope scope, bool isLoopBody) {
         functionDeclaration.body.scope.parent = scope;
         AnalyzeBlockLike(errors, functionDeclaration.body, functionDeclaration.body.scope, isLoopBody, true);
@@ -298,19 +302,97 @@ public class Analyzer {
             if (functionDeclaration.body.scope.DeclareVariable(parameter.name, new NullValue(), false) != ErrorType.NoError)
                 throw new Exception("couldn't declare function parameters");
 
+        BaseType[] types = functionDeclaration.arguments.Select(it => it.type).ToArray();
+        string[] paramNames = functionDeclaration.arguments.Select(it => it.name).ToArray();
+
+
+        if (functionDeclaration.isLastParams)
+            types[^1] = new ArrayType(types[^1]);
+
         return new DeclaredFunction() {
             returnType = functionDeclaration.returnType ?? new NullValue().Type,
-            argumentTypes = [],
-            isLastParams = functionDeclaration.arguments[^1].type.@params, // TODO: range test, testing only
-            pure = true, // testing
-            argumentNames = ["a", "b"], // testing
+            argumentTypes = types,
+            isLastParams = functionDeclaration.isLastParams,
+            // FIXME: the evaluation will try using the function params which are set to null
+            pure = functionDeclaration.body.Evaluate(functionDeclaration.body.scope).Case switch {
+                ErrorType.NoError or ErrorType.NullValue => true, // there should be only 4+1 cases
+                ErrorType => false,                               // 1: null value error (the function parameter values are set to null at this point)
+                                                                  // 2: no error but no value to return
+                                                                  // 3: no error and there is a value to return
+                                                                  // 4: not compile time constant AKA, not pure
+                                                                  // 5: invalid syntax, types and such in which case, the code won't even run
+                _ => true
+            },
+            argumentNames = paramNames,
             body = functionDeclaration.body
         };
     }
 
-    private static Either<ExpressionStatementNode, ErrorType> AnalyzeExpression(ExpressionNode expression, Scope scope) {
-        Godot.GD.Print(expression.Evaluate(scope).MapLeft(v => v.GetValue()));
-        throw new NotImplementedException("TODO");
+    // optimizes the expression and returns errors if there are any
+    // it mutates the expression inside the function but still returns it
+    // it mostly does constant folding
+    private static ExpressionNode AnalyzeExpression(ExpressionNode expression, Scope scope) {
+        // Godot.GD.Print(expression.Evaluate(scope).MapLeft(v => v.GetValue()));
+        switch (expression) {
+            case ArrayLiteralExpressionNode array:
+                for (int i = 0; i < array.content.Length; i++)
+                    array.content[i] = AnalyzeExpression(array.content[i], scope);
+
+                break;
+            case AssignmentExpressionNode assignment:
+                assignment.asignee = AnalyzeExpression(assignment.asignee, scope);
+                assignment.value = AnalyzeExpression(assignment.value, scope);
+                // replace assignment with empty
+                // TODO: assignment doesn't change the value and doesn't cause side effects
+                break;
+            case BinaryExpressionNode binary:
+                binary.left = AnalyzeExpression(binary.left, scope);
+                binary.right = AnalyzeExpression(binary.right, scope);
+                // try evaluating the binary expression
+                // if it can evaluate to a value, the expression can be folded
+                switch (binary.Evaluate(scope).Case) {
+                    case ICBValue value:
+                        return new ValueExpressionNode<ICBValue>(value);
+                }
+                break;
+            case CallExpressionNode call:
+                switch (call.Evaluate(scope).Case) {
+                    case ICBValue value: // the function is a pure function and can be safely evaluated during compile time
+                        return new ValueExpressionNode<ICBValue>(value);
+                }
+                break;
+            case ClosureExpressionNode closure:
+                // TODO
+                break;
+            case ComputedMemberAccessExpressionNode computedMemberAccess:
+                computedMemberAccess.member = AnalyzeExpression(computedMemberAccess.member, scope); // TODO: see if this could cause any bugs
+                computedMemberAccess.property = AnalyzeExpression(computedMemberAccess.property, scope);
+                break;
+            case MemberAccessExpressionNode memberAccess:
+                memberAccess.member = AnalyzeExpression(memberAccess.member, scope);
+                break;
+            case UnaryExpressionNode unary: // handles both posfix and prefix
+                unary.expression = AnalyzeExpression(unary.expression, scope);
+                break;
+            case RangeLiteralExpressionNode rangeLiteral:
+                rangeLiteral.start = AnalyzeExpression(rangeLiteral.start, scope);
+                rangeLiteral.end = AnalyzeExpression(rangeLiteral.end, scope);
+                break;
+            case TernaryExpressionNode ternary:
+                ternary.@true = AnalyzeExpression(ternary.@true, scope);
+                ternary.@false = AnalyzeExpression(ternary.@false, scope);
+                ternary.condition = AnalyzeExpression(ternary.condition, scope);
+                switch (ternary.condition.Evaluate(scope).Case) {
+                    case BoolValue @bool:
+                        return @bool ? ternary.@true : ternary.@false;
+                }
+                break;
+            // the rest are literals
+            default:
+                break;
+        }
+        // throw new NotImplementedException("TODO");
+        return expression;
     }
 
     // if (false){}
@@ -384,8 +466,10 @@ public class Analyzer {
             loop.body.body.Clear();
     }
 
+    // no need for if checks because the parser doesn't let while loops with nonexistent conditions to be created
     private static Either<StatementNode, ErrorType> AnalyzeWhileLoop(List<Error> errors, WhileLoopStatementNode whileLoop, Scope scope, bool isFunctionBody) {
         AnalyzeLoopBody(errors, whileLoop, scope, isFunctionBody);
+        whileLoop.condition = AnalyzeExpression(whileLoop.condition, scope);
 
         // if the condition could have side effects, the loop will remain, even with an empty body
         return whileLoop.condition.Evaluate(scope).Case switch {
@@ -407,34 +491,32 @@ public class Analyzer {
                     return err;
             }
 
+        if (forLoop.condition is not null)
+            forLoop.condition = AnalyzeExpression(forLoop.condition, scope);
+
+        if (forLoop.update is not null)
+            forLoop.update = AnalyzeExpression(forLoop.update, scope);
+
         // loop body is empty, just return init and condition because those would've ran at least once
+        // return then only if they are not compile time constant
         if (forLoop.body.body.Count == 0) {
             if (forLoop.init is not null)
-                forLoop.body.body.Add(forLoop.init);
-            if (forLoop.update is not null)
-                switch (AnalyzeExpression(forLoop.update, forLoop.body.scope).Case) {
-                    case ExpressionStatementNode expression:
-                        forLoop.body.body.Add(expression);
-                        return forLoop.body;
-                    case ErrorType err:
-                        return err;
-                    default:
-                        throw new UnreachableException();
-                };
+                switch (forLoop.init.Evaluate(scope).Case) {
+                    case ErrorType.NotCompileTimeConstant:
+                        forLoop.body.body.Add(forLoop.init);
+                        break;
+                }
+            if (forLoop.condition is not null)
+                switch (forLoop.condition.Evaluate(scope).Case) {
+                    case ErrorType.NotCompileTimeConstant:
+                        forLoop.body.body.Add(new ExpressionStatementNode(forLoop.condition));
+                        break;
+                }
+
+            return forLoop.body.body.Count > 0 ? forLoop.body : new EmptyStatementNode();
         }
 
         if (forLoop.condition is not null) {
-            switch (AnalyzeExpression(forLoop.condition, forLoop.body.scope).Case) {
-                case ExpressionStatementNode expression:
-                    forLoop.condition = expression.expression;
-                    break;
-                case ErrorType err:
-                    if (err != ErrorType.NoError || err != ErrorType.NotCompileTimeConstant)
-                        return err;
-                    break;
-                default:
-                    throw new UnreachableException();
-            }
             switch (forLoop.condition.Evaluate(scope).Case) {
                 case BoolValue @bool:
                     if (!@bool) // for(;false;)
@@ -452,19 +534,6 @@ public class Analyzer {
             }
         }
 
-        if (forLoop.update is not null)
-            switch (AnalyzeExpression(forLoop.update, forLoop.body.scope).Case) {
-                case ExpressionStatementNode expression:
-                    forLoop.update = expression.expression;
-                    break;
-                case ErrorType err:
-                    if (err != ErrorType.NoError || err != ErrorType.NotCompileTimeConstant)
-                        return err;
-                    break;
-                default:
-                    throw new UnreachableException();
-            }
-
         return forLoop;
     }
 
@@ -479,6 +548,8 @@ public class Analyzer {
         ErrorType error = AnalyzeVariableDeclaration(errors, forEachLoop.body.scope, forEachLoop.value);
         if (error != ErrorType.NoError)
             return error;
+
+        forEachLoop.iterable = AnalyzeExpression(forEachLoop.iterable, scope);
 
         return forEachLoop.iterable.Evaluate(scope).Case switch {
             ArrayValue => forEachLoop,

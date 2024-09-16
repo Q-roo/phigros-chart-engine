@@ -80,6 +80,12 @@ text = "Reload"
 [node name="CodeEdit" type="CodeEdit" parent="Panel/TabContainer/Chartbuild/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+text = "#version 0
+fn add(a: i32, b: i32) -> i32 {
+	return a + b;
+}
+
+add(1,2);"
 scroll_smooth = true
 scroll_past_end_of_file = true
 minimap_draw = true

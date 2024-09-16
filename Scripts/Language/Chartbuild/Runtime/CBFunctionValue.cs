@@ -5,7 +5,7 @@ namespace PCE.Chartbuild.Runtime;
 
 public class CBFunctionValue(CBFunction value) : ICBValue {
     public BaseType ReturnType => value.returnType;
-    public List<BaseType> ArgumentTypes => value.argumentTypes;
+    public BaseType[] ArgumentTypes => value.argumentTypes;
     public bool IsLastParams => value.isLastParams;
     public BaseType Type => value.Type;
     public bool Callable => true;

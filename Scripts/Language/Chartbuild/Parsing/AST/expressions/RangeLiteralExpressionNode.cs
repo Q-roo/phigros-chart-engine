@@ -2,7 +2,8 @@ namespace PCE.Chartbuild;
 
 public class RangeLiteralExpressionNode(ExpressionNode start, ExpressionNode end, bool inclusiveEnd) : ExpressionNode
 {
-    public readonly ExpressionNode start = start;
-    public readonly ExpressionNode end = end;
+    // TODO: the step value will be 1 by default and can be set with the set_step_size() function
+    public ExpressionNode start = start;
+    public ExpressionNode end = end;
     public readonly bool inclusiveEnd = inclusiveEnd;
 }
