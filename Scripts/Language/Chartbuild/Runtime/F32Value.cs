@@ -2,6 +2,7 @@ using LanguageExt;
 using Godot;
 using PCE.Util;
 using System.Diagnostics;
+using LanguageExt.UnsafeValueAccess;
 
 namespace PCE.Chartbuild.Runtime;
 
@@ -39,6 +40,23 @@ public struct F32Value(double value) : ICBValue {
         };
     }
 
+    public readonly ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
+        F32Value r = RHSAsF32Unsafe(rhs);
+        return @operator switch {
+                TokenType.Plus => this + r,
+                TokenType.Minus => this - r,
+                TokenType.Multiply => this * r,
+                TokenType.Divide => DivUnsafe(this, r),
+                TokenType.Modulo => ModUnsafe(this, r),
+                TokenType.Power => Power(this, r),
+                TokenType.LessThan => this < r,
+                TokenType.LessThanOrEqual => this <= r,
+                TokenType.GreaterThan => this > r,
+                TokenType.GreaterThanOrEqual => this >= r,
+                _ => throw new UnreachableException()
+            };
+    }
+
     public readonly object GetValue() {
         return value;
     }
@@ -62,9 +80,20 @@ public struct F32Value(double value) : ICBValue {
         };
     }
 
+    private static F32Value RHSAsF32Unsafe(ICBValue v) {
+        return v switch {
+            F32Value f32 => f32,
+            I32Value i32 => new F32Value(i32),
+            _ => throw new UnreachableException()
+        };
+    }
+
     public static implicit operator double(F32Value value) => value.value;
     public static implicit operator F32Value(double value) => new(value);
     public static implicit operator F32Value(I32Value value) => new(value);
+
+    public static F32Value DivUnsafe(F32Value lhs, F32Value rhs) => new(lhs.value / rhs.value);
+    public static F32Value ModUnsafe(F32Value lhs, F32Value rhs) => new(lhs.value % rhs.value);
 
     public static F32Value Power(F32Value lhs, F32Value rhs) => new(Mathf.Pow(lhs.value, rhs.value));
     public static F32Value operator +(F32Value value) => new(+value.value);

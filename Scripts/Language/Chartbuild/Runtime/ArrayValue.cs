@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using LanguageExt;
 
 namespace PCE.Chartbuild.Runtime;
@@ -15,6 +16,14 @@ public class ArrayValue : ICBValue {
             TokenType.Equal => new BoolValue(values.Equals(rhs)),
             TokenType.NotEqual => new BoolValue(!values.Equals(rhs)),
             _ => ErrorType.NotSupported
+        };
+    }
+
+    public ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
+        return @operator switch {
+            TokenType.Equal => new BoolValue(values.Equals(rhs)),
+            TokenType.NotEqual => new BoolValue(!values.Equals(rhs)),
+            _ => throw new UnreachableException()
         };
     }
 

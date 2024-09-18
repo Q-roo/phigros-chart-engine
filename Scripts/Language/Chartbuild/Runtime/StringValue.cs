@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using LanguageExt;
 
 namespace PCE.Chartbuild.Runtime;
@@ -30,6 +31,18 @@ public struct StringValue(string value) : ICBValue {
         return @operator switch {
             TokenType.Plus => rhs is StringValue r ? value + r : ErrorType.InvalidType,
             _ => ErrorType.NotSupported
+        };
+    }
+
+    public ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
+        if (@operator == TokenType.Equal)
+            return new BoolValue(Equals(rhs));
+        else if (@operator == TokenType.NotEqual)
+            return new BoolValue(!Equals(rhs));
+
+        return @operator switch {
+            TokenType.Plus => value + (StringValue)rhs,
+            _ => throw new UnreachableException()
         };
     }
 

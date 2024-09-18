@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using LanguageExt;
 
 namespace PCE.Chartbuild.Runtime;
@@ -38,6 +39,14 @@ public struct BoolValue(bool value) : ICBValue {
             TokenType.Equal => new BoolValue(Equals(rhs)),
             TokenType.NotEqual => new BoolValue(!Equals(rhs)),
             _ => ErrorType.NotSupported
+        };
+    }
+
+    public readonly ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
+        return @operator switch {
+            TokenType.Equal => new BoolValue(Equals(rhs)),
+            TokenType.NotEqual => new BoolValue(!Equals(rhs)),
+            _ => throw new UnreachableException()
         };
     }
 }

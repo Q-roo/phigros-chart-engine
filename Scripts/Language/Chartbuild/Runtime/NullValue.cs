@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using LanguageExt;
 
 namespace PCE.Chartbuild.Runtime;
@@ -10,6 +11,14 @@ public class NullValue : ICBValue {
             TokenType.Equal => new BoolValue(Equals(rhs)),
             TokenType.NotEqual => new BoolValue(!Equals(rhs)),
             _ => ErrorType.NullValue,
+        };
+    }
+
+    public ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
+        return @operator switch { 
+            TokenType.Equal => new BoolValue(Equals(rhs)),
+            TokenType.NotEqual => new BoolValue(!Equals(rhs)),
+            _ => throw new UnreachableException(),
         };
     }
 

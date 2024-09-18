@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using LanguageExt;
 
 namespace PCE.Chartbuild.Runtime;
@@ -16,6 +17,10 @@ public abstract class CBFunction {
 
     public static Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
         return ErrorType.NotSupported;
+    }
+
+    public static ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
+        throw new UnreachableException();
     }
 
     public abstract Either<ICBValue, ErrorType> Call(params ICBValue[] args);

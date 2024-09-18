@@ -2,6 +2,7 @@ using System;
 using LanguageExt;
 using Godot;
 using PCE.Util;
+using System.Diagnostics;
 
 namespace PCE.Chartbuild.Runtime;
 
@@ -43,6 +44,30 @@ public struct I32Value(int value) : ICBValue {
             return ErrorType.InvalidType;
     }
 
+    public readonly ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
+        if (rhs is I32Value r)
+            return @operator switch {
+                TokenType.Plus => this + r,
+                TokenType.Minus => this - r,
+                TokenType.Multiply => this * r,
+                TokenType.Divide => DivUnsafe(this, r),
+                TokenType.Modulo => ModUnsafe(this, r),
+                TokenType.Power => Power(this, r),
+                TokenType.ShiftLeft => this << r,
+                TokenType.ShiftRight => this >> r,
+                TokenType.BitwiseXor => this ^ r,
+                TokenType.BitwiseAnd => this & r,
+                TokenType.BitwiseOr => this | r,
+                TokenType.LessThan => this < r,
+                TokenType.LessThanOrEqual => this <= r,
+                TokenType.GreaterThan => this > r,
+                TokenType.GreaterThanOrEqual => this >= r,
+                _ => throw new UnreachableException()
+            };
+        else
+            throw new UnreachableException();
+    }
+
     public readonly object GetValue() {
         return value;
     }
@@ -60,6 +85,11 @@ public struct I32Value(int value) : ICBValue {
 
     public static implicit operator int(I32Value value) => value.value;
     public static implicit operator I32Value(int value) => new(value);
+
+    // FIXME f32value can handle i32value as rhs but this might not be the case here
+
+    public static I32Value DivUnsafe(I32Value lhs, I32Value rhs) => new(lhs.value / rhs.value);
+    public static I32Value ModUnsafe(I32Value lhs, I32Value rhs) => new(lhs.value % rhs.value);
 
     public static I32Value Power(I32Value lhs, I32Value rhs) => new((int)Mathf.Pow(lhs.value, rhs.value));
 

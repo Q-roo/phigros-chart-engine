@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using LanguageExt;
+using LanguageExt.UnsafeValueAccess;
 
 namespace PCE.Chartbuild.Runtime;
 
@@ -27,7 +28,10 @@ public class CBVariable {
     public CBVariable(ICBValue value, bool @readonly)
     : this(value, @readonly, value is not null, true) { }
 
+    public ICBValue GetValueUnsafe() => value;
+    public void SetValueUnsafe(ICBValue value) => this.value = value.IsReference ? value : value.Clone().Swap().ValueUnsafe();
     public Either<ICBValue, ErrorType> GetValue() => initalized ? Either<ICBValue, ErrorType>.Left(value) : ErrorType.UninitalizedValue;
+    // for the wm when it is known that it is initalized for sure
     public ErrorType SetValue(ICBValue value) {
         if (initalized && @readonly)
             return ErrorType.SetConstant;

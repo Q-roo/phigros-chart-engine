@@ -11,8 +11,8 @@ public interface ICBValue {
     public object GetValue();
     public ErrorType SetValue(object value);
 
-    // public Result<ICBValue, ErrorType> ExecuteOperator(ICBValue handler, ICBValue lhs, ICBValue rhs, out ICBValue result);
     public Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs);
+    public ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs);
 
     // nothing is also an ICBValue
     public Either<ICBValue, ErrorType> Call(params ICBValue[] args) => ErrorType.NotSupported;

@@ -15,6 +15,8 @@ public class CBFunctionValue(CBFunction value) : ICBValue {
     public CBFunction value = value;
 
     public Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) => CBFunction.ExecuteBinaryOperator(@operator, rhs);
+    public ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) => CBFunction.ExecuteBinaryOperatorUnsafe(@operator, rhs);
+
     public Either<ICBValue, ErrorType> Call(params ICBValue[] args) => value.Call(args);
 
     public object GetValue() => value;
