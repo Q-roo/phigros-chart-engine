@@ -8,6 +8,9 @@ using PCE.Chartbuild.Runtime;
 namespace PCE.Chartbuild;
 
 // TODO: type checking (IMPORTANT)
+// TODO: assignment might be compile time constant
+// TODO: stop iteration error
+// FIXME: avoid evaluating infinite loops
 
 // TODO
 /*

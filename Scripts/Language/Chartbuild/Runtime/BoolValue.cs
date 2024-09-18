@@ -30,7 +30,7 @@ public struct BoolValue(bool value) : ICBValue {
 
     public static BoolValue operator ==(BoolValue lhs, object rhs) => lhs.value.Equals(rhs) || rhs is BoolValue r && lhs.value == r.value;
     public static BoolValue operator !=(BoolValue lhs, object rhs) => !(lhs == rhs);
-    public override readonly bool Equals(object obj) => this == obj;
+    public override readonly bool Equals(object obj) => value.Equals(obj) || obj is BoolValue v && value == v.value;
     public override readonly int GetHashCode() => value.GetHashCode();
 
     public readonly Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {

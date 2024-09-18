@@ -49,4 +49,8 @@ public class ArrayValue : ICBValue {
 
         return ErrorType.InvalidType;
     }
+
+    public override bool Equals(object obj) => values == obj || obj is ArrayValue array && array.values == values;
+
+    public override int GetHashCode() => values.GetHashCode();
 }

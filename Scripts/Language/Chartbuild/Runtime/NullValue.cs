@@ -6,7 +6,11 @@ public class NullValue : ICBValue {
     public BaseType Type => new IdentifierType("unset");
 
     public Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
-        return ErrorType.NullValue;
+        return @operator switch { 
+            TokenType.Equal => new BoolValue(Equals(rhs)),
+            TokenType.NotEqual => new BoolValue(!Equals(rhs)),
+            _ => ErrorType.NullValue,
+        };
     }
 
     public Either<ICBValue, ErrorType> Call(params ICBValue[] args) => ErrorType.NullValue;
@@ -18,4 +22,8 @@ public class NullValue : ICBValue {
     public ErrorType SetValue(object value) {
         return ErrorType.NullValue;
     }
+
+    public override bool Equals(object obj) => obj is null || obj is NullValue || obj is ICBValue v && v.GetValue() is null;
+
+    public override int GetHashCode() => 0;
 }

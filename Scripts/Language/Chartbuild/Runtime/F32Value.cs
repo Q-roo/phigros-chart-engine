@@ -85,8 +85,8 @@ public struct F32Value(double value) : ICBValue {
     public static BoolValue operator >=(F32Value lhs, F32Value rhs) => new(lhs.value >= rhs.value);
     public static BoolValue operator <=(F32Value lhs, F32Value rhs) => new(lhs.value <= rhs.value);
 
-    public override readonly bool Equals(object obj) => value.Equals(obj) ||
-    (obj is I32Value vi && value == vi.value) ||
-    (obj is F32Value vf && value == vf.value);
+    public override readonly bool Equals(object obj) => value.Equals(obj)
+    || (obj is I32Value vi && value == vi.value)
+    || (obj is F32Value vf && value == vf.value);
     public override readonly int GetHashCode() => value.GetHashCode();
 }
