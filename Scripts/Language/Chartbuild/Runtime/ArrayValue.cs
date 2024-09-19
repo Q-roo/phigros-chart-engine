@@ -1,12 +1,14 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using LanguageExt;
 
 namespace PCE.Chartbuild.Runtime;
 
-public class ArrayValue : ICBValue {
+public class ArrayValue : IEnumerableICBValue {
     public BaseType innerType;
     public BaseType Type => new ArrayType(innerType);
+    public BaseType InnerType => innerType;
     public bool IsReference => true;
 
     public List<ICBValue> values = [];
@@ -62,4 +64,8 @@ public class ArrayValue : ICBValue {
     public override bool Equals(object obj) => values == obj || obj is ArrayValue array && array.values == values;
 
     public override int GetHashCode() => values.GetHashCode();
+
+    public IEnumerator<ICBValue> GetEnumerator() => values.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

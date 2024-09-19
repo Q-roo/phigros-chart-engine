@@ -11,6 +11,7 @@ namespace PCE.Chartbuild;
 // TODO: assignment might be compile time constant
 // TODO: stop iteration error
 // FIXME: avoid evaluating infinite loops
+// TODO: type coersion
 
 // TODO
 /*
@@ -335,7 +336,7 @@ public class Analyzer {
     // it mutates the expression inside the function but still returns it
     // it mostly does constant folding
     private static ExpressionNode AnalyzeExpression(ExpressionNode expression, Scope scope) {
-        // Godot.GD.Print(expression.Evaluate(scope).MapLeft(v => v.GetValue()));
+        Godot.GD.Print(expression.Evaluate(scope).MapLeft(v => v.GetValue()));
         switch (expression) {
             case ArrayLiteralExpressionNode array:
                 for (int i = 0; i < array.content.Length; i++)
@@ -555,7 +556,7 @@ public class Analyzer {
         forEachLoop.iterable = AnalyzeExpression(forEachLoop.iterable, scope);
 
         return forEachLoop.iterable.Evaluate(scope).Case switch {
-            ArrayValue => forEachLoop,
+            IEnumerableICBValue => forEachLoop,
             ICBValue => ErrorType.InvalidType,
             ErrorType err => err,
             _ => throw new UnreachableException()
