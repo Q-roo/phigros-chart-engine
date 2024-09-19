@@ -137,7 +137,7 @@ public static class Lexer
                         continue;
                     }
                 }
-                while (char.IsAsciiDigit(c));
+                while (char.IsAsciiDigit(c) || c == '.');
 
                 column += i - start - 1;
 
