@@ -52,4 +52,6 @@ public struct StringValue(string value) : ICBValue {
     public static BoolValue operator !=(StringValue lhs, object rhs) => !(lhs == rhs);
     public override readonly bool Equals(object obj) => value.Equals(obj) || (obj is StringValue v && value == v);
     public override readonly int GetHashCode() => value.GetHashCode();
+
+    public override readonly string ToString() => value;
 }

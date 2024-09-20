@@ -2,16 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Godot;
 using LanguageExt;
 using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chartbuild;
 
-// TODO: type checking (IMPORTANT)
+// TODO: generic types
 // TODO: assignment might be compile time constant
 // TODO: stop iteration error
 // FIXME: avoid evaluating infinite loops
-// TODO: type coersion
+// FIXME: store type for variables
 
 // TODO
 /*
@@ -78,6 +79,20 @@ public class Analyzer {
         ast.scope.DeclareVariable("true", new BoolValue(true), true);
         ast.scope.DeclareVariable("false", new BoolValue(false), true);
         ast.scope.DeclareVariable("unset", new NullValue(), true); // I can already feel the bugs this will cause
+
+        // not the final print, this is just for testing the native bindings
+        ast.scope.DeclareVariable("dbg_print", new CBFunctionValue(new NativeFunctionBinding(args => {
+            GD.Print(string.Join<ICBValue>(", ", args));
+            return Either<ICBValue, ErrorType>.Left(ast.scope.GetVariableUnsafe("unset").GetValueUnsafe());
+        }) {
+            pure = true,
+            isLastParams = true,
+            parameterNames = ["values"],
+            paremeterTypes = [new ArrayType(new AnyType())],
+            returnType = new NullType()
+        }),
+            true
+        );
 
         if (ast.body.Count > 0)
             if (ast.body[0] is CommandStatementNode command)
@@ -336,7 +351,6 @@ public class Analyzer {
     // it mutates the expression inside the function but still returns it
     // it mostly does constant folding
     private static ExpressionNode AnalyzeExpression(ExpressionNode expression, Scope scope) {
-        Godot.GD.Print(expression.Evaluate(scope).MapLeft(v => v.GetValue()));
         switch (expression) {
             case ArrayLiteralExpressionNode array:
                 for (int i = 0; i < array.content.Length; i++)
@@ -486,6 +500,19 @@ public class Analyzer {
 
     // FIXME: for (i ;;) is not possible
     private static Either<StatementNode, ErrorType> AnalyzeForLoop(List<Error> errors, ForLoopStatementNode forLoop, Scope scope, bool isFunctionBody) {
+        // turn the for loops into while loops because they are easier to handle
+        // BlockStatementNode block = new([]);
+        // block.scope.parent = scope;
+        // if (forLoop.init is not null)
+        // block.body.Add(forLoop.init);
+
+        // forLoop.body ??= new([]);
+        // if (forLoop.update is not null)
+        // forLoop.body.body.Add(new ExpressionStatementNode(forLoop.update));
+
+        // block.body.Add(new WhileLoopStatementNode(forLoop.condition, forLoop.body));
+        // AnalyzeBlockLike(errors, block, block.scope, true, isFunctionBody);
+        // the byte code generator converts it so no need to do it here
         AnalyzeLoopBody(errors, forLoop, scope, isFunctionBody);
         if (forLoop.init is not null)
             switch (AnalyzeVariableDeclaration(errors, forLoop.body.scope, forLoop.init)) {

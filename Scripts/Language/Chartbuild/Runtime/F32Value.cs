@@ -109,4 +109,6 @@ public struct F32Value(double value) : ICBValue {
     || (obj is I32Value vi && value == vi.value)
     || (obj is F32Value vf && value == vf.value);
     public override readonly int GetHashCode() => value.GetHashCode();
+
+    public override readonly string ToString() => value.ToString();
 }

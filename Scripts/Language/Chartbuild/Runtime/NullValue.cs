@@ -35,4 +35,6 @@ public class NullValue : ICBValue {
     public override bool Equals(object obj) => obj is null || obj is NullValue || obj is ICBValue v && v.GetValue() is null;
 
     public override int GetHashCode() => 0;
+
+    public override string ToString() => $"{null}";
 }

@@ -85,7 +85,7 @@ fn add(a: i32, b: f32) -> f32 {
 	return a + b;
 }
 
-add(true,2);"
+dbg_print(add(true,2));"
 scroll_smooth = true
 scroll_past_end_of_file = true
 minimap_draw = true

@@ -61,6 +61,8 @@ public class ArrayValue : IEnumerableICBValue {
         return ErrorType.InvalidType;
     }
 
+    public override string ToString() => $"[{string.Join(", ", values)}]";
+
     public override bool Equals(object obj) => values == obj || obj is ArrayValue array && array.values == values;
 
     public override int GetHashCode() => values.GetHashCode();

@@ -34,6 +34,8 @@ public struct BoolValue(bool value) : ICBValue {
     public override readonly bool Equals(object obj) => value.Equals(obj) || obj is BoolValue v && value == v.value;
     public override readonly int GetHashCode() => value.GetHashCode();
 
+    public override readonly string ToString() => value.ToString();
+
     public readonly Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
         bool value = this.value;
         return rhs.TryCastThen<BoolValue, ICBValue>(@bool => @operator switch {

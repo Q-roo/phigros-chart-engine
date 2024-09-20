@@ -78,8 +78,6 @@ public struct I32Value(int value) : ICBValue {
     public static implicit operator int(I32Value value) => value.value;
     public static implicit operator I32Value(int value) => new(value);
 
-    // FIXME f32value can handle i32value as rhs but this might not be the case here
-
     public static I32Value DivUnsafe(I32Value lhs, I32Value rhs) => new(lhs.value / rhs.value);
     public static I32Value ModUnsafe(I32Value lhs, I32Value rhs) => new(lhs.value % rhs.value);
 
@@ -114,4 +112,6 @@ public struct I32Value(int value) : ICBValue {
     || (obj is I32Value vi && value == vi.value)
     || (obj is F32Value vf && value == vf.value);
     public override readonly int GetHashCode() => value.GetHashCode();
+
+    public override readonly string ToString() => value.ToString();
 }
