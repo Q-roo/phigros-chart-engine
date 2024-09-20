@@ -4,7 +4,7 @@ using LanguageExt;
 namespace PCE.Chartbuild.Runtime;
 
 public struct StringValue(string value) : ICBValue {
-    public readonly BaseType Type => new IdentifierType("str");
+    public readonly BaseType Type => new StringType();
     public readonly bool IsReference => true;
 
     public string value = value;
@@ -23,18 +23,16 @@ public struct StringValue(string value) : ICBValue {
     public readonly Either<StringValue, ErrorType> Clone() => new StringValue(value); // TODO: let's see if this breaks anything
 
     public readonly Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
-        if (@operator == TokenType.Equal)
-            return new BoolValue(Equals(rhs));
-        else if (@operator == TokenType.NotEqual)
-            return new BoolValue(!Equals(rhs));
-
-        return @operator switch {
-            TokenType.Plus => rhs is StringValue r ? value + r : ErrorType.InvalidType,
+        StringValue lhs = this;
+        return rhs.TryCastThen<StringValue, ICBValue>(str => @operator switch {
+            TokenType.Equal => lhs == str,
+            TokenType.NotEqual => lhs != str,
+            TokenType.Plus => lhs + str,
             _ => ErrorType.NotSupported
-        };
+        });
     }
 
-    public ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
+    public readonly ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
         if (@operator == TokenType.Equal)
             return new BoolValue(Equals(rhs));
         else if (@operator == TokenType.NotEqual)

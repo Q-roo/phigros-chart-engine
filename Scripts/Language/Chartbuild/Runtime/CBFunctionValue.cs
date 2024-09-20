@@ -1,14 +1,13 @@
-using System.Collections.Generic;
 using LanguageExt;
 
 namespace PCE.Chartbuild.Runtime;
 
-public class CBFunctionValue(CBFunction value) : ICBValue {
+public class CBFunctionValue(CBFunction value) : ICallableICBValue {
     public BaseType ReturnType => value.returnType;
-    public BaseType[] ArgumentTypes => value.argumentTypes;
+    public BaseType[] ParameterTypes => value.paremeterTypes;
+    public string[] ParameterNames => value.parameterNames;
     public bool IsLastParams => value.isLastParams;
     public BaseType Type => value.Type;
-    public bool Callable => true;
     public bool IsReference => true;
     public bool IsPureCallable => value.pure;
 

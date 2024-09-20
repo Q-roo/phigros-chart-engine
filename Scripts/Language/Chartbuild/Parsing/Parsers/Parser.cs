@@ -537,10 +537,22 @@ public class Parser(BaseToken[] tokens)
         return left;
     }
 
+    private InvalidType CreateInvalidType() {
+        errors.Add(new(ErrorType.InvalidType, "this type does not exist", -1, -1));
+        return new();
+    }
+
     // T
-    private IdentifierType ParseIdentifierType()
+    private BaseType ParseIdentifierType()
     {
-        return new(GetIdentifierName());
+        string typeName = GetIdentifierName();
+        // TODO: better type name lookup
+        return typeName switch {
+            "i32" => new I32Type(),
+            "f32" => new F32Type(),
+            "bool" => new BoolType(),
+            _ => CreateInvalidType(),
+        };
     }
 
     // [T]
@@ -553,24 +565,24 @@ public class Parser(BaseToken[] tokens)
     }
 
     // <T>
-    private GenericType ParseGenericType(IdentifierType left)
-    {
-        List<BaseType> content = [];
+    // private GenericType ParseGenericType(IdentifierType left)
+    // {
+    //     List<BaseType> content = [];
 
-        Expect(TokenType.LessThan);
+    //     Expect(TokenType.LessThan);
 
-        while (HasTokens && CurrentType != TokenType.GreaterThan)
-        {
-            content.Add(ParseType());
+    //     while (HasTokens && CurrentType != TokenType.GreaterThan)
+    //     {
+    //         content.Add(ParseType());
 
-            if (CurrentType != TokenType.GreaterThan)
-                Expect(TokenType.Coma);
-        }
+    //         if (CurrentType != TokenType.GreaterThan)
+    //             Expect(TokenType.Coma);
+    //     }
 
-        Expect(TokenType.GreaterThan);
+    //     Expect(TokenType.GreaterThan);
 
-        return new(left.name, [.. content]);
-    }
+    //     return new(left.name, [.. content]);
+    // }
 
     #endregion
 
@@ -688,7 +700,7 @@ public class Parser(BaseToken[] tokens)
     {
         return type switch
         {
-            TokenType.LessThan => ParseGenericType(left as IdentifierType),
+            // TokenType.LessThan => ParseGenericType(left as IdentifierType),
             _ => throw new NotImplementedException($"unimplemented type led behaviour for \"{type.ToSourceString()}\""),
         };
     }

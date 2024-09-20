@@ -11,7 +11,7 @@ public class IEnumerableType(BaseType type) : BaseType {
     public override string TypeName => $"IEnumerable<{Type}>";
 
     public override bool CanCoerceInto(BaseType type) {
-        return type.IsChildOf(this);
+        return type is IEnumerableType enumerableType && this.type.CanBeAssignedTo(enumerableType.type);
     }
 
     public override Either<ICBValue, ErrorType> Constructor(params ICBValue[] arguments) {

@@ -7,16 +7,26 @@ public class DeclaredFunction : CBFunction {
     public BlockStatementNode body;
     public override Either<ICBValue, ErrorType> Call(params ICBValue[] args) {
         if (isLastParams) {
-            if (args.Length < argumentNames.Length - 1)
+            if (args.Length < parameterNames.Length - 1)
                 return ErrorType.InvalidArgument; // since the last argument is an array, it can be an empty one
 
-            for (int i = 0; i < argumentNames.Length - 1; i++) {
-                string parameter = argumentNames[i];
+            for (int i = 0; i < parameterNames.Length - 1; i++) {
+                string parameter = parameterNames[i];
+                BaseType type = paremeterTypes[i];
+                ICBValue arg = args[i];
+
                 switch (body.scope.GetVariable(parameter).Case) {
                     case ICBValue variable:
-                        switch (variable.SetValue(args[i])) {
-                            case ErrorType error when error is not ErrorType.NoError:
-                                return error; // this is why invalid argument error exists but this might be more helpful
+                        if (!arg.Type.CanBeAssignedTo(type))
+                            return ErrorType.InvalidArgument;
+                        switch (type.Constructor(arg).Case) {
+                            case ICBValue value:
+                                variable.SetValue(value);
+                                break;
+                            case ErrorType err:
+                                return err;
+                            default:
+                                throw new UnreachableException();
                         }
                         break;
                     default:
@@ -24,10 +34,10 @@ public class DeclaredFunction : CBFunction {
                 }
             }
 
-            switch (body.scope.GetVariable(argumentNames[^1]).Case) {
+            switch (body.scope.GetVariable(parameterNames[^1]).Case) {
                 case ICBValue variable:
                     ArrayValue array = new();
-                    foreach (ICBValue value in args[(argumentNames.Length - 2)..])
+                    foreach (ICBValue value in args[(parameterNames.Length - 2)..])
                         switch (array.AddMember(value)) {
                             case ErrorType error when error is not ErrorType.NoError:
                                 return error;
@@ -43,10 +53,10 @@ public class DeclaredFunction : CBFunction {
 
 
         } else {
-            if (args.Length < argumentNames.Length)
+            if (args.Length < parameterNames.Length)
                 return ErrorType.InvalidArgument;
-            for (int i = 0; i < argumentNames.Length; i++) {
-                string parameter = argumentNames[i];
+            for (int i = 0; i < parameterNames.Length; i++) {
+                string parameter = parameterNames[i];
                 switch (body.scope.GetVariable(parameter).Case) {
                     case CBVariable variable:
                         switch (variable.SetValue(args[i])) {
@@ -64,7 +74,7 @@ public class DeclaredFunction : CBFunction {
         foreach (StatementNode statement in body.body)
             switch (statement.Evaluate(body.scope).Case) {
                 case ICBValue value:
-                    if (value.Type != returnType)
+                    if (!value.Type.CanBeAssignedTo(returnType))
                         return ErrorType.InvalidType;
 
                     return Either<ICBValue, ErrorType>.Left(value);
@@ -73,7 +83,7 @@ public class DeclaredFunction : CBFunction {
             }
 
         return body.scope.GetVariable("unset").Case switch {
-            ICBValue value => value.Type != returnType ? ErrorType.InvalidType : Either<ICBValue, ErrorType>.Left(value),
+            ICBValue value => value.Type.CanBeAssignedTo(returnType) ? Either<ICBValue, ErrorType>.Left(value) : ErrorType.InvalidType,
             _ => throw new UnreachableException() // the global scope should have it defined
         };
     }

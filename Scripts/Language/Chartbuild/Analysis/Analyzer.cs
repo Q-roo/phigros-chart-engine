@@ -315,7 +315,7 @@ public class Analyzer {
 
         return new DeclaredFunction() {
             returnType = functionDeclaration.returnType ?? new NullValue().Type,
-            argumentTypes = types,
+            paremeterTypes = types,
             isLastParams = functionDeclaration.isLastParams,
             // FIXME: the evaluation will try using the function params which are set to null
             pure = functionDeclaration.body.Evaluate(functionDeclaration.body.scope).Case switch {
@@ -327,7 +327,7 @@ public class Analyzer {
                                                                   // 5: invalid syntax, types and such in which case, the code won't even run
                 _ => true
             },
-            argumentNames = paramNames,
+            parameterNames = paramNames,
             body = functionDeclaration.body
         };
     }

@@ -75,9 +75,7 @@ public static class Evaluator {
 
     public static Either<ICBValue, ErrorType> EvaluateCall(CallExpressionNode call, Scope scope) {
         switch (EvaluateExpression(call.method, scope).Case) {
-            case ICBValue value when !value.Callable:
-                return ErrorType.NotCallable;
-            case ICBValue callable:
+            case ICallableICBValue callable:
                 if (!callable.IsPureCallable)
                     return ErrorType.NotCompileTimeConstant;
 
@@ -85,6 +83,8 @@ public static class Evaluator {
                 foreach (ExpressionNode expression in call.arguments) {
                     switch (EvaluateExpression(expression, scope).Case) {
                         case ICBValue value:
+                            // NOTE: while type checking could be done here for the arguments, it will be done during the call
+                            // because that's when native functions check the argument types as well
                             args.Add(value);
                             break;
                         case ErrorType err:
@@ -93,7 +93,14 @@ public static class Evaluator {
                             throw new UnreachableException();
                     }
                 }
-                return callable.Call([.. args]);
+                // type checking be handled by the function
+                return callable.Call([.. args]);/* .Case switch {
+                    ICBValue result => result.Type.CanBeAssignedTo(callable.ReturnType) ? callable.ReturnType.Constructor(result) : ErrorType.InvalidType,
+                    ErrorType err => err,
+                    _ => throw new UnreachableException()
+                }; */
+            case ICBValue value:
+                return ErrorType.NotCallable;
             case ErrorType err:
                 return err;
             default:

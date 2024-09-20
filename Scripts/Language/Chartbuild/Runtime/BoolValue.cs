@@ -4,7 +4,7 @@ using LanguageExt;
 namespace PCE.Chartbuild.Runtime;
 
 public struct BoolValue(bool value) : ICBValue {
-    public readonly BaseType Type => new IdentifierType("bool");
+    public readonly BaseType Type => new BoolType();
     public readonly bool IsReference => false;
 
     private bool value = value;
@@ -35,11 +35,12 @@ public struct BoolValue(bool value) : ICBValue {
     public override readonly int GetHashCode() => value.GetHashCode();
 
     public readonly Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
-        return @operator switch {
-            TokenType.Equal => new BoolValue(Equals(rhs)),
-            TokenType.NotEqual => new BoolValue(!Equals(rhs)),
+        bool value = this.value;
+        return rhs.TryCastThen<BoolValue, ICBValue>(@bool => @operator switch {
+            TokenType.Equal => new BoolValue(@bool.value == value),
+            TokenType.NotEqual => new BoolValue(@bool.value != value),
             _ => ErrorType.NotSupported
-        };
+        });
     }
 
     public readonly ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {

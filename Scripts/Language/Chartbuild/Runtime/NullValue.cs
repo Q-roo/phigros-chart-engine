@@ -4,7 +4,7 @@ using LanguageExt;
 namespace PCE.Chartbuild.Runtime;
 
 public class NullValue : ICBValue {
-    public BaseType Type => new IdentifierType("unset");
+    public BaseType Type => new NullType();
 
     public Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
         return @operator switch { 

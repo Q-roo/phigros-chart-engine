@@ -2,12 +2,11 @@ using LanguageExt;
 using Godot;
 using PCE.Util;
 using System.Diagnostics;
-using LanguageExt.UnsafeValueAccess;
 
 namespace PCE.Chartbuild.Runtime;
 
 public struct F32Value(double value) : ICBValue {
-    public readonly BaseType Type => new IdentifierType("f32");
+    public readonly BaseType Type => new F32Type();
     public readonly bool IsReference => true;
 
     public double value = value;
@@ -16,45 +15,37 @@ public struct F32Value(double value) : ICBValue {
     : this(0) { }
 
     public readonly Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
-        if (@operator == TokenType.Equal)
-            return new BoolValue(Equals(rhs));
-        else if (@operator == TokenType.NotEqual)
-            return new BoolValue(!Equals(rhs));
-
-        return RHSAsF32(rhs).Case switch {
-            F32Value r => @operator switch {
-                TokenType.Plus => this + r,
-                TokenType.Minus => this - r,
-                TokenType.Multiply => this * r,
-                TokenType.Divide => (this / r).MapLeft<ICBValue>(v => v),
-                TokenType.Modulo => (this % r).MapLeft<ICBValue>(v => v),
-                TokenType.Power => Power(this, r),
-                TokenType.LessThan => this < r,
-                TokenType.LessThanOrEqual => this <= r,
-                TokenType.GreaterThan => this > r,
-                TokenType.GreaterThanOrEqual => this >= r,
-                _ => ErrorType.NotSupported
-            },
-            ErrorType err => err,
-            _ => throw new UnreachableException()
-        };
+        F32Value lhs = this;
+        return rhs.TryCastThen<F32Value, ICBValue>(f32 => @operator switch {
+            TokenType.Plus => lhs + f32,
+            TokenType.Minus => lhs - f32,
+            TokenType.Multiply => lhs * f32,
+            TokenType.Divide => (lhs / f32).MapLeft<ICBValue>(v => v),
+            TokenType.Modulo => (lhs % f32).MapLeft<ICBValue>(v => v),
+            TokenType.Power => Power(lhs, f32),
+            TokenType.LessThan => lhs < f32,
+            TokenType.LessThanOrEqual => lhs <= f32,
+            TokenType.GreaterThan => lhs > f32,
+            TokenType.GreaterThanOrEqual => lhs >= f32,
+            _ => ErrorType.NotSupported
+        });
     }
 
     public readonly ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
         F32Value r = RHSAsF32Unsafe(rhs);
         return @operator switch {
-                TokenType.Plus => this + r,
-                TokenType.Minus => this - r,
-                TokenType.Multiply => this * r,
-                TokenType.Divide => DivUnsafe(this, r),
-                TokenType.Modulo => ModUnsafe(this, r),
-                TokenType.Power => Power(this, r),
-                TokenType.LessThan => this < r,
-                TokenType.LessThanOrEqual => this <= r,
-                TokenType.GreaterThan => this > r,
-                TokenType.GreaterThanOrEqual => this >= r,
-                _ => throw new UnreachableException()
-            };
+            TokenType.Plus => this + r,
+            TokenType.Minus => this - r,
+            TokenType.Multiply => this * r,
+            TokenType.Divide => DivUnsafe(this, r),
+            TokenType.Modulo => ModUnsafe(this, r),
+            TokenType.Power => Power(this, r),
+            TokenType.LessThan => this < r,
+            TokenType.LessThanOrEqual => this <= r,
+            TokenType.GreaterThan => this > r,
+            TokenType.GreaterThanOrEqual => this >= r,
+            _ => throw new UnreachableException()
+        };
     }
 
     public readonly object GetValue() {

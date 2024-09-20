@@ -4,14 +4,24 @@ using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chartbuild;
 
-public abstract class BaseType : ICBValue {
+public abstract class BaseType : ICallableICBValue {
     public virtual BaseType Parent => null;
-    public bool Callable => true;
     public bool IsReference => true;
     public abstract bool IsPureCallable { get; }
     public abstract string TypeName { get; }
 
-    public BaseType Type => new IdentifierType("Type");
+    public BaseType Type => new TypeType();
+
+    // constructors receive only 1 parameter for now
+    // TODO: probably overloading
+    public bool IsLastParams => false;
+
+    // this will become the child class instance
+    public BaseType ReturnType => this;
+
+    public string[] ParameterNames => ["input"];
+
+    public BaseType[] ParameterTypes => [new AnyType()];
 
     public sealed override string ToString() => TypeName;
 
@@ -27,7 +37,7 @@ public abstract class BaseType : ICBValue {
     public override int GetHashCode() => ToString().GetHashCode();
 
     public virtual bool IsChildOf(BaseType parent) {
-        BaseType p = this.Parent;
+        BaseType p = Parent;
         while (p is not null) {
             if (p == parent)
                 return true;

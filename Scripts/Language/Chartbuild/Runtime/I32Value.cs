@@ -1,4 +1,3 @@
-using System;
 using LanguageExt;
 using Godot;
 using PCE.Util;
@@ -7,7 +6,7 @@ using System.Diagnostics;
 namespace PCE.Chartbuild.Runtime;
 
 public struct I32Value(int value) : ICBValue {
-    public readonly BaseType Type => new IdentifierType("i32");
+    public readonly BaseType Type => new I32Type();
     public readonly bool IsReference => true;
 
     public int value = value;
@@ -16,32 +15,25 @@ public struct I32Value(int value) : ICBValue {
     : this(0) { }
 
     public readonly Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
-        if (@operator == TokenType.Equal)
-            return new BoolValue(Equals(rhs));
-        else if (@operator == TokenType.NotEqual)
-            return new BoolValue(!Equals(rhs));
-
-        if (rhs is I32Value r)
-            return @operator switch {
-                TokenType.Plus => this + r,
-                TokenType.Minus => this - r,
-                TokenType.Multiply => this * r,
-                TokenType.Divide => (this / r).MapLeft<ICBValue>(v => v),
-                TokenType.Modulo => (this % r).MapLeft<ICBValue>(v => v),
-                TokenType.Power => Power(this, r),
-                TokenType.ShiftLeft => this << r,
-                TokenType.ShiftRight => this >> r,
-                TokenType.BitwiseXor => this ^ r,
-                TokenType.BitwiseAnd => this & r,
-                TokenType.BitwiseOr => this | r,
-                TokenType.LessThan => this < r,
-                TokenType.LessThanOrEqual => this <= r,
-                TokenType.GreaterThan => this > r,
-                TokenType.GreaterThanOrEqual => this >= r,
-                _ => ErrorType.NotSupported
-            };
-        else
-            return ErrorType.InvalidType;
+        I32Value lhs = this;
+        return rhs.TryCastThen<I32Value, ICBValue>(i32 => @operator switch {
+            TokenType.Plus => lhs + i32,
+            TokenType.Minus => lhs - i32,
+            TokenType.Multiply => lhs * i32,
+            TokenType.Divide => (lhs / i32).MapLeft<ICBValue>(v => v),
+            TokenType.Modulo => (lhs % i32).MapLeft<ICBValue>(v => v),
+            TokenType.Power => Power(lhs, i32),
+            TokenType.ShiftLeft => lhs << i32,
+            TokenType.ShiftRight => lhs >> i32,
+            TokenType.BitwiseXor => lhs ^ i32,
+            TokenType.BitwiseAnd => lhs & i32,
+            TokenType.BitwiseOr => lhs | i32,
+            TokenType.LessThan => lhs < i32,
+            TokenType.LessThanOrEqual => lhs <= i32,
+            TokenType.GreaterThan => lhs > i32,
+            TokenType.GreaterThanOrEqual => lhs >= i32,
+            _ => ErrorType.NotSupported
+        });
     }
 
     public readonly ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {

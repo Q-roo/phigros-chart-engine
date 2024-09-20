@@ -31,7 +31,7 @@ public class ArrayValue : IEnumerableICBValue {
 
     public ErrorType AddMember(ICBValue value) {
         innerType ??= value.Type;
-        if (value.Type != innerType)
+        if (!value.Type.CanBeAssignedTo(innerType))
             return ErrorType.InvalidType;
 
         values.Add(value);
@@ -39,13 +39,13 @@ public class ArrayValue : IEnumerableICBValue {
     }
 
     public Either<ICBValue, ErrorType> GetMember(ICBValue memberName) {
-        if (memberName is not I32Value idx)
-            return ErrorType.InvalidType;
+        return memberName.TryCastThen<I32Value, ICBValue>(i32 => {
+            int idx = i32;
+            if (idx < 0 || idx >= values.Count)
+                return ErrorType.OutOfRange;
 
-        if (idx.value < 0 || idx.value >= values.Count)
-            return ErrorType.OutOfRange;
-
-        return Either<ICBValue, ErrorType>.Left(values[idx.value]);
+            return Either<ICBValue, ErrorType>.Left(values[idx]);
+        });
     }
 
     public object GetValue() {
