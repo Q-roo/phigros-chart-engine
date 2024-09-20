@@ -13,6 +13,7 @@ public interface ICBValue {
 
     public Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs);
     public ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs);
+    // TODO: prefix & postfix execute
 
     // nothing is also an ICBValue
     public Either<ICBValue, ErrorType> Call(params ICBValue[] args) => ErrorType.NotSupported;

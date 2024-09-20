@@ -3,18 +3,19 @@ using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chartbuild;
 
-public class ArrayType(BaseType type) : IEnumerableType(type)
-{
+public class StringType : BaseType {
     public override bool IsPureCallable => true;
 
-    public override string TypeName => $"[{type}]";
+    public override string TypeName => "str";
 
-    // TODO: coercion and constructor
     public override bool CanCoerceInto(BaseType type) {
-        return type.CanBeAssignedTo(new IEnumerableType(type));
+        return false;
     }
 
     public override Either<ICBValue, ErrorType> Constructor(params ICBValue[] arguments) {
-        throw new System.NotImplementedException();
+        if (arguments.Length != 1)
+            return ErrorType.InvalidArgument;
+
+        return new StringValue(arguments[0].ToString());
     }
 }

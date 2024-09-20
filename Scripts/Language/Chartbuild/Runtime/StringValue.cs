@@ -7,7 +7,7 @@ public struct StringValue(string value) : ICBValue {
     public readonly BaseType Type => new IdentifierType("str");
     public readonly bool IsReference => true;
 
-    private string value = value;
+    public string value = value;
 
     public StringValue()
     : this(string.Empty) { }

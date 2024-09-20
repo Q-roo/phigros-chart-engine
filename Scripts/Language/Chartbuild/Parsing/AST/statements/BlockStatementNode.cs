@@ -3,7 +3,8 @@ using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chartbuild;
 
-public class BlockStatementNode(params List<StatementNode> body) : StatementNode {
+// apparently I can't use params List<T> from my laptop
+public class BlockStatementNode(List<StatementNode> body) : StatementNode {
     public readonly List<StatementNode> body = body;
     public readonly Scope scope = new();
 
