@@ -46,7 +46,14 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 GD.Print(tokens);
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
                 ast = Chartbuild.Analyzer.Analyze(ast);
-                GD.Print(Newtonsoft.Json.JsonConvert.SerializeObject(ast, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.JsonSerializerSettings() { PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects }));
+                GD.Print(Newtonsoft.Json.JsonConvert.SerializeObject(
+                    ast,
+                    Newtonsoft.Json.Formatting.Indented,
+                    new Newtonsoft.Json.JsonSerializerSettings() {
+                        PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects,
+                        ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                    }
+                ));
             } catch (Exception ex) {
                 GD.Print(ex);
             }

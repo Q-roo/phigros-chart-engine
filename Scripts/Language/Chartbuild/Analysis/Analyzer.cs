@@ -81,16 +81,16 @@ public class Analyzer {
         ast.scope.DeclareVariable("unset", new NullValue(), true); // I can already feel the bugs this will cause
 
         // not the final print, this is just for testing the native bindings
-        ast.scope.DeclareVariable("dbg_print", new CBFunctionValue(new NativeFunctionBinding(args => {
-            GD.Print(string.Join<ICBValue>(", ", args));
-            return Either<ICBValue, ErrorType>.Left(ast.scope.GetVariableUnsafe("unset").GetValueUnsafe());
-        }) {
-            pure = true,
-            isLastParams = true,
-            parameterNames = ["values"],
-            paremeterTypes = [new ArrayType(new AnyType())],
-            returnType = new NullType()
-        }),
+        ast.scope.DeclareVariable(
+            "dbg_print",
+            new CBFunctionValue(new NativeFunctionBinding(args => {
+                GD.Print(string.Join<ICBValue>(", ", args));
+            }) {
+                pure = false,
+                isLastParams = true,
+                parameterNames = ["values"],
+                paremeterTypes = [new ArrayType(new AnyType())],
+            }),
             true
         );
 
@@ -374,6 +374,9 @@ public class Analyzer {
                 }
                 break;
             case CallExpressionNode call:
+                for (int i = 0; i < call.arguments.Length; i++)
+                    call.arguments[i] = AnalyzeExpression(call.arguments[i], scope);
+
                 switch (call.Evaluate(scope).Case) {
                     case ICBValue value: // the function is a pure function and can be safely evaluated during compile time
                         return new ValueExpressionNode<ICBValue>(value);
