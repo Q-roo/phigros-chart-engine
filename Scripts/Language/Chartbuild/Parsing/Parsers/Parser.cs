@@ -4,8 +4,7 @@ using LanguageExt;
 
 namespace PCE.Chartbuild;
 
-public class Parser(BaseToken[] tokens)
-{
+public class Parser(BaseToken[] tokens) {
     public const Version ForVersion = Version.V_0;
 
     private readonly BaseToken[] tokens = tokens;
@@ -29,35 +28,29 @@ public class Parser(BaseToken[] tokens)
     }
 
     // NOTE: feels really dodgy
-    private object PushError(Error error)
-    {
+    private object PushError(Error error) {
         errors.Add(error);
 
         return null;
     }
 
-    private BaseToken Advance()
-    {
+    private BaseToken Advance() {
         return tokens[position++];
     }
 
-    private Option<BaseToken> Expect(TokenType type)
-    {
+    private Option<BaseToken> Expect(TokenType type) {
         return Expect(type, ErrorType.UnexpectedToken, null);
     }
 
-    public Option<BaseToken> Expect(TokenType type, ErrorType error)
-    {
+    public Option<BaseToken> Expect(TokenType type, ErrorType error) {
         return Expect(type, error, null);
     }
 
-    public Option<BaseToken> Expect(TokenType type, string msg)
-    {
+    public Option<BaseToken> Expect(TokenType type, string msg) {
         return Expect(type, ErrorType.UnexpectedToken, msg);
     }
 
-    private Option<BaseToken> Expect(TokenType type, ErrorType error, string msg)
-    {
+    private Option<BaseToken> Expect(TokenType type, ErrorType error, string msg) {
         if (CurrentType == type)
             return Advance();
 
@@ -67,21 +60,16 @@ public class Parser(BaseToken[] tokens)
         return null;
     }
 
-    public string GetIdentifierName()
-    {
-        return Expect(TokenType.Identifier).Case switch
-        {
+    public string GetIdentifierName() {
+        return Expect(TokenType.Identifier).Case switch {
             IdentifierToken token => token.name,
             _ => ErrorName
         };
     }
 
-    private StatementNode ParseStatement()
-    {
-        return Statement().Case switch
-        {
-            Option<StatementNode> node => node.Case switch
-            {
+    private StatementNode ParseStatement() {
+        return Statement().Case switch {
+            Option<StatementNode> node => node.Case switch {
                 StatementNode statement => statement,
                 _ => ParseExpressionStatement()
             },
@@ -89,16 +77,13 @@ public class Parser(BaseToken[] tokens)
         };
     }
 
-    private T ParseSimpleStatementAndAdvance<T>() where T : StatementNode, new()
-    {
+    private T ParseSimpleStatementAndAdvance<T>() where T : StatementNode, new() {
         Advance();
         return new T();
     }
 
-    private Either<Option<StatementNode>, Error> Statement()
-    {
-        return CurrentType switch
-        {
+    private Either<Option<StatementNode>, Error> Statement() {
+        return CurrentType switch {
             TokenType.Hash => Option<StatementNode>.Some(ParseCommandStatement()),
 
             TokenType.Let or
@@ -125,8 +110,7 @@ public class Parser(BaseToken[] tokens)
 
     #region statement parsers
 
-    private ReturnStatementNode ParseReturnStatement()
-    {
+    private ReturnStatementNode ParseReturnStatement() {
         Advance();
         ExpressionNode @return = null;
 
@@ -139,21 +123,18 @@ public class Parser(BaseToken[] tokens)
     }
 
     // NOTE: #identifier will result in an error, an expression must be assigned
-    private CommandStatementNode ParseCommandStatement()
-    {
+    private CommandStatementNode ParseCommandStatement() {
         Advance();
         return new(GetIdentifierName(), ParseExpression(BindingPower.Default));
     }
 
-    private ExpressionStatementNode ParseExpressionStatement()
-    {
+    private ExpressionStatementNode ParseExpressionStatement() {
         ExpressionNode expression = ParseExpression(BindingPower.Default);
         Expect(TokenType.Semicolon);
         return new(expression);
     }
 
-    private BlockStatementNode ParseBlockStatement()
-    {
+    private BlockStatementNode ParseBlockStatement() {
         Advance();
         List<StatementNode> body = [];
 
@@ -165,22 +146,19 @@ public class Parser(BaseToken[] tokens)
         return new([.. body]);
     }
 
-    private VariableDeclarationStatementNode ParseVariableDeclaration()
-    {
+    private VariableDeclarationStatementNode ParseVariableDeclaration() {
         bool isReadonly = Advance().Type == TokenType.Const;
         string name = GetIdentifierName();
 
         BaseType type = null;
         ExpressionNode valueExpression = null;
 
-        if (CurrentType == TokenType.Colon)
-        {
+        if (CurrentType == TokenType.Colon) {
             Advance();
             type = ParseType();
         }
 
-        if (CurrentType == TokenType.Assign)
-        {
+        if (CurrentType == TokenType.Assign) {
             Advance();
             valueExpression = ParseExpression(BindingPower.Assignment);
         }
@@ -193,8 +171,7 @@ public class Parser(BaseToken[] tokens)
         return new(isReadonly, name, valueExpression, type);
     }
 
-    private FunctionDeclarationStatementNode ParseFunctionDeclaration()
-    {
+    private FunctionDeclarationStatementNode ParseFunctionDeclaration() {
         Advance();
         string fnName = GetIdentifierName();
         List<FunctionParameter> arguments = [];
@@ -202,10 +179,8 @@ public class Parser(BaseToken[] tokens)
         bool paramsArg = false;
 
         Expect(TokenType.LeftParenthesis);
-        while (HasTokens && CurrentType != TokenType.RightParenthesis)
-        {
-            if (CurrentType == TokenType.DotDot)
-            {
+        while (HasTokens && CurrentType != TokenType.RightParenthesis) {
+            if (CurrentType == TokenType.DotDot) {
                 paramsArg = true;
                 Advance();
             }
@@ -215,16 +190,14 @@ public class Parser(BaseToken[] tokens)
             BaseType argType = ParseType();
             ExpressionNode defaultValue = null;
 
-            if (CurrentType == TokenType.Assign)
-            {
+            if (CurrentType == TokenType.Assign) {
                 Advance();
                 defaultValue = ParseExpression(BindingPower.Default);
             }
 
             arguments.Add(new(argName, argType, defaultValue));
 
-            if (paramsArg)
-            {
+            if (paramsArg) {
                 Expect(TokenType.RightParenthesis, "params argument must be the last argument");
                 break;
             }
@@ -236,8 +209,7 @@ public class Parser(BaseToken[] tokens)
         if (!paramsArg) // expect was already called if params arg is true
             Expect(TokenType.RightParenthesis);
 
-        if (CurrentType == TokenType.RightArrow)
-        {
+        if (CurrentType == TokenType.RightArrow) {
             Advance();
             returnType = ParseType();
         }
@@ -245,8 +217,7 @@ public class Parser(BaseToken[] tokens)
         return new(fnName, [.. arguments], paramsArg, ParseBlockStatement(), returnType);
     }
 
-    private IfStatementNode ParseIfStatement()
-    {
+    private IfStatementNode ParseIfStatement() {
         Advance();
         Expect(TokenType.LeftParenthesis);
         ExpressionNode condition = ParseExpression(BindingPower.Default);
@@ -255,8 +226,7 @@ public class Parser(BaseToken[] tokens)
         StatementNode @true = ParseStatement();
         StatementNode @false = null;
 
-        if (CurrentType == TokenType.Else)
-        {
+        if (CurrentType == TokenType.Else) {
             Advance();
             @false = ParseStatement();
         }
@@ -264,8 +234,7 @@ public class Parser(BaseToken[] tokens)
         return new(condition, @true, @false);
     }
 
-    private WhileLoopStatementNode ParseWhileLoopStatement()
-    {
+    private WhileLoopStatementNode ParseWhileLoopStatement() {
         Advance();
         Expect(TokenType.LeftParenthesis);
         ExpressionNode condition = ParseExpression(BindingPower.Default);
@@ -274,8 +243,7 @@ public class Parser(BaseToken[] tokens)
         return new(condition, ParseStatement());
     }
 
-    private LoopStatementNode ParseForLoopStatement()
-    {
+    private LoopStatementNode ParseForLoopStatement() {
         // TODO: for (...;a++, b++)
         // for (const it in iterable)
         // for (let a = 0; a < n; a++)
@@ -295,12 +263,10 @@ public class Parser(BaseToken[] tokens)
             else
                 Advance();
 
-            if (CurrentType != TokenType.RightParenthesis)
-            {
+            if (CurrentType != TokenType.RightParenthesis) {
                 update = ParseExpression(BindingPower.Default);
                 Expect(TokenType.RightParenthesis);
-            }
-            else
+            } else
                 Advance();
 
             return new ForLoopStatementNode(null, condition, update, ParseStatement());
@@ -313,8 +279,7 @@ public class Parser(BaseToken[] tokens)
         string name = GetIdentifierName();
         BaseType type = null;
 
-        if (CurrentType == TokenType.Colon)
-        {
+        if (CurrentType == TokenType.Colon) {
             Advance();
             type = ParseType();
         }
@@ -332,18 +297,15 @@ public class Parser(BaseToken[] tokens)
                 condition = ParseExpressionStatement().expression;
             else
                 Advance();
-            if (CurrentType != TokenType.RightParenthesis)
-            {
+            if (CurrentType != TokenType.RightParenthesis) {
                 update = ParseExpression(BindingPower.Default);
                 Expect(TokenType.RightParenthesis);
-            }
-            else
+            } else
                 Expect(TokenType.RightParenthesis);
 
             return new ForLoopStatementNode(init, condition, update, ParseStatement());
-        }
-        else // for (i in iter)
-        {
+        } else // for (i in iter)
+          {
             Expect(TokenType.In);
             ExpressionNode iterable = ParseExpression(BindingPower.Default);
             Expect(TokenType.RightParenthesis);
@@ -355,8 +317,7 @@ public class Parser(BaseToken[] tokens)
 
     #region expression parsers
 
-    private ExpressionNode ParseExpression(BindingPower bindingPower)
-    {
+    private ExpressionNode ParseExpression(BindingPower bindingPower) {
         // assume it is a nud
         // continue while there is a led and current binding power < current token binding power
         // left associative
@@ -368,18 +329,15 @@ public class Parser(BaseToken[] tokens)
         return left;
     }
 
-    private BinaryExpressionNode ParseBinaryExpression(ExpressionNode left, BindingPower bindingPower)
-    {
+    private BinaryExpressionNode ParseBinaryExpression(ExpressionNode left, BindingPower bindingPower) {
         return new(left, Advance(), ParseExpression(bindingPower));
     }
 
-    private PrefixExpressionNode ParsePrefixExpression()
-    {
+    private PrefixExpressionNode ParsePrefixExpression() {
         return new(Advance(), ParseExpression(BindingPower.Unary));
     }
 
-    private ExpressionNode ParseGroupingExpression()
-    {
+    private ExpressionNode ParseGroupingExpression() {
         Advance(); // current token is '('. advance past that
         ExpressionNode expression = ParseExpression(BindingPower.Default);
         Expect(TokenType.RightParenthesis); // advance past the ')' token
@@ -388,14 +346,12 @@ public class Parser(BaseToken[] tokens)
     }
 
     // [...]
-    private ArrayLiteralExpressionNode ParseArrayExpression()
-    {
+    private ArrayLiteralExpressionNode ParseArrayExpression() {
         List<ExpressionNode> content = [];
 
         Expect(TokenType.LeftBracket);
 
-        while (HasTokens && CurrentType != TokenType.RightBracket)
-        {
+        while (HasTokens && CurrentType != TokenType.RightBracket) {
             // [a = 10] is possible, use logical to avoid it
             content.Add(ParseExpression(BindingPower.Default));
 
@@ -408,21 +364,18 @@ public class Parser(BaseToken[] tokens)
         return new([.. content]);
     }
 
-    private PrefixExpressionNode ParsePostfixExpression(ExpressionNode left)
-    {
+    private PrefixExpressionNode ParsePostfixExpression(ExpressionNode left) {
         BaseToken @operator = CurrentToken;
         // Advance();
         Advance();
         return new(@operator, left);
     }
 
-    private AssignmentExpressionNode ParseAssignmentExpression(ExpressionNode left)
-    {
+    private AssignmentExpressionNode ParseAssignmentExpression(ExpressionNode left) {
         return new(left, Advance(), ParseExpression(BindingPower.Assignment));
     }
 
-    private TernaryExpressionNode ParseTernaryExpression(ExpressionNode left)
-    {
+    private TernaryExpressionNode ParseTernaryExpression(ExpressionNode left) {
         Advance();
         ExpressionNode @true = ParseExpression(BindingPower.Default);
         Expect(TokenType.Colon);
@@ -430,8 +383,7 @@ public class Parser(BaseToken[] tokens)
         return new(left, @true, @false);
     }
 
-    private MemberExpressionNode ParseMemberAccessExpression(ExpressionNode left)
-    {
+    private MemberExpressionNode ParseMemberAccessExpression(ExpressionNode left) {
         if (Advance().Type == TokenType.LeftBracket) // computed
         {
             ExpressionNode rightHandSide = ParseExpression(BindingPower.Member);
@@ -443,13 +395,11 @@ public class Parser(BaseToken[] tokens)
         return new MemberAccessExpressionNode(left, GetIdentifierName());
     }
 
-    private CallExpressionNode ParseCallExpression(ExpressionNode left)
-    {
+    private CallExpressionNode ParseCallExpression(ExpressionNode left) {
         Advance();
         List<ExpressionNode> arguments = [];
 
-        while (HasTokens && CurrentType != TokenType.RightParenthesis)
-        {
+        while (HasTokens && CurrentType != TokenType.RightParenthesis) {
             arguments.Add(ParseExpression(BindingPower.Assignment));
 
             if (HasTokens && CurrentType != TokenType.RightParenthesis)
@@ -461,15 +411,13 @@ public class Parser(BaseToken[] tokens)
         return new(left, [.. arguments]);
     }
 
-    private RangeLiteralExpressionNode ParseRangeLiteral(ExpressionNode left)
-    {
+    private RangeLiteralExpressionNode ParseRangeLiteral(ExpressionNode left) {
         bool includeEnd = Advance().Type == TokenType.DotDotEqual;
         // prevent 0..1+1 from being valid and enforce 0..(1+1)
         return new(left, ParseExpression(BindingPower.Logical), includeEnd);
     }
 
-    private ClosureExpressionNode ParseClosureExpression()
-    {
+    private ClosureExpressionNode ParseClosureExpression() {
         List<FunctionParameter> parameters = [];
         BaseType returnType = null;
 
@@ -478,13 +426,10 @@ public class Parser(BaseToken[] tokens)
         // |x, y|
         // |x: T| optional type annotations, try to infer it
         // || -> T
-        if (Advance().Type == TokenType.BitwiseOr)
-        {
+        if (Advance().Type == TokenType.BitwiseOr) {
             bool paramsArg = false;
-            while (HasTokens && CurrentType != TokenType.BitwiseOr)
-            {
-                if (CurrentType == TokenType.DotDot)
-                {
+            while (HasTokens && CurrentType != TokenType.BitwiseOr) {
+                if (CurrentType == TokenType.DotDot) {
                     Advance();
                     paramsArg = true;
                 }
@@ -493,16 +438,14 @@ public class Parser(BaseToken[] tokens)
                 BaseType type = null;
                 ExpressionNode defaultValue = null;
 
-                if (CurrentType == TokenType.Colon)
-                {
+                if (CurrentType == TokenType.Colon) {
                     Advance();
                     type = ParseType();
                 }
 
                 parameters.Add(new(name, type, defaultValue));
 
-                if (paramsArg)
-                {
+                if (paramsArg) {
                     Expect(TokenType.BitwiseOr, "params argument must be the last argument");
                     break;
                 }
@@ -515,8 +458,7 @@ public class Parser(BaseToken[] tokens)
                 Expect(TokenType.BitwiseOr);
         }
 
-        if (CurrentType == TokenType.RightArrow)
-        {
+        if (CurrentType == TokenType.RightArrow) {
             Advance();
             returnType = ParseType();
         }
@@ -528,8 +470,7 @@ public class Parser(BaseToken[] tokens)
 
     #region type parsers
 
-    private BaseType ParseType()
-    {
+    private BaseType ParseType() {
         BaseType left = TypeNud(CurrentType);
         while (CurrentType.TypeLookup() > BindingPower.Default)
             left = TypeLed(left, CurrentType);
@@ -543,8 +484,7 @@ public class Parser(BaseToken[] tokens)
     }
 
     // T
-    private BaseType ParseIdentifierType()
-    {
+    private BaseType ParseIdentifierType() {
         string typeName = GetIdentifierName();
         // TODO: better type name lookup
         return typeName switch {
@@ -556,12 +496,37 @@ public class Parser(BaseToken[] tokens)
     }
 
     // [T]
-    private ArrayType ParseArrayType()
-    {
+    private ArrayType ParseArrayType() {
         Advance();
         ArrayType type = new(ParseType());
         Expect(TokenType.RightBracket);
         return type;
+    }
+
+    private FunctionType ParseFunctionType() {
+        Advance();
+        Expect(TokenType.LeftParenthesis);
+        List<BaseType> argumentTypes = [];
+        bool isLastParams = false;
+        while (HasTokens && CurrentType != TokenType.RightParenthesis) {
+            if (CurrentType == TokenType.DotDot) {
+                isLastParams = true;
+                Advance();
+            }
+
+            argumentTypes.Add(ParseType());
+
+            if (CurrentType == TokenType.RightParenthesis)
+                break;
+
+            Expect(isLastParams ? TokenType.RightParenthesis : TokenType.Coma);
+        }
+
+        if (!isLastParams)
+            Expect(TokenType.RightParenthesis);
+
+        Expect(TokenType.RightArrow);
+        return new(ParseType(), isLastParams, [.. argumentTypes]);
     }
 
     // <T>
@@ -586,10 +551,8 @@ public class Parser(BaseToken[] tokens)
 
     #endregion
 
-    private ExpressionNode Nud(TokenType type)
-    {
-        return type switch
-        {
+    private ExpressionNode Nud(TokenType type) {
+        return type switch {
             // literals or identifiers
             TokenType.IntLiteral => new IntExpressionNode((Advance() as IntLiteralToken).value),
             TokenType.FloatLiteral => new DoubleExpressionNode((Advance() as DoubleLiteralToken).value),
@@ -619,10 +582,8 @@ public class Parser(BaseToken[] tokens)
         };
     }
 
-    private ExpressionNode Led(ExpressionNode left, TokenType type, BindingPower bindingPower)
-    {
-        return type switch
-        {
+    private ExpressionNode Led(ExpressionNode left, TokenType type, BindingPower bindingPower) {
+        return type switch {
             // literal
             TokenType.DotDot or
             TokenType.DotDotEqual => ParseRangeLiteral(left),
@@ -686,20 +647,17 @@ public class Parser(BaseToken[] tokens)
         };
     }
 
-    private BaseType TypeNud(TokenType type)
-    {
-        return type switch
-        {
+    private BaseType TypeNud(TokenType type) {
+        return type switch {
             TokenType.Identifier => ParseIdentifierType(),
             TokenType.LeftBracket => ParseArrayType(),
+            TokenType.Fn => ParseFunctionType(),
             _ => throw new NotImplementedException($"unimplemented type nud behaviour for \"{type.ToSourceString()}\""),
         };
     }
 
-    private BaseType TypeLed(BaseType left, TokenType type)
-    {
-        return type switch
-        {
+    private BaseType TypeLed(BaseType left, TokenType type) {
+        return type switch {
             // TokenType.LessThan => ParseGenericType(left as IdentifierType),
             _ => throw new NotImplementedException($"unimplemented type led behaviour for \"{type.ToSourceString()}\""),
         };
