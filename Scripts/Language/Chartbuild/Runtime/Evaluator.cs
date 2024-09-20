@@ -36,7 +36,19 @@ public static class Evaluator {
     public static Either<ICBValue, ErrorType> EvaluateBinaryOperation(BinaryExpressionNode binaryExpression, Scope scope) {
         return EvaluateExpression(binaryExpression.left, scope).Case switch {
             ICBValue left => EvaluateExpression(binaryExpression.right, scope).Case switch {
-                ICBValue right => left.ExecuteBinaryOperator(binaryExpression.@operator.Type, right),
+                ICBValue right => left.ExecuteBinaryOperator(binaryExpression.@operator.Type, right).Case switch {
+                    ICBValue v => Either<ICBValue, ErrorType>.Left(v),
+                    // this should work: 0 == 0.0
+                    // because i32 can be assigned to f32
+                    // so cast the left side
+                    ErrorType.InvalidType when left.Type.CanBeAssignedTo(right.Type) => right.Type.Constructor(left).Case switch {
+                        ICBValue casted => casted.ExecuteBinaryOperator(binaryExpression.@operator.Type, right),
+                        ErrorType err => err,
+                        _ => throw new UnreachableException()
+                    },
+                    ErrorType err => err,
+                    _ => throw new UnreachableException()
+                },
                 ErrorType err => err,
                 _ => throw new UnreachableException()
             },
