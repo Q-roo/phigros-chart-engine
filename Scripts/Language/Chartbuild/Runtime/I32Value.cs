@@ -64,7 +64,8 @@ public struct I32Value(int value) : ICBValue {
         return value;
     }
 
-    public readonly Either<I32Value, ErrorType> Clone() => new I32Value(value);
+    readonly Either<ICBValue, ErrorType> ICBValue.Clone() => Clone();
+    public readonly I32Value Clone() => new(value);
 
     public ErrorType SetValue(object value) {
         if (value.IsNumericType()) {

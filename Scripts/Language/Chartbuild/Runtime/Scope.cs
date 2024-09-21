@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using LanguageExt;
@@ -22,12 +23,67 @@ public class Scope(Scope parent) {
         return false;
     }
 
+    // fix for nested function declarations
+    // make a new scope during calls
+    public static Scope Clone(Scope scope) {
+        Scope clone = new(scope.parent);
+
+        foreach (string name in scope.varialbes.Keys) {
+            CBVariable variable = scope.varialbes[name];
+            switch (variable.GetValue().Case) {
+                case ICBValue value:
+                    if (value.IsReference) {
+                        clone.varialbes[name] = new(value, variable.@readonly, variable.constant);
+                        break;
+                    }
+
+                    clone.varialbes[name] = value.Clone().Case switch {
+                        ICBValue cloned => new(cloned, variable.@readonly, variable.constant),
+                        _ => throw new NotImplementedException("TODO: error handling (failed to clone)"),
+                    };
+                    break;
+                default:
+                    throw new NotImplementedException("TODO: error handling (failed to get value)");
+            }
+        }
+
+        return clone;
+    }
+
+    // fix for nested function declarations
+    // make duplicates of the non reference values
+    // public void CaptureParent() {
+    //     if (parent is null)
+    //         return;
+
+    //     parent.CaptureParent(); // this is probably a bad idea
+
+    //     foreach (string name in parent.varialbes.Keys) {
+    //         CBVariable variable = parent.varialbes[name];
+    //         switch (variable.GetValue().Case) {
+    //             case ICBValue value:
+    //                 if (value.IsReference)
+    //                     break;
+    //                 switch (value.Clone().Case) {
+    //                     case ICBValue clone:
+    //                         varialbes[name] = new(clone, variable.@readonly, variable.constant);
+    //                         break;
+    //                     default:
+    //                         throw new NotImplementedException("TODO: error handling");
+    //                 }
+    //                 break;
+    //             default:
+    //                 throw new NotImplementedException("TODO: error handling");
+    //         }
+    //     }
+    // }
+
 
     public ErrorType DeclareNonConstant(string name, bool @readonly, bool initalized) {
         if (HasVariable(name))
             return ErrorType.DuplicateIdentifier;
 
-            varialbes.Add(name, new(@readonly, initalized, false));
+        varialbes.Add(name, new(@readonly, initalized, false));
         return ErrorType.NoError;
     }
 

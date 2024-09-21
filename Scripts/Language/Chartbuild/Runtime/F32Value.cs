@@ -52,7 +52,8 @@ public struct F32Value(double value) : ICBValue {
         return value;
     }
 
-    public readonly Either<F32Value, ErrorType> Clone() => new F32Value(value);
+    readonly Either<ICBValue, ErrorType> ICBValue.Clone() => Clone();
+    public readonly F32Value Clone() => new(value);
 
     public ErrorType SetValue(object value) {
         if (value.IsNumericType()) {

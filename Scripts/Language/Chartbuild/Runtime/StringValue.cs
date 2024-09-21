@@ -20,7 +20,8 @@ public struct StringValue(string value) : ICBValue {
         } else return ErrorType.InvalidType;
     }
 
-    public readonly Either<StringValue, ErrorType> Clone() => new StringValue(value); // TODO: let's see if this breaks anything
+    readonly Either<ICBValue, ErrorType> ICBValue.Clone() => Clone();
+    public readonly StringValue Clone() => new(value); // TODO: let's see if this breaks anything
 
     public readonly Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
         StringValue lhs = this;

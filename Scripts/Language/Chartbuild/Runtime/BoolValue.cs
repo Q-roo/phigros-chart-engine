@@ -22,7 +22,8 @@ public struct BoolValue(bool value) : ICBValue {
         return ErrorType.InvalidType;
     }
 
-    public readonly Either<BoolValue, ErrorType> Clone() => new BoolValue(value);
+    readonly Either<ICBValue, ErrorType> ICBValue.Clone() => Clone();
+    public readonly BoolValue Clone() => new(value);
 
     public static implicit operator bool(BoolValue value) => value.value;
     public static implicit operator BoolValue(bool value) => new(value);

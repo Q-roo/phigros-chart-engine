@@ -6,6 +6,12 @@ namespace PCE.Chartbuild.Runtime;
 public class DeclaredFunction : CBFunction {
     public BlockStatementNode body;
     public override Either<ICBValue, ErrorType> Call(params ICBValue[] args) {
+        // take the following example
+        // fn make_adder(a) {
+        //  return |b| {a + b;}
+        // }
+        // the scope needs to be reconstructed each time make_adder is called
+
         if (isLastParams) {
             if (args.Length < parameterNames.Length - 1) // the params is an array so it can be of size 0
                 return ErrorType.InvalidArgument;
@@ -50,7 +56,7 @@ public class DeclaredFunction : CBFunction {
                     return error;
             }
         }
-
+        
         foreach (StatementNode statement in body.body)
             switch (statement.Evaluate(body.scope).Case) {
                 case ICBValue value:
@@ -68,7 +74,9 @@ public class DeclaredFunction : CBFunction {
         };
     }
 
-    private ErrorType TryAssignParameter(int parameterIndex, ICBValue argument) {
+    private ErrorType TryAssignParameter(int parameterIndex, ICBValue value) => TryAssignParameter(parameterIndex, value, body.scope);
+
+    private ErrorType TryAssignParameter(int parameterIndex, ICBValue argument, Scope scope) {
         string name = parameterNames[parameterIndex];
         BaseType type = paremeterTypes[parameterIndex];
         if (!argument.Type.CanBeAssignedTo(type))
@@ -76,7 +84,7 @@ public class DeclaredFunction : CBFunction {
 
 
 
-        return body.scope.GetVariable(name).Case switch {
+        return scope.GetVariable(name).Case switch {
             CBVariable variable => type.Constructor(argument).Case switch {
                 ICBValue value => variable.SetValue(value),
                 ErrorType err => err,

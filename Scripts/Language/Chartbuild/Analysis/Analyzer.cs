@@ -13,7 +13,7 @@ namespace PCE.Chartbuild;
 // TODO: stop iteration error
 // FIXME: avoid evaluating infinite loops
 // FIXME: store type for variables
-// FIXME: in the following example, add2 overrides add so add returns 4 instead of 3
+// in the following example, add2 overrides add so add returns 4 instead of 3
 /*
 #version 0
 fn make_adder(b: f32) -> fn(i32) -> f32 {
@@ -29,6 +29,7 @@ const add2 = make_adder(3);
 dbg_print(add(true));
 dbg_print(add2(5));
 */
+// SOLUTION: capture the non reference type variables
 
 // TODO
 /*
@@ -312,7 +313,8 @@ public class Analyzer {
             switch (variableDeclaration.valueExpression.Evaluate(scope).Case) {
                 case ICBValue v:
                     value = v;
-                    if (variableDeclaration.type is not null && variableDeclaration.type != v.Type) {
+                    variableDeclaration.type ??= v.Type;
+                    if (!v.Type.CanBeAssignedTo(variableDeclaration.type)) {
                         return ErrorType.InvalidType;
                     }
                     break;
@@ -345,6 +347,7 @@ public class Analyzer {
             if (functionDeclaration.body.scope.DeclareVariable(parameter.name, new NullValue(), false) != ErrorType.NoError)
                 throw new Exception("couldn't declare function parameters");
 
+        // functionDeclaration.body.scope.CaptureParent();
         AnalyzeBlockLike(errors, functionDeclaration.body, functionDeclaration.body.scope, isLoopBody, true);
 
         BaseType[] types = functionDeclaration.arguments.Select(it => it.type).ToArray();
@@ -354,20 +357,22 @@ public class Analyzer {
         if (functionDeclaration.isLastParams)
             types[^1] = new ArrayType(types[^1]);
 
+        bool pure = functionDeclaration.body.Evaluate(functionDeclaration.body.scope).Case switch {
+            ErrorType.NoError or ErrorType.NullValue => true, // there should be only 4+1 cases
+            ErrorType => false,                               // 1: null value error (the function parameter values are set to null at this point)
+                                                              // 2: no error but no value to return
+                                                              // 3: no error and there is a value to return
+                                                              // 4: not compile time constant AKA, not pure
+                                                              // 5: invalid syntax, types and such in which case, the code won't even run
+            _ => true
+        };
+
         return new DeclaredFunction() {
             returnType = functionDeclaration.returnType ?? new NullValue().Type,
             paremeterTypes = types,
             isLastParams = functionDeclaration.isLastParams,
             // FIXME: the evaluation will try using the function params which are set to null
-            pure = functionDeclaration.body.Evaluate(functionDeclaration.body.scope).Case switch {
-                ErrorType.NoError or ErrorType.NullValue => true, // there should be only 4+1 cases
-                ErrorType => false,                               // 1: null value error (the function parameter values are set to null at this point)
-                                                                  // 2: no error but no value to return
-                                                                  // 3: no error and there is a value to return
-                                                                  // 4: not compile time constant AKA, not pure
-                                                                  // 5: invalid syntax, types and such in which case, the code won't even run
-                _ => true
-            },
+            pure = pure,
             parameterNames = paramNames,
             body = functionDeclaration.body
         };
@@ -440,6 +445,7 @@ public class Analyzer {
                 }
                 break;
             // the rest are literals
+            // or identifiers
             default:
                 break;
         }

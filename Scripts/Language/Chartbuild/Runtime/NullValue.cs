@@ -22,7 +22,9 @@ public class NullValue : ICBValue {
         };
     }
 
-    public Either<ICBValue, ErrorType> Call(params ICBValue[] args) => ErrorType.NullValue;
+    Either<ICBValue, ErrorType> ICBValue.Clone() => Clone();
+    public static NullValue Clone() => new();
+    public static Either<ICBValue, ErrorType> Call(params ICBValue[] args) => ErrorType.NullValue;
 
     public object GetValue() {
         return null;

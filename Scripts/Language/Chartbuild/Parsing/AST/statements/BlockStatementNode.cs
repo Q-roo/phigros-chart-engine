@@ -6,7 +6,7 @@ namespace PCE.Chartbuild;
 // apparently I can't use params List<T> from my laptop
 public class BlockStatementNode(List<StatementNode> body) : StatementNode {
     public readonly List<StatementNode> body = body;
-    public readonly Scope scope = new();
+    public Scope scope = new();
 
     public void RemoveChildStatementNode(StatementNode child) {
         body.Remove(child);

@@ -14,7 +14,7 @@ public class VariableDeclarationStatementNode(bool @readonly, string name, Expre
     public readonly ExpressionNode valueExpression = valueExpression;
 
     // if type is null, try infering it
-    public BaseType type { get; private set; } = type;
+    public BaseType type = type;
     // infer this as well
     public bool constant {get; private set;}
 
