@@ -36,7 +36,7 @@ public class CBVariable {
         if (initalized && @readonly)
             return ErrorType.SetConstant;
 
-        if (value == null)
+        if (value is null || value is NullValue)
             return ErrorType.SetNull;
 
         if (value.IsReference) {

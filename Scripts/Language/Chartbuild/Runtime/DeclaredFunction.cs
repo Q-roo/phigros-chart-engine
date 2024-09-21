@@ -12,6 +12,8 @@ public class DeclaredFunction : CBFunction {
         // }
         // the scope needs to be reconstructed each time make_adder is called
 
+        body.scope = body.scope.Clone();
+
         if (isLastParams) {
             if (args.Length < parameterNames.Length - 1) // the params is an array so it can be of size 0
                 return ErrorType.InvalidArgument;
@@ -56,9 +58,9 @@ public class DeclaredFunction : CBFunction {
                     return error;
             }
         }
-        
+
         foreach (StatementNode statement in body.body)
-            switch (statement.Evaluate(body.scope).Case) {
+            switch (/* statement.Evaluate(body.scope) */Interpreter.Evaluate(statement, body.scope).Case) {
                 case ICBValue value:
                     if (!value.Type.CanBeAssignedTo(returnType))
                         return ErrorType.InvalidType;

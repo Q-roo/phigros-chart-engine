@@ -96,6 +96,9 @@ public class Analyzer {
         ast.scope.DeclareVariable("true", new BoolValue(true), true);
         ast.scope.DeclareVariable("false", new BoolValue(false), true);
         ast.scope.DeclareVariable("unset", new NullValue(), true); // I can already feel the bugs this will cause
+        ast.scope.SetDefaultValue("true", new ValueExpressionNode<BoolValue>(new(true)));
+        ast.scope.SetDefaultValue("false", new ValueExpressionNode<BoolValue>(new(false)));
+        ast.scope.SetDefaultValue("unset", new ValueExpressionNode<NullValue>(new()));
 
         // not the final print, this is just for testing the native bindings
         ast.scope.DeclareVariable(
@@ -309,7 +312,7 @@ public class Analyzer {
 
     private static ErrorType AnalyzeVariableDeclaration(List<Error> errors, Scope scope, VariableDeclarationStatementNode variableDeclaration) {
         ICBValue value = null;
-        if (variableDeclaration.valueExpression is not null)
+        if (variableDeclaration.valueExpression is not null) {
             switch (variableDeclaration.valueExpression.Evaluate(scope).Case) {
                 case ICBValue v:
                     value = v;
@@ -326,6 +329,10 @@ public class Analyzer {
                 default:
                     throw new UnreachableException();
             }
+
+            if (value is not null)
+                scope.SetDefaultValue(variableDeclaration.name, variableDeclaration.valueExpression);
+        }
 
         return scope.DeclareVariable(
             variableDeclaration.name,

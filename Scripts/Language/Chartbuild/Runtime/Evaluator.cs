@@ -173,6 +173,8 @@ public static class Evaluator {
     };
 
     public static Either<ICBValue, ErrorType> EvaluateBlockStatement(BlockStatementNode block, Scope scope) {
+        block.scope = block.scope.Clone();
+
         foreach (StatementNode statement in block.body)
             switch (EvaluateStatement(statement, scope).Case) {
                 case ICBValue v:

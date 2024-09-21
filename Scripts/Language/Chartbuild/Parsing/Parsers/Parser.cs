@@ -188,14 +188,8 @@ public class Parser(BaseToken[] tokens) {
             string argName = GetIdentifierName();
             Expect(TokenType.Colon);
             BaseType argType = ParseType();
-            ExpressionNode defaultValue = null;
 
-            if (CurrentType == TokenType.Assign) {
-                Advance();
-                defaultValue = ParseExpression(BindingPower.Default);
-            }
-
-            arguments.Add(new(argName, argType, defaultValue));
+            arguments.Add(new(argName, argType));
 
             if (paramsArg) {
                 Expect(TokenType.RightParenthesis, "params argument must be the last argument");
@@ -436,14 +430,13 @@ public class Parser(BaseToken[] tokens) {
 
                 string name = GetIdentifierName();
                 BaseType type = null;
-                ExpressionNode defaultValue = null;
 
                 if (CurrentType == TokenType.Colon) {
                     Advance();
                     type = ParseType();
                 }
 
-                parameters.Add(new(name, type, defaultValue));
+                parameters.Add(new(name, type));
 
                 if (paramsArg) {
                     Expect(TokenType.BitwiseOr, "params argument must be the last argument");

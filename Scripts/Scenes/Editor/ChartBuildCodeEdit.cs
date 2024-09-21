@@ -45,7 +45,8 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 Chartbuild.BaseToken[] tokens = Chartbuild.Lexer.Parse(Text);
                 GD.Print(tokens);
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
-                ast = Chartbuild.Analyzer.Analyze(ast);
+                // ast = Chartbuild.Analyzer.Analyze(ast);
+                ast = new Chartbuild.Runtime.Interpreter(ast).Analyze();
                 GD.Print(Newtonsoft.Json.JsonConvert.SerializeObject(
                     ast,
                     Newtonsoft.Json.Formatting.Indented,

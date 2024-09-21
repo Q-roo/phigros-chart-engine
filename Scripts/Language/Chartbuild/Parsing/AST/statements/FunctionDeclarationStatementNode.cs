@@ -8,6 +8,6 @@ public class FunctionDeclarationStatementNode(string name, FunctionParameter[] a
     public readonly BlockStatementNode body = body;
 
     // infer it
-    public BaseType returnType { get; private set; } = returnType;
-    public bool pure { get; private set; }
+    public BaseType returnType = returnType;
+    public bool pure;
 }

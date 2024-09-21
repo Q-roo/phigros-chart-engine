@@ -34,7 +34,24 @@ public class ArrayValue : IEnumerableICBValue {
         if (!value.Type.CanBeAssignedTo(innerType))
             return ErrorType.InvalidType;
 
-        values.Add(value);
+        switch (innerType.Constructor(value).Case) {
+            case ICBValue casted:
+                values.Add(casted);
+                return ErrorType.NoError;
+            case ErrorType err:
+                return err;
+            default:
+                throw new UnreachableException();
+        }
+    }
+
+    public ErrorType Extend(IEnumerable<ICBValue> values) {
+        foreach (ICBValue value in values) {
+            ErrorType error = AddMember(value);
+            if (error != ErrorType.NoError)
+                return error;
+        }
+
         return ErrorType.NoError;
     }
 

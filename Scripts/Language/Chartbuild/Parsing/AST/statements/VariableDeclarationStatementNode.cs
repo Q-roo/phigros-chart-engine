@@ -11,7 +11,7 @@ public class VariableDeclarationStatementNode(bool @readonly, string name, Expre
     public readonly bool @readonly = @readonly;
     public readonly bool initalized = valueExpression is not null;
 
-    public readonly ExpressionNode valueExpression = valueExpression;
+    public ExpressionNode valueExpression = valueExpression;
 
     // if type is null, try infering it
     public BaseType type = type;
