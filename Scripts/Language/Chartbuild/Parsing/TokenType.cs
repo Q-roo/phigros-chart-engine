@@ -4,9 +4,9 @@ namespace PCE.Chartbuild;
 // * NullCoalescing, // ??
 // * NullCoalescingAssign, // ??=
 
-public enum TokenType
+public enum TokenType : byte
 {
-    Unknown = -1,
+    Unknown = 0,
 
     // basic
     Identifier,

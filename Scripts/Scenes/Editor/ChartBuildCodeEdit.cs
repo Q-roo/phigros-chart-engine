@@ -54,6 +54,9 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                         ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                     }
                 ));
+                GD.Print("raw byte code");
+                GD.Print(string.Join("\n", new Chartbuild.Runtime.ByteCodeGenerator(ast).Generate()));
+                GD.Print(new Chartbuild.Runtime.ByteCodeGenerator(ast).CreateVM().Dump());
             } catch (Exception ex) {
                 GD.Print(ex);
             }

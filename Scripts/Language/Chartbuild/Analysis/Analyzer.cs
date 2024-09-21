@@ -166,7 +166,7 @@ public class Analyzer {
                     break;
                 }
                 case FunctionDeclarationStatementNode functionDeclaration: {
-                    ErrorType error = block.scope.DeclareVariable(functionDeclaration.name, new CBFunctionValue(AnalyzeFunctionDeclaration(errors, functionDeclaration, block.scope, isLoopBody)), true);
+                    ErrorType error = parentScope.DeclareVariable(functionDeclaration.name, new CBFunctionValue(AnalyzeFunctionDeclaration(errors, functionDeclaration, parentScope, isLoopBody)), true);
                     if (error != ErrorType.NoError)
                         errors.Add(new(error, error.ToString(), -1, -1));
 
@@ -260,13 +260,16 @@ public class Analyzer {
                     } else
                         block.body.RemoveRange(i + 1, block.body.Count - (i + 1));
                     break;
-                case ReturnStatementNode:
+                case ReturnStatementNode @return:
                     if (!isFunctionBody) {
                         errors.Add(new(ErrorType.UnexpectedToken, "return statements can only be used inside functions", -1, -1));
                         block.body.RemoveAt(i);
                         i--;
-                    } else
+                    } else {
+                        if (@return.value is not null)
+                            @return.value = AnalyzeExpression(@return.value, block.scope);
                         block.body.RemoveRange(i + 1, block.body.Count - (i + 1));
+                    }
                     break;
                 default:
                     break;
@@ -315,11 +318,18 @@ public class Analyzer {
 
     private static DeclaredFunction AnalyzeFunctionDeclaration(List<Error> errors, FunctionDeclarationStatementNode functionDeclaration, Scope scope, bool isLoopBody) {
         functionDeclaration.body.scope.parent = scope;
-        AnalyzeBlockLike(errors, functionDeclaration.body, functionDeclaration.body.scope, isLoopBody, true);
+        // declare the parameters as variables first
+        // this fixes the following
+        // fn make_adder(a) {
+        //   fn add(b) => a + b
+        //   return add
+        // }
 
         foreach (FunctionParameter parameter in functionDeclaration.arguments)
             if (functionDeclaration.body.scope.DeclareVariable(parameter.name, new NullValue(), false) != ErrorType.NoError)
                 throw new Exception("couldn't declare function parameters");
+
+        AnalyzeBlockLike(errors, functionDeclaration.body, functionDeclaration.body.scope, isLoopBody, true);
 
         BaseType[] types = functionDeclaration.arguments.Select(it => it.type).ToArray();
         string[] paramNames = functionDeclaration.arguments.Select(it => it.name).ToArray();
@@ -376,6 +386,11 @@ public class Analyzer {
             case CallExpressionNode call:
                 for (int i = 0; i < call.arguments.Length; i++)
                     call.arguments[i] = AnalyzeExpression(call.arguments[i], scope);
+
+                call.isNative = call.method.Evaluate(scope).Case switch {
+                    CBFunctionValue functionValue => functionValue.value is NativeFunctionBinding,
+                    _ => false
+                };
 
                 switch (call.Evaluate(scope).Case) {
                     case ICBValue value: // the function is a pure function and can be safely evaluated during compile time

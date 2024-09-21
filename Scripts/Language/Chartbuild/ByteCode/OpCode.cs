@@ -5,6 +5,8 @@ public enum OpCode : byte {
     Halt, // stop the program
     // push, address
     Push, // push to stack
+    // push an i32value literal to the stack
+    DirectPushI32, // dpi, value
     // pop,
     Pop, // pop from the stack
     // goto, address
@@ -32,13 +34,14 @@ public enum OpCode : byte {
     // or changes the program counter by the offset
     // if it recieved a stop iteration
     IterNextOrGotoRelative, // iternogtr, offset
-    // assign, address (asignee), address(value)
-    Assign, // assign a value to a variable
+    // assign
+    Assign, // assign the top value on the stack to a variable that is now on top of the stack
     //binop, a, b, op
     BinaryOperator, // execute a binary operator (a, b, op is on the stack)
     //user defined functions rely on goto but that cannot call native functions
     // but native functions are also stored as cbfunctions which are stored here
-    // calln, address
+    // native calls pop the method from the stack
+    // calln
     CallNative, // cbfunction with an index
     Call, // call an user defined function
     // I don't know what this does but auto complete hallucinated it and I took a liking to it

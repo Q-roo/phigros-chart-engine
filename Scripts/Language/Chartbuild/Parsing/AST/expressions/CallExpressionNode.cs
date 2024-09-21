@@ -4,4 +4,5 @@ public class CallExpressionNode(ExpressionNode method, ExpressionNode[] argument
 {
     public readonly ExpressionNode method = method;
     public readonly ExpressionNode[] arguments = arguments;
+    public bool isNative;
 }

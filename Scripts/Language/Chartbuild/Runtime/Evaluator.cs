@@ -111,7 +111,7 @@ public static class Evaluator {
                     ErrorType err => err,
                     _ => throw new UnreachableException()
                 }; */
-            case ICBValue value:
+            case ICBValue:
                 return ErrorType.NotCallable;
             case ErrorType err:
                 return err;

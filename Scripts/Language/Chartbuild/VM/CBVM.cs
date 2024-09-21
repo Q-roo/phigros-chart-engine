@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 using LanguageExt.UnsafeValueAccess;
 
 namespace PCE.Chartbuild.Runtime;
 
 using Address = ushort;
 
-public class VM {
+public class VM(byte[] byteCode, CBVariable[] variables) {
     private const byte addressSizeInBytes = sizeof(Address) / sizeof(byte);
-    private readonly byte[] byteCode;
-    private readonly CBVariable[] variables;
+    private readonly byte[] byteCode = byteCode;
+    private readonly CBVariable[] variables = variables;
     private readonly Stack<ICBValue> stack= new(200); // this much should be enough to start with
 
     // when returning form a function, go to the previous location
@@ -30,6 +31,9 @@ public class VM {
                     return;
                 case OpCode.Push:
                     Push();
+                    break;
+                case OpCode.DirectPushI32:
+                    PushV(new I32Value(ReadT<int>()));
                     break;
                 case OpCode.Pop:
                     Pop();
@@ -62,11 +66,11 @@ public class VM {
                     Return();
                     break;
                 case OpCode.Assign:
-                    variables[ReadAddress()].SetValue(variables[ReadAddress()].GetValueUnsafe());
+                    Pop().SetValue(Pop());
                     break;
                 case OpCode.BinaryOperator:
-                    ICBValue b = variables[ReadAddress()].GetValueUnsafe();
-                    ICBValue a = variables[ReadAddress()].GetValueUnsafe();
+                    ICBValue b = Pop();
+                    ICBValue a = Pop();
                     // FIXME, this could crash with a divide by zero exception
                     PushV(a.ExecuteBinaryOperatorUnsafe(ReadT<TokenType>(), b));
                     break;
@@ -82,16 +86,100 @@ public class VM {
         }
     }
 
+    public string Dump() {
+        StringBuilder builder = new(300);
 
-    // private int ReadInt() {
-    //     byte[] bytes= new byte[4];
-    //     for (int i = 0; i < 4; i++)
-    //         bytes[i] = Read();
+        for (; programCounter < byteCode.Length;) {
+            switch ((OpCode)Read()) {
+                case OpCode.Halt:
+                    builder.AppendLine("HLT");
+                    break;
+                case OpCode.Pop:
+                    builder.AppendLine("POP");
+                    break;
+                case OpCode.Push:
+                    builder.Append("PUSH");
+                    builder.AppendLine($", {ReadAddress()}");
+                    break;
+                case OpCode.DirectPushI32:
+                    builder.Append("DPI");
+                    builder.AppendLine($", {ReadT<int>()}");
+                    break;
+                case OpCode.Goto:
+                    builder.Append("JMP");
+                    builder.AppendLine($", {ReadAddress()}");
+                    break;
+                case OpCode.GotoIf:
+                    builder.Append("JMPI");
+                    builder.AppendLine($", {ReadAddress()}");
+                    break;
+                case OpCode.GotoIfNot:
+                    builder.Append("JMPE");
+                    builder.AppendLine($", {ReadAddress()}");
+                    break;
+                case OpCode.GotoNoStackPush:
+                    builder.Append("JMPN");
+                    builder.AppendLine($", {ReadAddress()}");
+                    break;
+                case OpCode.GotoBack:
+                    builder.AppendLine("RET");
+                    break;
+                case OpCode.GotoRelative:
+                    builder.Append("JMPR");
+                    builder.AppendLine($", {ReadAddress()}");
+                    break;
+                case OpCode.GotoRelativeIf:
+                    builder.Append("JMPRI");
+                    builder.AppendLine($", {ReadAddress()}");
+                    break;
+                case OpCode.GotoRelativeIfNot:
+                    builder.Append("JMPRE");
+                    builder.AppendLine($", {ReadAddress()}");
+                    break;
+                case OpCode.GotoRelativeNoStackPush:
+                    builder.Append("JMPRN");
+                    builder.AppendLine($", {ReadAddress()}");
+                    break;
+                case OpCode.IterNextOrGotoRelative:
+                    builder.Append("ITNOJMPR");
+                    builder.AppendLine($", {ReadAddress()}");
+                    break;
+                case OpCode.Assign:
+                    builder.AppendLine("ASGN");
+                    break;
+                case OpCode.BinaryOperator:
+                    builder.Append("BINOP");
+                    builder.AppendLine($", {ReadT<TokenType>()}");
+                    break;
+                case OpCode.Call: {
+                    builder.Append("CALL");
+                    builder.Append($", {ReadAddress()}");
+                    uint argCount = ReadT<uint>();
+                    builder.Append($", {argCount}");
+                    for (int i = 0; i < argCount; i++)
+                        builder.Append($", {ReadAddress()}");
 
-    //     if (BitConverter.IsLittleEndian)
-    //         Array.Reverse(bytes);
-    //     return BitConverter.ToInt32(bytes, 0);
-    // }
+                    builder.AppendLine();
+                    break;
+                }
+                case OpCode.CallNative: {
+                    builder.Append("CALLN");
+                    uint argCount = ReadT<uint>();
+                    builder.Append($", {argCount}");
+                    for (int i = 0; i < argCount; i++)
+                        builder.Append($", {ReadAddress()}");
+
+                    builder.AppendLine();
+                    break;
+                }
+                default:
+                    builder.AppendLine("unknown instruction");
+                    break;
+            }
+        }
+
+        return builder.ToString();
+    }
 
     // this is me having fun
     private Address ReadAddress() {
@@ -160,13 +248,13 @@ public class VM {
         // push n
         // push function
 
-        uint functionLocation = 0;
+        Address functionLocation = 0;
         CBFunction function = null;
 
         if (isNative)
-            functionLocation = ReadAddress();
+            function = ((CBFunctionValue)Pop()).value;
         else
-            function = ((CBFunctionValue)variables[ReadAddress()].GetValueUnsafe()).value;
+            functionLocation = ReadAddress();
 
         uint ArgsLength = ReadT<uint>(); // exist for ...params
         ICBValue[] arguments = new ICBValue[ArgsLength];
@@ -174,14 +262,15 @@ public class VM {
         for (int i = 0; i < ArgsLength; i++)
             arguments[i] = variables[ReadAddress()].GetValueUnsafe();
 
-        if (isNative) {
+        if (isNative)
+            // no need for call unsafe because native functions will do a lot of checks anyways
+            PushV(function.Call(arguments).Swap().ValueUnsafe());
+        else {
             gotoStack.Push(programCounter);
             foreach (ICBValue arg in arguments)
                 stack.Push(arg);
 
             programCounter = functionLocation;
-        } else
-            // no need for call unsafe because native functions will do a lot of checks anyways
-            PushV(function.Call(arguments).Swap().ValueUnsafe());
+        }
     }
 }

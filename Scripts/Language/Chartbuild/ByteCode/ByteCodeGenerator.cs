@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace PCE.Chartbuild.Runtime;
 
@@ -25,23 +26,137 @@ public class ByteCodeGenerator(ASTRoot ast) {
     // so function body code should be either at the start or at the end
     // with an offset to make sure the addresses are correct
 
+    public VM CreateVM() => new(Generate(), [.. variables]);
+
     public byte[] Generate() {
         //gotoIndexLookup.Add(ast, 0);
         // probably useless
         GenerateBlock(ast, code, false, false, null, null);
 
         dataLocationOffset = (ushort)(code.Count - 1);
-        return [.. code, .. functionCode];
+        return [.. code, (byte)OpCode.Halt, .. functionCode];
     }
 
     private static Func<int> CreateCurrentLoopSizeGetter(ByteCodeOutput output) => () => output.Count;
+    private void AddVariableToLookup(CBVariable variable) {
+        if (variableAddressLookup.ContainsKey(variable))
+        return;
+
+        variables.Add(variable);
+        variableAddressLookup[variable] = (Address)Godot.Mathf.Max(variables.Count - 1, 0); // the first addres would be -1 (which then would wrap) otherwise
+    }
+
+    private void GenerateExpression(ExpressionNode expression, ByteCodeOutput output) {
+        switch (expression) {
+            case AssignmentExpressionNode assignment:
+                GenerateAssignment(assignment, output);
+                break;
+            case BinaryExpressionNode binary:
+                GenerateBinaryOperation(binary, output);
+                break;
+            case CallExpressionNode call:
+                GenerateCall(call, output);
+                break;
+            case ClosureExpressionNode:
+                // TODO: still not implemented
+                throw new NotImplementedException("TODO: closures");
+            case ComputedMemberAccessExpressionNode computedMemberAccess:
+
+            case MemberAccessExpressionNode:
+            case IdentifierExpressionNode:
+            case PrefixExpressionNode:
+            case PostfixExpressionNode:
+            case TernaryExpressionNode:
+            default:
+                break;
+        }
+    }
+
+    private void GenerateAssignment(AssignmentExpressionNode assignment, ByteCodeOutput output) {
+        // push the asigned value onto the stack
+        // call assign
+
+        // push value a onto the stack
+        GenerateExpression(assignment.asignee, output);
+
+        // push value b onto the stack
+
+        // cases like +=, ...etc
+        // since call is not a binary expression node,
+        // it shouldn't be handled by this branch
+        if (assignment.@operator.Type != TokenType.Assign && assignment.@operator.Type != TokenType.DotAssign) {
+            BinaryExpressionNode binary = new(
+                        assignment.asignee,
+                        new Token(
+                            assignment.@operator.lineNumber,
+                            assignment.@operator.columnNumber,
+                            assignment.@operator.Type switch {
+                                TokenType.PlusAssign => TokenType.Plus,
+                                TokenType.MinusAssign => TokenType.Minus,
+                                TokenType.MultiplyAssign => TokenType.Multiply,
+                                TokenType.PowerAssign => TokenType.Power,
+                                TokenType.DivideAssign => TokenType.Divide,
+                                TokenType.ModuloAssign => TokenType.Modulo,
+                                TokenType.ShiftLeftAssign => TokenType.ShiftLeft,
+                                TokenType.ShiftRightAssign => TokenType.ShiftRight,
+                                TokenType.BitwiseAndAssign => TokenType.BitwiseAnd,
+                                TokenType.BitwiseOrAssign => TokenType.BitwiseOr,
+                                TokenType.BitwiseXorAssign => TokenType.BitwiseXor,
+                                TokenType.BitswiseNotAssign => TokenType.BitwiseNot,
+                                _ => throw new UnreachableException()
+                            }
+                        ),
+                        assignment.value
+                    );
+
+            GenerateBinaryOperation(binary, output);
+        } else
+            GenerateExpression(assignment.value, output);
+
+        output.Add((byte)OpCode.Assign);
+    }
+
+    private void GenerateBinaryOperation(BinaryExpressionNode binary, ByteCodeOutput output) {
+        GenerateExpression(binary.left, output);
+        GenerateExpression(binary.right, output);
+        output.Add((byte)binary.@operator.Type);
+        output.Add((byte)OpCode.BinaryOperator);
+        // the vm will push the result to the stack
+    }
+
+    private void GenerateCall(CallExpressionNode call, ByteCodeOutput output) {
+        Address start = (Address)output.Count;
+
+        foreach (ExpressionNode argument in call.arguments)
+            GenerateExpression(argument, output);
+        
+        output.Add((byte)OpCode.DirectPushI32);
+        output.AddRange(BitConverter.GetBytes(call.arguments.Length));
+        
+        if (call.isNative)
+        {
+            // native functions don't have a bytecode body
+            // just push the fucntion onto the stack
+            GenerateExpression(call.method, output);
+            output.Add((byte)OpCode.CallNative);
+        }
+        else {
+            // user defined functions have a bytecode body
+            // put the address of the function body
+            output.AddRange(BitConverter.GetBytes(start));
+            output.Add((byte)OpCode.CallNative);
+        }
+    }
+
+    private void GenerateComputedMemberAccess(ComputedMemberAccessExpressionNode computedMemberAccess, ByteCodeOutput output) {
+
+    }
 
     private void GenerateBlock(BlockStatementNode body, ByteCodeOutput output, bool isInFunctionBody, bool isInLoopBody, Func<int> getCurrentLoopBodySize, List<int> breakPositions) {
         // TODO: might not be neccassary to add this to the lookup
         // gotoIndexLookup[body] = code.Count - 1;
         foreach (CBVariable variable in body.scope.AllVariables) {
-            variables.Add(variable);
-            variableAddressLookup[variable] = (Address)(variables.Count - 1);
+            AddVariableToLookup(variable);
 
             if (variable.GetValueUnsafe() is CBFunctionValue functionValue && functionValue.value is DeclaredFunction function)
                 GenerateFunction(function, getCurrentLoopBodySize, breakPositions);
@@ -109,23 +224,6 @@ public class ByteCodeGenerator(ASTRoot ast) {
             GenerateExpression(@return.value, output);
 
         output.Add((byte)OpCode.GotoBack);
-    }
-
-    private void GenerateExpression(ExpressionNode expression, ByteCodeOutput output) {
-        switch (expression) {
-            case AssignmentExpressionNode:
-            case BinaryExpressionNode:
-            case CallExpressionNode:
-            case ClosureExpressionNode:
-            case ComputedMemberAccessExpressionNode:
-            case MemberAccessExpressionNode:
-            case IdentifierExpressionNode:
-            case PrefixExpressionNode:
-            case PostfixExpressionNode:
-            case TernaryExpressionNode:
-            default:
-            break;
-        }
     }
 
     private void GenerateFunction(DeclaredFunction function, Func<int> getCurrentLoopBodySize, List<int> breakPositions) {
