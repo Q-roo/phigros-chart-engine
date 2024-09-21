@@ -13,6 +13,22 @@ namespace PCE.Chartbuild;
 // TODO: stop iteration error
 // FIXME: avoid evaluating infinite loops
 // FIXME: store type for variables
+// FIXME: in the following example, add2 overrides add so add returns 4 instead of 3
+/*
+#version 0
+fn make_adder(b: f32) -> fn(i32) -> f32 {
+	fn add(a: i32) -> f32 {
+		return a + b;
+	}
+	
+	return add;
+}
+
+const add = make_adder(2);
+const add2 = make_adder(3);
+dbg_print(add(true));
+dbg_print(add2(5));
+*/
 
 // TODO
 /*
