@@ -53,7 +53,7 @@ public static class BindingPowerExtensions
             TokenType.PowerAssign or
             TokenType.ShiftLeftAssign or
             TokenType.ShiftRightAssign or
-            TokenType.BitswiseNotAssign or
+            TokenType.BitwiseNotAssign or
             TokenType.BitwiseAndAssign or
             TokenType.BitwiseOrAssign or
             TokenType.BitwiseXorAssign => BindingPower.Assignment,

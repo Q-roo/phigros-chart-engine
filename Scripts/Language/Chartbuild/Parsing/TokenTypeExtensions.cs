@@ -46,7 +46,7 @@ public static class TokenTypeExtensions
             TokenType.BitwiseAndAssign   => "&=",
             TokenType.BitwiseOrAssign    => "|=",
             TokenType.BitwiseXorAssign   => "^=",
-            TokenType.BitswiseNotAssign  => "~=",
+            TokenType.BitwiseNotAssign  => "~=",
             TokenType.Increment          => "++",
             TokenType.Decrement          => "--",
             TokenType.If                 => "if",

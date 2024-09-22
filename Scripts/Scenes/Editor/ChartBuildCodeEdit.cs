@@ -47,17 +47,19 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
                 // ast = Chartbuild.Analyzer.Analyze(ast);
                 ast = new Chartbuild.Runtime.Interpreter(ast).Analyze();
-                GD.Print(Newtonsoft.Json.JsonConvert.SerializeObject(
-                    ast,
-                    Newtonsoft.Json.Formatting.Indented,
-                    new Newtonsoft.Json.JsonSerializerSettings() {
-                        PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects,
-                        ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                    }
-                ));
-                GD.Print("raw byte code");
-                GD.Print(string.Join("\n", new Chartbuild.Runtime.ByteCodeGenerator(ast).Generate()));
-                GD.Print(new Chartbuild.Runtime.ByteCodeGenerator(ast).CreateVM().Dump());
+                // GD.Print(Newtonsoft.Json.JsonConvert.SerializeObject(
+                //     ast,
+                //     Newtonsoft.Json.Formatting.Indented,
+                //     new Newtonsoft.Json.JsonSerializerSettings() {
+                //         PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects,
+                //         ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                //     }
+                // ));
+                GD.Print(new Chartbuild.Runtime.UnsafeByteCodeGenerator().Generate(ast).Dump());
+                // GD.Print("raw byte code");
+                // GD.Print(string.Join("\n", new Chartbuild.Runtime.UnsafeByteCodeGenerator().Generate(ast).GetCode()));
+                // GD.Print(string.Join("\n", new Chartbuild.Runtime.ByteCodeGenerator(ast).Generate()));
+                // GD.Print(new Chartbuild.Runtime.ByteCodeGenerator(ast).CreateVM().Dump());
             } catch (Exception ex) {
                 GD.Print(ex);
             }

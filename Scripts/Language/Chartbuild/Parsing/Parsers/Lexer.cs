@@ -123,6 +123,7 @@ public static class Lexer
 
                 start = i;
                 bool isInt = true;
+                int dots = 0; // prevent 1.. and such
 
                 do
                 {
@@ -134,10 +135,11 @@ public static class Lexer
                     if (c == '.')
                     {
                         isInt = false;
+                        dots++;
                         continue;
                     }
                 }
-                while (char.IsAsciiDigit(c) || c == '.');
+                while (char.IsAsciiDigit(c) || (c == '.' && dots == 1));
 
                 column += i - start - 1;
 
@@ -263,7 +265,7 @@ public static class Lexer
                 TryCharVariantsAhead(in source, ref i, '+', TokenType.Plus, out type, out columnChange, ("+", TokenType.Increment), ("=", TokenType.PlusAssign)) ||
                 TryCharVariantsAhead(in source, ref i, '-', TokenType.Minus, out type, out columnChange, ("-", TokenType.Decrement), ("=", TokenType.MinusAssign), (">", TokenType.RightArrow)) ||
                 TryCharVariantsAhead(in source, ref i, '^', TokenType.BitwiseXor, out type, out columnChange, ("=", TokenType.BitwiseXorAssign)) ||
-                TryCharVariantsAhead(in source, ref i, '~', TokenType.BitwiseNot, out type, out columnChange, ("=", TokenType.BitswiseNotAssign)) ||
+                TryCharVariantsAhead(in source, ref i, '~', TokenType.BitwiseNot, out type, out columnChange, ("=", TokenType.BitwiseNotAssign)) ||
                 TryCharVariantsAhead(in source, ref i, '|', TokenType.BitwiseOr, out type, out columnChange, ("|", TokenType.Or), ("=", TokenType.BitwiseOrAssign)) ||
                 TryCharVariantsAhead(in source, ref i, '&', TokenType.BitwiseAnd, out type, out columnChange, ("&", TokenType.And), ("=", TokenType.BitwiseAndAssign)) ||
                 TryCharVariantsAhead(in source, ref i, '<', TokenType.LessThan, out type, out columnChange, ("<", TokenType.ShiftLeft), ("=", TokenType.LessThanOrEqual), ("<=", TokenType.ShiftLeftAssign)) ||

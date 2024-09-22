@@ -102,7 +102,7 @@ public class ByteCodeGenerator(ASTRoot ast) {
                                 TokenType.BitwiseAndAssign => TokenType.BitwiseAnd,
                                 TokenType.BitwiseOrAssign => TokenType.BitwiseOr,
                                 TokenType.BitwiseXorAssign => TokenType.BitwiseXor,
-                                TokenType.BitswiseNotAssign => TokenType.BitwiseNot,
+                                TokenType.BitwiseNotAssign => TokenType.BitwiseNot,
                                 _ => throw new UnreachableException()
                             }
                         ),

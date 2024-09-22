@@ -58,7 +58,7 @@ public enum TokenType : byte
     BitwiseAndAssign, // &=
     BitwiseOrAssign, // |=
     BitwiseXorAssign, // ^=
-    BitswiseNotAssign, // ~=
+    BitwiseNotAssign, // ~=
     Increment, // ++
     Decrement, // --
 

@@ -622,7 +622,7 @@ public class Parser(BaseToken[] tokens) {
             TokenType.PowerAssign or
             TokenType.ShiftLeftAssign or
             TokenType.ShiftRightAssign or
-            TokenType.BitswiseNotAssign or
+            TokenType.BitwiseNotAssign or
             TokenType.BitwiseAndAssign or
             TokenType.BitwiseOrAssign or
             TokenType.BitwiseXorAssign => ParseAssignmentExpression(left),

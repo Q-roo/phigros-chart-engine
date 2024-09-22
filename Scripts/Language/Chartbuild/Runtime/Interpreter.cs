@@ -233,8 +233,7 @@ public class Interpreter(ASTRoot ast) {
             if (functionDeclaration.body.scope.DeclareVariable(parameter.name, new NullValue(), false) != ErrorType.NoError)
                 throw new Exception("couldn't declare function parameters");
 
-        DeclaredFunction function = new()
-            {
+        DeclaredFunction function = new() {
             returnType = functionDeclaration.returnType,
             isLastParams = functionDeclaration.isLastParams,
             parameterNames = functionDeclaration.arguments.Select(it => it.name).ToArray(),
@@ -249,15 +248,7 @@ public class Interpreter(ASTRoot ast) {
         else {
             ErrorType error = scope.DeclareVariable(
                 functionDeclaration.name,
-                new CBFunctionValue(new DeclaredFunction()
-                {
-                    returnType = functionDeclaration.returnType,
-                    isLastParams = functionDeclaration.isLastParams,
-                    parameterNames = functionDeclaration.arguments.Select(it => it.name).ToArray(),
-                    paremeterTypes = functionDeclaration.arguments.Select(it => it.type).ToArray(),
-                    pure = functionDeclaration.pure,
-                    body = functionDeclaration.body,
-                }),
+                new CBFunctionValue(function),
                 true
             );
 
@@ -302,12 +293,10 @@ public class Interpreter(ASTRoot ast) {
         if (@return.value is not null)
             return EvaluateExpression(@return.value, scope);
 
-        ICBValue value = scope.GetVariable("unset").Case switch {
-            ICBValue v => v,
+        return scope.GetVariable("unset").Case switch {
+            ICBValue v => Either<ICBValue, ErrorType>.Left(v),
             _ => throw new UnreachableException()
         };
-
-        return Either<ICBValue, ErrorType>.Left(value);
     }
 
     // assumes that the scope is already set up
@@ -319,6 +308,7 @@ public class Interpreter(ASTRoot ast) {
                 i--;
             }
         }
+
         return block;
     }
 
@@ -363,12 +353,23 @@ public class Interpreter(ASTRoot ast) {
                     if (functionDeclaration.body.scope.DeclareVariable(parameter.name, new NullValue(), false) != ErrorType.NoError)
                         throw new Exception("couldn't declare function parameters");
 
+                // declare the function first
+                // this is needed for e.g. recursion
+                scope.DeclareVariable(functionDeclaration.name, new CBFunctionValue(new DeclaredFunction() {
+                    returnType = functionDeclaration.returnType,
+                    isLastParams = functionDeclaration.isLastParams,
+                    parameterNames = functionDeclaration.arguments.Select(it => it.name).ToArray(),
+                    paremeterTypes = functionDeclaration.arguments.Select(it => it.type).ToArray(),
+                    pure = functionDeclaration.pure,
+                    body = functionDeclaration.body,
+                }
+                ), true);
+
                 // don't allow the following
                 // while (true) {
                 // ||{break;}
                 // }
                 AnalyzeBlockLike(functionDeclaration.body, true, false);
-
 
                 if (functionDeclaration.isLastParams)
                     functionDeclaration.arguments[^1].type = new ArrayType(functionDeclaration.arguments[^1].type);
@@ -387,16 +388,6 @@ public class Interpreter(ASTRoot ast) {
                 };
                 functionDeclaration.pure = pure;
                 functionDeclaration.returnType ??= new NullType();
-
-                scope.DeclareVariable(functionDeclaration.name, new CBFunctionValue(new DeclaredFunction() {
-                    returnType = functionDeclaration.returnType,
-                    isLastParams = functionDeclaration.isLastParams,
-                    parameterNames = functionDeclaration.arguments.Select(it => it.name).ToArray(),
-                    paremeterTypes = functionDeclaration.arguments.Select(it => it.type).ToArray(),
-                    pure = functionDeclaration.pure,
-                    body = functionDeclaration.body,
-                }
-                ), true);
 
                 break;
             case ReturnStatementNode @return:
