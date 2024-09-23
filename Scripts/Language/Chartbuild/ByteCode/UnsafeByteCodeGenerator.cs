@@ -12,60 +12,8 @@ public class UnsafeByteCodeGenerator {
     // functions are top level
     // functions inside functions are handled as if they were closure
 
-    class Chunk {
-        public List<byte> code = new(200);
-
-        private readonly List<CBVariable> variables = [];
-        private readonly Dictionary<string, CBVariable> variablesWithNames = [];
-        private readonly Dictionary<CBVariable, Address> variableAddressLookup = [];
-
-        private readonly List<object> constantPool = [];
-        private  readonly Dictionary<object, Address> constantAddressLookup = [];
-
-        public Address DeclareVariable(string name, CBVariable variable) {
-            if (!HasConstant(name))
-                AddConstant(name);
-
-            // TODO: check if exists
-            variables.Add(variable);
-            variablesWithNames[name] = variable;
-            Address address = (Address)(variables.Count - 1);
-            variableAddressLookup[variable] = address;
-            return address;
-        }
-
-        public Address Lookup(string name) {
-            // TODO: instead of creating new variables, create a link
-            // tha variable is in a parent scope
-            if (!variablesWithNames.TryGetValue(name, out CBVariable variable)) {
-                variable = new CBVariable(false);
-                DeclareVariable(name, variable);
-            }
-
-            return variableAddressLookup[variable];
-        }
-
-        public Address Lookup(CBVariable variable) {
-            return variableAddressLookup[variable];
-        }
-
-        public Address AddConstant(object constant) {
-            constantPool.Add(constant);
-            Address address = (Address)(constantPool.Count - 1);
-            constantAddressLookup[constant] = address;
-            return address;
-        }
-
-        public bool HasConstant(object constant) {
-            return constantAddressLookup.ContainsKey(constant);
-        }
-
-        public Address ConstantLookup(object constant) {
-            return constantAddressLookup[constant];
-        }
-    }
-
-    private readonly List<Chunk> chunks = new(200);
+    private readonly List<ByteCodeChunk> chunks = new(200);
+    private ByteCodeChunk RootChunk => chunks[0];
     public byte[] GetCode() => chunks.SelectMany(it => it.code).ToArray();
 
     public string Dump() {
@@ -117,8 +65,7 @@ public class UnsafeByteCodeGenerator {
                     builder.AppendLine("DSPN");
                     break;
                 case UnsafeOpCode.SPOP:
-                    builder.Append("SPOP");
-                    builder.AppendLine($", {ReadAddress()}");
+                    builder.AppendLine("SPOP");
                     break;
                 case UnsafeOpCode.LCST:
                     builder.Append("LCST");
@@ -210,14 +157,19 @@ public class UnsafeByteCodeGenerator {
     }
 
     public UnsafeByteCodeGenerator Generate(ASTRoot ast) {
-        GenerateChunk(ast);
-        chunks.Add(new() { code = [UnsafeOpCode.HLT.AsByte()] });
+        GenerateRootChunk();
+        GenerateChunk(ast, RootChunk);
+        chunks[^1].code.Add(UnsafeOpCode.HLT.AsByte());
         return this;
     }
 
+    private void GenerateRootChunk() {
+        ByteCodeChunk chunk = new(null, false);
+        chunks.Add(chunk);
+    }
 
-    private void GenerateChunk(BlockStatementNode block) {
-        Chunk chunk = new();
+    private void GenerateChunk(BlockStatementNode block, ByteCodeChunk parent) {
+        ByteCodeChunk chunk = new(parent, false);
         foreach (StatementNode statement in block.body)
             GenerateStatement(statement, chunk, 0);
 
@@ -225,12 +177,12 @@ public class UnsafeByteCodeGenerator {
     }
 
     // handle all functions as if they were closures
-    private void GenerateFunction(FunctionDeclarationStatementNode closure) {
-        Chunk chunk = new();
+    private void GenerateFunction(FunctionDeclarationStatementNode closure, ByteCodeChunk parent) {
+        ByteCodeChunk chunk = new(parent, false);
 
         chunk.code.Add(UnsafeOpCode.CPTR.AsByte());
         foreach (FunctionParameter argument in closure.arguments) {
-            Address address = chunk.Lookup(argument.name);
+            Address address = chunk.DeclareVariable(argument.name, new(false));
             chunk.code.Add(UnsafeOpCode.IGET.AsByte());
             chunk.code.AddRange(BitConverter.GetBytes(address));
             chunk.code.Add(UnsafeOpCode.SPOP.AsByte());
@@ -246,13 +198,13 @@ public class UnsafeByteCodeGenerator {
         chunks.Add(chunk);
     }
 
-    private void GenerateStatement(StatementNode statement, Chunk chunk, Address continueTarget) {
+    private void GenerateStatement(StatementNode statement, ByteCodeChunk chunk, Address continueTarget) {
         switch (statement) {
             case EmptyStatementNode:
             case CommandStatementNode: // this shouldn't be here
                 break;
             case BlockStatementNode block:
-                GenerateChunk(block);
+                GenerateChunk(block, chunk);
                 break;
             case ExpressionStatementNode expression:
                 GenerateExpression(expression.expression, chunk);
@@ -277,7 +229,7 @@ public class UnsafeByteCodeGenerator {
                 GenerateExpression(new IdentifierExpressionNode(functionDeclaration.name), chunk);
                 // construct the closure which will be on the stack
                 chunk.code.Add(UnsafeOpCode.CSTART.AsByte());
-                GenerateFunction(functionDeclaration);
+                GenerateFunction(functionDeclaration, chunk);
                 chunk.code.Add(UnsafeOpCode.CEND.AsByte());
                 // assign the closure to the variable
                 chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
@@ -314,7 +266,7 @@ public class UnsafeByteCodeGenerator {
                 chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
 
                 Address start = (Address)chunk.code.Count;
-                Chunk tmp = new();
+                ByteCodeChunk tmp = new(chunk, true);
 
                 GenerateStatement(@foreach.body, tmp, start);
                 tmp.code.Add(UnsafeOpCode.JMP.AsByte());
@@ -350,7 +302,7 @@ public class UnsafeByteCodeGenerator {
                 // jump to start
                 // TODO: not 2 but the size of a the opcode + args
                 Address start = (Address)chunk.code.Count;
-                Chunk tmp = new();
+                ByteCodeChunk tmp = new(chunk, true);
 
                 GenerateStatement(@while.body, tmp, start);
                 tmp.code.Add(UnsafeOpCode.JMP.AsByte());
@@ -373,7 +325,7 @@ public class UnsafeByteCodeGenerator {
                 // DSPI (1), 0 (4)
                 // DSPI (1), 1 (4)
                 // HLT (1)
-                Chunk tmp = new();
+                ByteCodeChunk tmp = new(chunk, true);
                 GenerateStatement(@if.@false, tmp, continueTarget);
                 GenerateExpression(@if.condition, chunk);
                 chunk.code.Add(UnsafeOpCode.JMPI.AsByte());
@@ -388,7 +340,7 @@ public class UnsafeByteCodeGenerator {
         }
     }
 
-    private void GenerateExpression(ExpressionNode expression, Chunk chunk) {
+    private void GenerateExpression(ExpressionNode expression, ByteCodeChunk chunk) {
         switch (expression) {
             case IntExpressionNode @int:
                 chunk.code.Add(UnsafeOpCode.DSPI.AsByte());
@@ -400,7 +352,7 @@ public class UnsafeByteCodeGenerator {
                 break;
             case StringExpressionNode @string: {
                 string value = @string.value;
-                Address address = chunk.HasConstant(value) ? chunk.ConstantLookup(value) : chunk.AddConstant(value);
+                Address address = ByteCodeChunk.HasConstant(value) ? ByteCodeChunk.ConstantLookup(value) : ByteCodeChunk.AddConstant(value);
                 chunk.code.Add(UnsafeOpCode.LCST.AsByte());
                 chunk.code.AddRange(BitConverter.GetBytes(address));
                 break;
@@ -443,7 +395,7 @@ public class UnsafeByteCodeGenerator {
                         break;
                     default:
                         // TODO: address should exist
-                        Address address = chunk.HasConstant(value) ? chunk.ConstantLookup(value) : chunk.AddConstant(value);
+                        Address address = ByteCodeChunk.HasConstant(value) ? ByteCodeChunk.ConstantLookup(value) : ByteCodeChunk.AddConstant(value);
                         chunk.code.Add(UnsafeOpCode.IGET.AsByte());
                         chunk.code.AddRange(BitConverter.GetBytes(address));
                         break;
