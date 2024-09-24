@@ -1,15 +1,14 @@
 namespace PCE.Chartbuild.Runtime;
 
+using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Address = ushort;
 
-public class ByteCodeChunk(ByteCodeChunk parent, bool temporary) {
+public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info) {
     public List<byte> code = new(200);
     private readonly ByteCodeChunk parent = parent;
-
-    private static readonly List<object> constantPool = [];
-    private static readonly Dictionary<object, Address> constantAddressLookup = [];
-    private static readonly List<CBVariable> variables = [];
+    private readonly ChunkInfo info = info;
 
     private readonly Dictionary<string, CBVariable> variablesWithNames = [];
     private readonly Dictionary<CBVariable, Address> variableAddressLookup = [];
@@ -24,7 +23,32 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary) {
             variableLinks[name] = chunk.variableLinks[name];
         }
 
-        code.AddRange(parent.code);
+        Merge(chunk);
+    }
+
+    public void Merge(ByteCodeChunk chunk) {
+        // correct the addresses
+        for (int i = 0; i < chunk.code.Count;) {
+            UnsafeOpCode instruction = (UnsafeOpCode)chunk.code[i];
+            switch (instruction) {
+                case UnsafeOpCode.DSPA:
+                    // // get the address
+                    i++;
+                    Address address = BitConverter.ToUInt16(CollectionsMarshal.AsSpan(chunk.code.Slice(i, sizeof(Address))));
+                    // // correct the address
+                    address += (Address)code.Count;
+                    // // remove the wrong address
+                    chunk.code.RemoveRange(i, sizeof(Address));
+                    // // insert the correct address back
+                    chunk.code.InsertRange(i, BitConverter.GetBytes(address));
+                    i += instruction.SizeOf() - 1;
+                    break;
+                default:
+                    i += instruction.SizeOf();
+                    break;
+            }
+        }
+        code.AddRange(chunk.code);
     }
 
     public Address DeclareOrGet(string name, CBVariable variable) {
@@ -44,8 +68,7 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary) {
         )
             throw new System.Exception($"duplicate identifier: {name}");
 
-        Address address = (Address)variables.Count;
-        variables.Add(variable);
+        Address address = info.CreateVariable(name, variable);
         variablesWithNames[name] = variable;
         variableAddressLookup[variable] = address;
 
@@ -94,18 +117,7 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary) {
         return value.Address;
     }
 
-    public static Address AddConstant(object constant) {
-        constantPool.Add(constant);
-        Address address = (Address)(constantPool.Count - 1);
-        constantAddressLookup[constant] = address;
-        return address;
-    }
-
-    public static bool HasConstant(object constant) {
-        return constantAddressLookup.ContainsKey(constant);
-    }
-
-    public static Address ConstantLookup(object constant) {
-        return constantAddressLookup[constant];
+    public Address AddOrGetConstant(object constant) {
+        return info.AddOrGetConstant(constant);
     }
 }

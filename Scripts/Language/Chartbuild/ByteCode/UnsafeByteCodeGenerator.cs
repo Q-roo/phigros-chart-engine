@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 
 namespace PCE.Chartbuild.Runtime;
@@ -13,8 +12,11 @@ public class UnsafeByteCodeGenerator {
     // functions inside functions are handled as if they were closure
 
     private readonly List<ByteCodeChunk> chunks = new(200);
+    private readonly ChunkInfo chunkInfo = new();
     private ByteCodeChunk RootChunk => chunks[0];
-    public byte[] GetCode() => chunks.SelectMany(it => it.code).ToArray();
+    public byte[] GetCode() {
+        return [.. RootChunk.code];
+    }
 
     public string Dump() {
         StringBuilder builder = new(200);
@@ -44,10 +46,14 @@ public class UnsafeByteCodeGenerator {
                     break;
                 case UnsafeOpCode.DCLV:
                     builder.Append("DCLV");
-                    builder.AppendLine($", {ReadAddress()}");
+                    builder.AppendLine($", {chunkInfo.GetVariableName(ReadAddress())}");
                     break;
                 case UnsafeOpCode.ASGN:
                     builder.AppendLine("ASGN");
+                    break;
+                case UnsafeOpCode.DSPA:
+                    builder.Append("DSPA");
+                    builder.AppendLine($", {ReadAddress()}");
                     break;
                 case UnsafeOpCode.DSPI:
                     builder.Append("DSPI");
@@ -68,8 +74,9 @@ public class UnsafeByteCodeGenerator {
                     builder.AppendLine("SPOP");
                     break;
                 case UnsafeOpCode.LCST:
+                    Address address = ReadAddress();
                     builder.Append("LCST");
-                    builder.AppendLine($", {ReadAddress()}");
+                    builder.AppendLine($", {address} ({chunkInfo.GetConstant(address)})");
                     break;
                 case UnsafeOpCode.ACOL:
                     builder.Append("ACOL");
@@ -103,38 +110,47 @@ public class UnsafeByteCodeGenerator {
                     break;
                 case UnsafeOpCode.IGET:
                     builder.Append("IGET");
-                    builder.AppendLine($", {ReadAddress()}");
+                    builder.AppendLine($", {chunkInfo.GetConstant(ReadAddress())}");
                     break;
                 case UnsafeOpCode.MGET:
                     builder.AppendLine("MGET");
                     break;
                 case UnsafeOpCode.JMP:
-                    builder.Append("JMP");
-                    builder.AppendLine($", {ReadAddress()}");
+                    builder.AppendLine("JMP");
                     break;
                 case UnsafeOpCode.JMPI:
-                    builder.Append("JMPI");
-                    builder.AppendLine($", {ReadAddress()}");
+                    builder.AppendLine("JMPI");
                     break;
                 case UnsafeOpCode.JMPN:
-                    builder.Append("JMPN");
-                    builder.AppendLine($", {ReadAddress()}");
+                    builder.AppendLine("JMPN");
+                    break;
+                    case UnsafeOpCode.JMPS:
+                    builder.AppendLine("JMPS");
                     break;
                 case UnsafeOpCode.JMPE:
-                    builder.Append("JMPE");
+                    builder.AppendLine("JMPE");
                     break;
-                case UnsafeOpCode.APUSH:
-                    builder.Append("APUSH");
-                    builder.AppendLine($", {ReadAddress()}");
+                case UnsafeOpCode.JMPNE:
+                    builder.AppendLine("JMPNE");
                     break;
-                case UnsafeOpCode.APOP:
-                    builder.AppendLine("APOP");
+                // case UnsafeOpCode.APUSH:
+                //     builder.Append("APUSH");
+                //     builder.AppendLine($", {ReadAddress()}");
+                //     break;
+                // case UnsafeOpCode.APOP:
+                //     builder.AppendLine("APOP");
+                //     break;
+                case UnsafeOpCode.RET:
+                    builder.AppendLine("RET");
                     break;
                 case UnsafeOpCode.ITER:
                     builder.AppendLine("ITER");
                     break;
                 case UnsafeOpCode.ITERN:
                     builder.AppendLine("ITERN");
+                    break;
+                case UnsafeOpCode.LSTART:
+                    builder.AppendLine("LSTART");
                     break;
                 case UnsafeOpCode.LEND:
                     builder.AppendLine("LEND");
@@ -143,10 +159,10 @@ public class UnsafeByteCodeGenerator {
                     builder.AppendLine("CPTR");
                     break;
                 case UnsafeOpCode.CSTART:
-                    builder.AppendLine("LEND");
+                    builder.AppendLine("CSTART");
                     break;
                 case UnsafeOpCode.CEND:
-                    builder.AppendLine("LEND");
+                    builder.AppendLine("CEND");
                     break;
                 default:
                     builder.AppendLine("unknown");
@@ -157,28 +173,36 @@ public class UnsafeByteCodeGenerator {
     }
 
     public UnsafeByteCodeGenerator Generate(ASTRoot ast) {
+        SetupChunkInfo();
         GenerateRootChunk();
         GenerateChunk(ast, RootChunk);
         chunks[^1].code.Add(UnsafeOpCode.HLT.AsByte());
         return this;
     }
 
+    private void SetupChunkInfo() {
+
+    }
+
+    private ByteCodeChunk CreateChunk(ByteCodeChunk parent) => new(parent, false, chunkInfo);
+    private ByteCodeChunk CreateTemporaryChunk(ByteCodeChunk parent) => new(parent, true, chunkInfo);
+
     private void GenerateRootChunk() {
-        ByteCodeChunk chunk = new(null, false);
+        ByteCodeChunk chunk = CreateChunk(null);
         chunks.Add(chunk);
     }
 
     private void GenerateChunk(BlockStatementNode block, ByteCodeChunk parent) {
-        ByteCodeChunk chunk = new(parent, false);
+        ByteCodeChunk chunk = CreateChunk(parent);
         foreach (StatementNode statement in block.body)
-            GenerateStatement(statement, chunk, 0);
+            GenerateStatement(statement, chunk);
 
-        chunks.Add(chunk);
+        parent.Merge(chunk);
     }
 
     // handle all functions as if they were closures
-    private void GenerateFunction(FunctionDeclarationStatementNode closure, ByteCodeChunk parent) {
-        ByteCodeChunk chunk = new(parent, false);
+    private void GenerateFunctionChunk(FunctionDeclarationStatementNode closure, ByteCodeChunk parent) {
+        ByteCodeChunk chunk = CreateChunk(parent);
 
         chunk.code.Add(UnsafeOpCode.CPTR.AsByte());
         foreach (FunctionParameter argument in closure.arguments) {
@@ -190,16 +214,18 @@ public class UnsafeByteCodeGenerator {
         }
 
         foreach (StatementNode statement in closure.body.body)
-            GenerateStatement(statement, chunk, 0);
+            GenerateStatement(statement, chunk);
 
-        chunk.code.Add(UnsafeOpCode.APOP.AsByte());
-        chunk.code.Add(UnsafeOpCode.JMPE.AsByte());
+        // FIXME: this could result in 2 RET instructions, it won't cause bugs but it does increase the size with 1 byte
+        chunk.code.Add(UnsafeOpCode.RET.AsByte());
 
-        chunks.Add(chunk);
+        parent.Merge(chunk);
     }
 
-    private void GenerateStatement(StatementNode statement, ByteCodeChunk chunk, Address continueTarget) {
+    private void GenerateStatement(StatementNode statement, ByteCodeChunk chunk) {
+
         switch (statement) {
+            case null: // some statements can have null as a body
             case EmptyStatementNode:
             case CommandStatementNode: // this shouldn't be here
                 break;
@@ -215,21 +241,21 @@ public class UnsafeByteCodeGenerator {
                 chunk.code.Add(UnsafeOpCode.DCLV.AsByte());
                 chunk.code.AddRange(BitConverter.GetBytes(address));
 
-                if (!variableDeclaration.valueExpression.IsNullOrEmpty()) {
-                    GenerateExpression(variableDeclaration.valueExpression, chunk);
+                if (!variableDeclaration.valueExpression.IsNullOrEmpty())
                     GenerateExpression(new AssignmentExpressionNode(new IdentifierExpressionNode(variableDeclaration.name), new Token(-1, -1, TokenType.Assign), variableDeclaration.valueExpression), chunk);
-                }
+
                 break;
             }
             case FunctionDeclarationStatementNode functionDeclaration: {
                 // declare a variable in the chunk with the name of the function
                 // pass in 0 explicitly to avoid being able to create a function inside a loop that could break from the loop
-                GenerateStatement(new VariableDeclarationStatementNode(true, functionDeclaration.name, null, null), chunk, 0);
+                GenerateStatement(new VariableDeclarationStatementNode(true, functionDeclaration.name, null, null), chunk);
                 // load the address of the variable onto the stack
                 GenerateExpression(new IdentifierExpressionNode(functionDeclaration.name), chunk);
                 // construct the closure which will be on the stack
                 chunk.code.Add(UnsafeOpCode.CSTART.AsByte());
-                GenerateFunction(functionDeclaration, chunk);
+                // the merging happens in the method
+                GenerateFunctionChunk(functionDeclaration, chunk);
                 chunk.code.Add(UnsafeOpCode.CEND.AsByte());
                 // assign the closure to the variable
                 chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
@@ -239,58 +265,54 @@ public class UnsafeByteCodeGenerator {
                 chunk.code.Add(UnsafeOpCode.JMPE.AsByte());
                 break;
             case ContinueStatementNode:
-                chunk.code.Add(UnsafeOpCode.JMPE.AsByte());
-                chunk.code.AddRange(BitConverter.GetBytes(continueTarget));
+                chunk.code.Add(UnsafeOpCode.JMPS.AsByte());
                 break;
             case ReturnStatementNode @return:
                 if (@return.value is not null)
                     GenerateExpression(@return.value, chunk);
-                chunk.code.Add(UnsafeOpCode.APOP.AsByte());
-                chunk.code.Add(UnsafeOpCode.JMP.AsByte());
+
+                chunk.code.Add(UnsafeOpCode.RET.AsByte());
                 break;
             case ForeachLoopStatementNode @foreach: {
-                // TODO
-                // declare tmp var
-                // mkiter
-                // store iter in tmp
-                // loop start
-                // iter next &tmp
-                // jump if not address(loop body size)
-                // body
-                // + jump to start
+                // store the iterable's iterator in a variable
                 // TODO: random name
-                Address address = chunk.DeclareVariable("/iter", new(true));
+                chunk.DeclareVariable("/iter", new(true));
+                // get the variable noto the stack
                 GenerateExpression(new IdentifierExpressionNode("/iter"), chunk);
+                // generate the iterable
                 GenerateExpression(@foreach.iterable, chunk);
+                // get the iterator from the iterable
                 chunk.code.Add(UnsafeOpCode.ITER.AsByte());
+                // assign it to the variable
                 chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
 
-                Address start = (Address)chunk.code.Count;
-                ByteCodeChunk tmp = new(chunk, true);
-
-                GenerateStatement(@foreach.body, tmp, start);
-                tmp.code.Add(UnsafeOpCode.JMP.AsByte());
-                tmp.code.AddRange(BitConverter.GetBytes(start));
-
+                // start of the loop
+                chunk.code.Add(UnsafeOpCode.LSTART.AsByte());
+                // get the iterator to the stack
                 GenerateExpression(new IdentifierExpressionNode("/iter"), chunk);
+                // get the next element
                 chunk.code.Add(UnsafeOpCode.ITERN.AsByte());
-                chunk.code.Add(UnsafeOpCode.JMPN.AsByte());
-                chunk.code.AddRange(BitConverter.GetBytes((Address)tmp.code.Count));
-                chunk.code.AddRange(tmp.code);
+                // jump to the end of the loop if the get next was unsuccessful (the iterator is consumed)
+                chunk.code.Add(UnsafeOpCode.JMPNE.AsByte());
+                // loop body
+                GenerateStatement(@foreach.body, chunk);
+                // go to the start of the loop
+                chunk.code.Add(UnsafeOpCode.JMPS.AsByte());
+                // end of the loop
                 chunk.code.Add(UnsafeOpCode.LEND.AsByte());
                 break;
             }
             case ForLoopStatementNode @for: {
                 // a for loop can be turned into a while loop without much trouble
                 if (!@for.init.IsNullOrEmpty())
-                    GenerateStatement(@for.init, chunk, 0);
+                    GenerateStatement(@for.init, chunk);
 
-                BlockStatementNode body = @for.body is BlockStatementNode block ? block : new([]);
+                BlockStatementNode body = @for.body is BlockStatementNode block ? block : new([@for.body]);
                 if (!@for.update.IsNullOrEmpty())
                     body.body.Add(new ExpressionStatementNode(@for.update));
 
                 WhileLoopStatementNode @while = new(@for.condition ?? new IdentifierExpressionNode("true"), body);
-                GenerateStatement(@while, chunk, 0);
+                GenerateStatement(@while, chunk);
                 break;
             }
             case WhileLoopStatementNode @while: {
@@ -300,18 +322,14 @@ public class UnsafeByteCodeGenerator {
                 // address
                 // body
                 // jump to start
-                // TODO: not 2 but the size of a the opcode + args
-                Address start = (Address)chunk.code.Count;
-                ByteCodeChunk tmp = new(chunk, true);
 
-                GenerateStatement(@while.body, tmp, start);
-                tmp.code.Add(UnsafeOpCode.JMP.AsByte());
-                tmp.code.AddRange(BitConverter.GetBytes(start));
-
+                chunk.code.Add(UnsafeOpCode.LSTART.AsByte());
                 GenerateExpression(@while.condition, chunk);
-                chunk.code.Add(UnsafeOpCode.JMPN.AsByte());
-                chunk.code.AddRange(BitConverter.GetBytes((Address)tmp.code.Count));
-                chunk.code.AddRange(tmp.code);
+                chunk.code.Add(UnsafeOpCode.JMPNE.AsByte());
+
+                GenerateStatement(@while.body, chunk);
+                chunk.code.Add(UnsafeOpCode.JMPS.AsByte());
+
                 chunk.code.Add(UnsafeOpCode.LEND.AsByte());
                 break;
             }
@@ -325,18 +343,19 @@ public class UnsafeByteCodeGenerator {
                 // DSPI (1), 0 (4)
                 // DSPI (1), 1 (4)
                 // HLT (1)
-                ByteCodeChunk tmp = new(chunk, true);
-                GenerateStatement(@if.@false, tmp, continueTarget);
+                ByteCodeChunk tmp = CreateTemporaryChunk(chunk);
+                GenerateStatement(@if.@false, tmp);
                 GenerateExpression(@if.condition, chunk);
+                chunk.code.Add(UnsafeOpCode.DSPA.AsByte());
+                // take the size of the address and the next instruction into consideration during the calculations
+                chunk.code.AddRange(BitConverter.GetBytes((Address)(chunk.code.Count + tmp.code.Count + UnsafeOpCode.JMPI.SizeOf() + sizeof(Address))));
                 chunk.code.Add(UnsafeOpCode.JMPI.AsByte());
-                // TODO: not 3 but the size of a the opcode + args
-                chunk.code.AddRange(BitConverter.GetBytes((Address)(chunk.code.Count + tmp.code.Count + 3)));
-                chunk.code.AddRange(tmp.code);
-                GenerateStatement(@if.@true, chunk, continueTarget);
+                chunk.MergeTemporary(tmp);
+                GenerateStatement(@if.@true, chunk);
                 break;
             }
             default:
-                throw new NotImplementedException($"generation not implemented for {statement}");
+                throw new NotImplementedException($"generation not implemented for {statement.GetType()}");
         }
     }
 
@@ -352,7 +371,7 @@ public class UnsafeByteCodeGenerator {
                 break;
             case StringExpressionNode @string: {
                 string value = @string.value;
-                Address address = ByteCodeChunk.HasConstant(value) ? ByteCodeChunk.ConstantLookup(value) : ByteCodeChunk.AddConstant(value);
+                Address address = chunkInfo.AddOrGetConstant(value);
                 chunk.code.Add(UnsafeOpCode.LCST.AsByte());
                 chunk.code.AddRange(BitConverter.GetBytes(address));
                 break;
@@ -394,8 +413,7 @@ public class UnsafeByteCodeGenerator {
                         chunk.code.Add(UnsafeOpCode.DSPN.AsByte());
                         break;
                     default:
-                        // TODO: address should exist
-                        Address address = ByteCodeChunk.HasConstant(value) ? ByteCodeChunk.ConstantLookup(value) : ByteCodeChunk.AddConstant(value);
+                        Address address = chunkInfo.AddOrGetConstant(value); // the address should exist
                         chunk.code.Add(UnsafeOpCode.IGET.AsByte());
                         chunk.code.AddRange(BitConverter.GetBytes(address));
                         break;
@@ -418,15 +436,16 @@ public class UnsafeByteCodeGenerator {
                     ternary.condition,
                     new ExpressionStatementNode(ternary.@true),
                     new ExpressionStatementNode(ternary.@false)
-                ), chunk, 0);
+                ), chunk);
                 break;
             case AssignmentExpressionNode assignment: {
                 TokenType @operator = assignment.@operator.Type;
-                // .= is a = a.method()
-                if (assignment.value is not CallExpressionNode call)
-                    throw new Exception();
 
                 if (@operator == TokenType.DotAssign) {
+                    // .= is a = a.method()
+                    if (assignment.value is not CallExpressionNode call)
+                        throw new Exception();
+
                     GenerateExpression(
                         new AssignmentExpressionNode(
                             assignment.asignee,
