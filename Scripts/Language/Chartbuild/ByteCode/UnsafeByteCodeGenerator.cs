@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
@@ -10,10 +9,10 @@ using Address = ushort;
 public class UnsafeByteCodeGenerator {
     // functions are top level
     // functions inside functions are handled as if they were closure
+    // all functions are handled as if they were closures
 
-    private readonly List<ByteCodeChunk> chunks = new(200);
     private readonly ChunkInfo chunkInfo = new();
-    private ByteCodeChunk RootChunk => chunks[0];
+    private ByteCodeChunk RootChunk;
     public byte[] GetCode() {
         return [.. RootChunk.code];
     }
@@ -124,7 +123,7 @@ public class UnsafeByteCodeGenerator {
                 case UnsafeOpCode.JMPN:
                     builder.AppendLine("JMPN");
                     break;
-                    case UnsafeOpCode.JMPS:
+                case UnsafeOpCode.JMPS:
                     builder.AppendLine("JMPS");
                     break;
                 case UnsafeOpCode.JMPE:
@@ -133,13 +132,6 @@ public class UnsafeByteCodeGenerator {
                 case UnsafeOpCode.JMPNE:
                     builder.AppendLine("JMPNE");
                     break;
-                // case UnsafeOpCode.APUSH:
-                //     builder.Append("APUSH");
-                //     builder.AppendLine($", {ReadAddress()}");
-                //     break;
-                // case UnsafeOpCode.APOP:
-                //     builder.AppendLine("APOP");
-                //     break;
                 case UnsafeOpCode.RET:
                     builder.AppendLine("RET");
                     break;
@@ -176,7 +168,7 @@ public class UnsafeByteCodeGenerator {
         SetupChunkInfo();
         GenerateRootChunk();
         GenerateChunk(ast, RootChunk);
-        chunks[^1].code.Add(UnsafeOpCode.HLT.AsByte());
+        RootChunk.code.Add(UnsafeOpCode.HLT.AsByte());
         return this;
     }
 
@@ -188,8 +180,7 @@ public class UnsafeByteCodeGenerator {
     private ByteCodeChunk CreateTemporaryChunk(ByteCodeChunk parent) => new(parent, true, chunkInfo);
 
     private void GenerateRootChunk() {
-        ByteCodeChunk chunk = CreateChunk(null);
-        chunks.Add(chunk);
+        RootChunk = CreateChunk(null);
     }
 
     private void GenerateChunk(BlockStatementNode block, ByteCodeChunk parent) {
@@ -201,20 +192,20 @@ public class UnsafeByteCodeGenerator {
     }
 
     // handle all functions as if they were closures
-    private void GenerateFunctionChunk(FunctionDeclarationStatementNode closure, ByteCodeChunk parent) {
+    private void GenerateFunctionChunk(ClosureExpressionNode closure, ByteCodeChunk parent) {
         ByteCodeChunk chunk = CreateChunk(parent);
 
         chunk.code.Add(UnsafeOpCode.CPTR.AsByte());
         foreach (FunctionParameter argument in closure.arguments) {
-            Address address = chunk.DeclareVariable(argument.name, new(false));
+            chunk.DeclareVariable(argument.name, new(false));
+            Address address = chunkInfo.AddOrGetConstant(argument.name);
             chunk.code.Add(UnsafeOpCode.IGET.AsByte());
             chunk.code.AddRange(BitConverter.GetBytes(address));
             chunk.code.Add(UnsafeOpCode.SPOP.AsByte());
             chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
         }
 
-        foreach (StatementNode statement in closure.body.body)
-            GenerateStatement(statement, chunk);
+        GenerateStatement(closure.body, chunk);
 
         // FIXME: this could result in 2 RET instructions, it won't cause bugs but it does increase the size with 1 byte
         chunk.code.Add(UnsafeOpCode.RET.AsByte());
@@ -237,7 +228,7 @@ public class UnsafeByteCodeGenerator {
                 break;
             case VariableDeclarationStatementNode variableDeclaration: {
                 Address address = chunk.DeclareVariable(variableDeclaration.name, new(variableDeclaration.@readonly));
-                // TODO: maybe the address a and the identifier address should be related
+                // TODO: maybe the address and the identifier address should be related
                 chunk.code.Add(UnsafeOpCode.DCLV.AsByte());
                 chunk.code.AddRange(BitConverter.GetBytes(address));
 
@@ -248,15 +239,11 @@ public class UnsafeByteCodeGenerator {
             }
             case FunctionDeclarationStatementNode functionDeclaration: {
                 // declare a variable in the chunk with the name of the function
-                // pass in 0 explicitly to avoid being able to create a function inside a loop that could break from the loop
                 GenerateStatement(new VariableDeclarationStatementNode(true, functionDeclaration.name, null, null), chunk);
                 // load the address of the variable onto the stack
                 GenerateExpression(new IdentifierExpressionNode(functionDeclaration.name), chunk);
                 // construct the closure which will be on the stack
-                chunk.code.Add(UnsafeOpCode.CSTART.AsByte());
-                // the merging happens in the method
-                GenerateFunctionChunk(functionDeclaration, chunk);
-                chunk.code.Add(UnsafeOpCode.CEND.AsByte());
+                GenerateExpression(new ClosureExpressionNode(functionDeclaration.arguments, functionDeclaration.returnType, functionDeclaration.body, functionDeclaration.isLastParams), chunk);
                 // assign the closure to the variable
                 chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
                 break;
@@ -479,7 +466,11 @@ public class UnsafeByteCodeGenerator {
                 break;
             }
             case ClosureExpressionNode closure:
-                throw new NotImplementedException();
+                chunk.code.Add(UnsafeOpCode.CSTART.AsByte());
+                // the merging happens in the method
+                GenerateFunctionChunk(closure, chunk);
+                chunk.code.Add(UnsafeOpCode.CEND.AsByte());
+                break;
             case EmptyExpressionNode:
                 break;
             // probably not the correct use but it makes this simpler

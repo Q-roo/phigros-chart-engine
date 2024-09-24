@@ -14,7 +14,7 @@ public class ChunkInfo {
     private readonly Dictionary<CBVariable, Address> variableNamesAddresses = [];
 
     public Address CreateVariable(string name, CBVariable variable) {
-        // will throw an exception if the key already ecists
+        // will throw an exception if the key already exists
         variableAddressLookup.Add(variable, (Address)variables.Count);
         variables.Add(variable);
         Address address = AddOrGetConstant(name);

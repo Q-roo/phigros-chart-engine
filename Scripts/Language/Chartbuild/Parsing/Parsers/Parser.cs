@@ -414,6 +414,7 @@ public class Parser(BaseToken[] tokens) {
     private ClosureExpressionNode ParseClosureExpression() {
         List<FunctionParameter> parameters = [];
         BaseType returnType = null;
+        bool paramsArg = false;
 
         // 0 parameters: ||
         // 1 or more |x...|
@@ -421,7 +422,6 @@ public class Parser(BaseToken[] tokens) {
         // |x: T| optional type annotations, try to infer it
         // || -> T
         if (Advance().Type == TokenType.BitwiseOr) {
-            bool paramsArg = false;
             while (HasTokens && CurrentType != TokenType.BitwiseOr) {
                 if (CurrentType == TokenType.DotDot) {
                     Advance();
@@ -456,7 +456,7 @@ public class Parser(BaseToken[] tokens) {
             returnType = ParseType();
         }
 
-        return new([.. parameters], returnType, ParseStatement());
+        return new([.. parameters], returnType, ParseStatement(), paramsArg);
     }
 
     #endregion

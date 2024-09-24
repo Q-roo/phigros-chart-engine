@@ -91,6 +91,7 @@ fn make_adder(b: f32) -> fn(i32) -> f32 {
 
 const add = make_adder(2);
 const add2 = make_adder(3);
+const add3 = |a, b| return a + b;
 dbg_print(add(true));
 dbg_print(add2(5));"
 scroll_smooth = true
