@@ -43,6 +43,9 @@ public class UnsafeByteCodeGenerator {
                 case UnsafeOpCode.HLT:
                     builder.AppendLine("HLT");
                     break;
+                case UnsafeOpCode.NOOP:
+                    builder.AppendLine("NOOP");
+                    break;
                 case UnsafeOpCode.DCLV:
                     builder.Append("DCLV");
                     builder.AppendLine($", {chunkInfo.GetVariableName(ReadAddress())}");
@@ -168,12 +171,13 @@ public class UnsafeByteCodeGenerator {
         SetupChunkInfo();
         GenerateRootChunk();
         GenerateChunk(ast, RootChunk);
+        RootChunk.ResloveLoopLabels();
         RootChunk.code.Add(UnsafeOpCode.HLT.AsByte());
         return this;
     }
 
     private void SetupChunkInfo() {
-
+        // TODO: functions like print()
     }
 
     private ByteCodeChunk CreateChunk(ByteCodeChunk parent) => new(parent, false, chunkInfo);
@@ -250,9 +254,21 @@ public class UnsafeByteCodeGenerator {
             }
             case BreakStatementNode:
                 chunk.code.Add(UnsafeOpCode.JMPE.AsByte());
+                // will be replaced with
+                // dspa, address
+                // jmp
+                for (int i = 0; i < UnsafeOpCode.DSPA.SizeOf(); i++)
+                    chunk.code.Add(UnsafeOpCode.NOOP.AsByte()); // jmpe already takes care of the space needed for jmp
+
                 break;
             case ContinueStatementNode:
                 chunk.code.Add(UnsafeOpCode.JMPS.AsByte());
+                // will be replaced with
+                // dspa, address
+                // jmp
+                for (int i = 0; i < UnsafeOpCode.DSPA.SizeOf(); i++)
+                    chunk.code.Add(UnsafeOpCode.NOOP.AsByte()); // jmps already takes care of the space needed for jmp
+
                 break;
             case ReturnStatementNode @return:
                 if (@return.value is not null)
@@ -281,10 +297,22 @@ public class UnsafeByteCodeGenerator {
                 chunk.code.Add(UnsafeOpCode.ITERN.AsByte());
                 // jump to the end of the loop if the get next was unsuccessful (the iterator is consumed)
                 chunk.code.Add(UnsafeOpCode.JMPNE.AsByte());
+                // will be replaced with
+                // dspa, address
+                // jmpn
+                for (int i = 0; i < UnsafeOpCode.DSPA.SizeOf(); i++)
+                    chunk.code.Add(UnsafeOpCode.NOOP.AsByte()); // jmpne already takes care of the space needed for jmpn
+
                 // loop body
                 GenerateStatement(@foreach.body, chunk);
                 // go to the start of the loop
                 chunk.code.Add(UnsafeOpCode.JMPS.AsByte());
+                // will be replaced with
+                // dspa, address
+                // jmp
+                for (int i = 0; i < UnsafeOpCode.DSPA.SizeOf(); i++)
+                    chunk.code.Add(UnsafeOpCode.NOOP.AsByte()); // jmps already takes care of the space needed for jmp
+
                 // end of the loop
                 chunk.code.Add(UnsafeOpCode.LEND.AsByte());
                 break;
@@ -313,9 +341,19 @@ public class UnsafeByteCodeGenerator {
                 chunk.code.Add(UnsafeOpCode.LSTART.AsByte());
                 GenerateExpression(@while.condition, chunk);
                 chunk.code.Add(UnsafeOpCode.JMPNE.AsByte());
+                // will be replaced with
+                // dspa, address
+                // jmpn
+                for (int i = 0; i < UnsafeOpCode.DSPA.SizeOf(); i++)
+                    chunk.code.Add(UnsafeOpCode.NOOP.AsByte()); // jmpne already takes care of the space needed for jmpn
 
                 GenerateStatement(@while.body, chunk);
                 chunk.code.Add(UnsafeOpCode.JMPS.AsByte());
+                // will be replaced with
+                // dspa, address
+                // jmp
+                for (int i = 0; i < UnsafeOpCode.DSPA.SizeOf(); i++)
+                    chunk.code.Add(UnsafeOpCode.NOOP.AsByte()); // jmps already takes care of the space needed for jmp
 
                 chunk.code.Add(UnsafeOpCode.LEND.AsByte());
                 break;

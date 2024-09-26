@@ -4,6 +4,7 @@ using Address = ushort;
 
 public enum UnsafeOpCode : byte {
     HLT, // halt
+    NOOP, // no operation; a placeholder
     DCLV, // declare variable (address)
     ASGN, // assign
     DSPA, // direct stack push address (address)

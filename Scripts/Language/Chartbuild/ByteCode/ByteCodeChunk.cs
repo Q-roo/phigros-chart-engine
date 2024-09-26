@@ -51,6 +51,51 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info)
         code.AddRange(chunk.code);
     }
 
+    public void ResloveLoopLabels() {
+        int start = 0;
+        int end = 0;
+        for (int i = 0; i < code.Count;) {
+            UnsafeOpCode instruction = (UnsafeOpCode)code[i];
+
+            switch (instruction) {
+                case UnsafeOpCode.JMPE:
+                case UnsafeOpCode.JMPNE:
+                case UnsafeOpCode.JMPS: {
+                    code[i] = UnsafeOpCode.DSPA.AsByte();
+                    byte[] address = BitConverter.GetBytes(instruction == UnsafeOpCode.JMPS ? start : end);
+                    for (int j = 0; j < sizeof(Address); j++)
+                        code[i + 1 + j] = address[j];
+                    code[i + sizeof(Address) + 1] = (instruction == UnsafeOpCode.JMPNE ? UnsafeOpCode.JMPN : UnsafeOpCode.JMP).AsByte();
+                    i += UnsafeOpCode.DSPA.SizeOf() + (instruction == UnsafeOpCode.JMPNE ? UnsafeOpCode.JMPN : UnsafeOpCode.JMP).SizeOf();
+                    break;
+                }
+                // cannot remove this 2 since that would mean the dspa addresses would have to be fixed once again
+                case UnsafeOpCode.LSTART: {
+                    // without the +1, it would jump to the end of the previous instruction, not to the label
+                    start = i + 1;
+                    for (int j = i + UnsafeOpCode.LSTART.SizeOf(); j < code.Count;) {
+                        UnsafeOpCode opCode = (UnsafeOpCode)code[j];
+                        if (opCode == UnsafeOpCode.LEND) {
+                            end = j; // this will jump to the label
+                            break;
+                        }
+
+                        j += opCode.SizeOf();
+                    }
+                    i += instruction.SizeOf();
+                    break;
+                }
+                case UnsafeOpCode.LEND:
+                    // end = i;
+                    i += instruction.SizeOf();
+                    break;
+                default:
+                    i += instruction.SizeOf();
+                    break;
+            }
+        }
+    }
+
     public Address DeclareOrGet(string name, CBVariable variable) {
         if (TryGetLink(name, out ValueLink link))
             return link.Address;
@@ -66,7 +111,7 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info)
             variablesWithNames.ContainsKey(name)
             || (temporary && parent.variablesWithNames.ContainsKey(name))
         )
-            throw new System.Exception($"duplicate identifier: {name}");
+            throw new Exception($"duplicate identifier: {name}");
 
         Address address = info.CreateVariable(name, variable);
         variablesWithNames[name] = variable;
@@ -79,7 +124,7 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info)
 
     public Address Lookup(ValueLink link) {
         if (link.chunk != this)
-            throw new System.Exception("link doesn't point to the right chunk");
+            throw new Exception("link doesn't point to the right chunk");
 
         return variableAddressLookup[variablesWithNames[link.name]];
     }
