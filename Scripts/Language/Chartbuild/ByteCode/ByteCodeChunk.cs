@@ -8,7 +8,7 @@ using Address = ushort;
 public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info) {
     public List<byte> code = new(200);
     private readonly ByteCodeChunk parent = parent;
-    private readonly ChunkInfo info = info;
+    public readonly ChunkInfo info = info;
 
     private readonly Dictionary<string, CBVariable> variablesWithNames = [];
     private readonly Dictionary<CBVariable, Address> variableAddressLookup = [];
@@ -146,7 +146,7 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info)
 
     private ValueLink GetLink(string name) {
         if (!TryGetLink(name, out ValueLink link))
-            throw new System.Exception($"missing member: {name}");
+            throw new Exception($"missing member: {name}");
 
         return link;
     }

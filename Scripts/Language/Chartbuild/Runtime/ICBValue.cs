@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using LanguageExt;
+using LanguageExt.UnsafeValueAccess;
 
 namespace PCE.Chartbuild.Runtime;
 
@@ -17,6 +18,7 @@ public interface ICBValue {
 
     // nothing is also an ICBValue
     public Either<ICBValue, ErrorType> GetMember(ICBValue memberName) => ErrorType.MissingMember;
+    public ICBValue GetMemberUnsafe(ICBValue memberName) => GetMember(memberName).Swap().ValueUnsafe();
 
     public Either<ICBValue, ErrorType> Clone() => ErrorType.NotSupported;
 }

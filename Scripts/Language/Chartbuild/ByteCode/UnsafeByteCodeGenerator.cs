@@ -17,6 +17,8 @@ public class UnsafeByteCodeGenerator {
         return [.. RootChunk.code];
     }
 
+    public UnsafeVM BuildVM() => new(RootChunk);
+
     public string Dump() {
         StringBuilder builder = new(200);
         byte[] code = GetCode();
@@ -368,15 +370,56 @@ public class UnsafeByteCodeGenerator {
                 // DSPI (1), 0 (4)
                 // DSPI (1), 1 (4)
                 // HLT (1)
-                ByteCodeChunk tmp = CreateTemporaryChunk(chunk);
-                GenerateStatement(@if.@false, tmp);
+                // ByteCodeChunk tmp = CreateTemporaryChunk(chunk);
+                // GenerateStatement(@if.@false, tmp);
+                // GenerateExpression(@if.condition, chunk);
+                // chunk.code.Add(UnsafeOpCode.DSPA.AsByte());
+                // // take the size of the address and the next instruction into consideration during the calculations
+                // chunk.code.AddRange(BitConverter.GetBytes((Address)(chunk.code.Count + tmp.code.Count + UnsafeOpCode.JMPI.SizeOf() + sizeof(Address))));
+                // chunk.code.Add(UnsafeOpCode.JMPI.AsByte());
+                // chunk.MergeTemporary(tmp);
+                // GenerateStatement(@if.@true, chunk);
+                ByteCodeChunk @true = CreateTemporaryChunk(chunk);
+                ByteCodeChunk @false = CreateTemporaryChunk(chunk);
+
+                GenerateStatement(@if.@true, @true);
+                GenerateStatement(@if.@false, @false);
+
                 GenerateExpression(@if.condition, chunk);
+
+                // calculate the size of the cureent and the next instruction as well
+
+                // test: [0 ? 2 : 3];
+                /*            size    total
+                --- condition
+                DSPI, 0     ; 5     ; 5
+                --- jump to the true branch
+                DSPA, 18    ; 3     ; 8
+                JMPI        ; 1     ; 9
+                --- false branch
+                DSPI, 3     ; 5     ; 14
+                DSPA, 20    ; 3     ; 17
+                JMP         ; 1     ; 18
+                --- true branch
+                DSPI, 2     ; 5     ; 23
+                --- rest
+                ACOL, 1     ; 5     ; 28
+                HLT         ; 1     ; 29
+                */
+
+                // FIXME: wrong jump targets
+                @false.code.Add(UnsafeOpCode.DSPA.AsByte());
+                @false.code.AddRange(BitConverter.GetBytes((Address)(
+                    // -4 is true
+                    chunk.code.Count + @false.code.Count + @true.code.Count - UnsafeOpCode.JMP.SizeOf() - sizeof(Address)
+                )));
+                @false.code.Add(UnsafeOpCode.JMP.AsByte());
+
                 chunk.code.Add(UnsafeOpCode.DSPA.AsByte());
-                // take the size of the address and the next instruction into consideration during the calculations
-                chunk.code.AddRange(BitConverter.GetBytes((Address)(chunk.code.Count + tmp.code.Count + UnsafeOpCode.JMPI.SizeOf() + sizeof(Address))));
+                chunk.code.AddRange(BitConverter.GetBytes((Address)(chunk.code.Count + @false.code.Count + UnsafeOpCode.JMPI.SizeOf() + sizeof(Address))));
                 chunk.code.Add(UnsafeOpCode.JMPI.AsByte());
-                chunk.MergeTemporary(tmp);
-                GenerateStatement(@if.@true, chunk);
+                chunk.MergeTemporary(@false);
+                chunk.MergeTemporary(@true);
                 break;
             }
             default:
