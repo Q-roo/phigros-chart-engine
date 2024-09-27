@@ -55,8 +55,9 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 //         ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                 //     }
                 // ));
-                GD.Print(new Chartbuild.Runtime.UnsafeByteCodeGenerator().Generate(ast).Dump());
-                GD.Print(new Chartbuild.Runtime.UnsafeByteCodeGenerator().Generate(ast).BuildVM().Run());
+                Chartbuild.Runtime.UnsafeByteCodeGenerator generator = new Chartbuild.Runtime.UnsafeByteCodeGenerator().Generate(ast);
+                GD.Print(generator.Dump());
+                GD.Print(generator.BuildVM().Run());
                 // GD.Print("raw byte code");
                 // GD.Print(string.Join("\n", new Chartbuild.Runtime.UnsafeByteCodeGenerator().Generate(ast).GetCode()));
                 // GD.Print(string.Join("\n", new Chartbuild.Runtime.ByteCodeGenerator(ast).Generate()));

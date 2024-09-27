@@ -18,6 +18,7 @@ public class UnsafeVM(ByteCodeChunk chunk) {
         Reset();
         while (programCounter < chunk.code.Count) {
             UnsafeOpCode opCode = (UnsafeOpCode)Read();
+            Godot.GD.Print($"{programCounter}: {opCode}");
             switch (opCode) {
                 case UnsafeOpCode.HLT:
                     return stack.Pop().GetValue();
@@ -136,7 +137,7 @@ public class UnsafeVM(ByteCodeChunk chunk) {
                 break;
             case UnsafeOpCode.MGET: {
                 CBObject b = stack.Pop();
-                stack.Push(new(stack.Pop().GetValue().members[b.GetValue()]));
+                stack.Push(new(stack.Pop().GetValue().members[b.GetValue().value].Get()));
                 break;
             }
             case UnsafeOpCode.JMP: {

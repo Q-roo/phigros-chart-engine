@@ -42,7 +42,7 @@ public class ObjectValue {
     public ValueType Type { get; init; }
     public readonly object value;
 
-    public readonly Dictionary<ObjectValue, IObjectPropertyDescriptor> members = [];
+    public readonly Dictionary<object, IObjectPropertyDescriptor> members = [];
 
     public ObjectValue(object value) {
         if (value is ObjectValue objectValue)
@@ -247,12 +247,12 @@ public class ObjectValueArray : ObjectValue {
         Type = ValueType.Array;
         values = content;
 
-        members[new("length")] = new FunctionalObjectPropertyDescriptor(() => new(values.Count));
+        members["length"] = new FunctionalObjectPropertyDescriptor(() => new(values.Count));
 
         // TODO: add, remove, ...etc
 
         for (int i = 0; i < content.Count; i++)
-            members[new(i)] = new DefaultObjectPropertyDescriptor(content[i]);
+            members[i] = new DefaultObjectPropertyDescriptor(content[i]);
     }
 
     public override string ToString() {
@@ -267,16 +267,17 @@ public class CBObject {
     public ValueType CurrentType => value.Type;
     private bool initalized;
 
-    public CBObject(object value) {
-        this.value = new(value);
-        if (this.value.Type != ValueType.Unset) {
+    public CBObject(ObjectValue value) {
+        this.value = value;
+        if (value.Type != ValueType.Unset) {
             initalized = true;
             InitalType = this.value.Type;
         }
-
     }
+    public CBObject(object value)
+    : this(new(value)) { }
     public CBObject()
-    : this(null) { }
+    : this(new(null)) { }
 
     public void SetValue(ObjectValue value) {
         if (!initalized) {
