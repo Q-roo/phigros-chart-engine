@@ -8,19 +8,19 @@ using Address = ushort;
 
 public class UnsafeVM(ByteCodeChunk chunk) {
     private readonly ByteCodeChunk chunk = chunk;
-    private ChunkInfo chunkInfo => chunk.info;
+    private ChunkInfo ChunkInfo => chunk.info;
 
     private int programCounter;
 
     private readonly Stack<CBObject> stack = new(200);
 
-    public ICBValue Run() {
+    public object Run() {
         Reset();
         while (programCounter < chunk.code.Count) {
             UnsafeOpCode opCode = (UnsafeOpCode)Read();
             switch (opCode) {
                 case UnsafeOpCode.HLT:
-                    return stack.Pop().Value;
+                    return stack.Pop().GetValue();
                 default:
                     ExecuteInstruction(opCode);
                     break;
@@ -33,7 +33,7 @@ public class UnsafeVM(ByteCodeChunk chunk) {
     private void Reset() {
         programCounter = 0;
         stack.Clear();
-        stack.Push(new(new NullValue()));
+        stack.Push(new());
     }
 
     private byte Read() => chunk.code[programCounter++];
@@ -63,49 +63,51 @@ public class UnsafeVM(ByteCodeChunk chunk) {
                 return;
             case UnsafeOpCode.DCLV:
                 // the variables are already created so just assign a default value
-                chunkInfo.GetVariable(ReadAddress()).SetValueUnsafe(new CBObject(new NullValue()));
+                // chunkInfo.GetVariable(ReadAddress()).SetValue(new());
+                // the value is already set to unset
+                ReadAddress(); // TODO: maybe reset it
                 break;
             case UnsafeOpCode.ASGN: { // a
                 // b
                 // asgn
-                ICBValue b = stack.Pop().Value;
-                stack.Pop().SetValue(b);
+                CBObject b = stack.Pop();
+                stack.Pop().SetValue(b.GetValue());
                 break;
             }
             case UnsafeOpCode.DSPA:
                 // TODO: new value type
-                stack.Push(new(new I32Value(ReadAddress())));
+                stack.Push(new(ReadAddress()));
                 break;
             case UnsafeOpCode.DSPI:
-                stack.Push(new(new I32Value(ReadI32())));
+                stack.Push(new(ReadI32()));
                 break;
             case UnsafeOpCode.DSPD:
-                stack.Push(new(new F32Value(ReadF32())));
+                stack.Push(new(ReadF32()));
                 break;
             case UnsafeOpCode.DSPB:
-                stack.Push(new(new BoolValue(ReadBool())));
+                stack.Push(new(ReadBool()));
                 break;
             case UnsafeOpCode.DSPN:
-                stack.Push(new(new NullValue()));
+                stack.Push(new());
                 break;
             case UnsafeOpCode.SPOP:
                 stack.Pop();
                 break;
             case UnsafeOpCode.LCST:
-                stack.Push(chunkInfo.GetConstant(ReadAddress()) switch {
-                    string str => new(new StringValue(str)),
+                stack.Push(ChunkInfo.GetConstant(ReadAddress()) switch {
+                    string str => new(str),
                     // for now, only strings are stored there
                     _ => throw new UnreachableException()
                 });
                 break;
             case UnsafeOpCode.ACOL:
                 int size = ReadI32();
-                List<ICBValue> values = new(size);
+                List<ObjectValue> values = new(size);
                 for (int i = 0; i < size; i++)
-                    values.Add(stack.Pop().Value);
+                    values.Add(stack.Pop().GetValue());
 
                 values.Reverse();
-                stack.Push(new(new ArrayValue() { values = values }));
+                stack.Push(new(new ObjectValueArray(values)));
                 break;
             case UnsafeOpCode.TRAN:
             case UnsafeOpCode.TRANI:
@@ -113,51 +115,47 @@ public class UnsafeVM(ByteCodeChunk chunk) {
                 throw new NotImplementedException();
             case UnsafeOpCode.BINOP: {
                 TokenType @operator = (TokenType)Read();
-                ICBValue b = stack.Pop().Value;
-                stack.Push(new(stack.Pop().ExecuteBinaryOperatorUnsafe(@operator, b)));
+                CBObject b = stack.Pop();
+                stack.Push(new(stack.Pop().GetValue().ExecuteBinaryOperator(@operator, b.GetValue())));
                 break;
             }
             case UnsafeOpCode.PREOP:
-            case UnsafeOpCode.POSOP:
-                // TODO
-                throw new NotImplementedException();
+            case UnsafeOpCode.POSOP: {
+                TokenType @operator = (TokenType)Read();
+                stack.Push(new(stack.Pop().GetValue().ExecuteUnaryOperator(@operator)));
+                break;
+            }
             case UnsafeOpCode.CALL:
             case UnsafeOpCode.CALLN:
                 throw new NotImplementedException();
             // case UnsafeOpCode.IGET:
-                // TODO: bring back scopes
-                // throw new NotImplementedException();
-                case UnsafeOpCode.LDV:
-                stack.Push(new(chunkInfo.GetVariable(ReadAddress()).GetValueUnsafe()));
+            // TODO: bring back scopes
+            // throw new NotImplementedException();
+            case UnsafeOpCode.LDV:
+                stack.Push(ChunkInfo.GetVariable(ReadAddress()));
                 break;
             case UnsafeOpCode.MGET: {
-                ICBValue b = stack.Pop().Value;
-                stack.Push(new(stack.Pop().GetMemberUnsafe(b)));
+                CBObject b = stack.Pop();
+                stack.Push(new(stack.Pop().GetValue().members[b.GetValue()]));
                 break;
             }
             case UnsafeOpCode.JMP: {
-                programCounter = ((I32Value)stack.Pop().Value).value;
+                programCounter = stack.Pop().GetValue().AsInt();
                 break;
             }
             case UnsafeOpCode.JMPI: {
-                int address = ((I32Value)stack.Pop().Value).value;
-                BoolValue condition = new BoolType().Constructor(stack.Pop().Value).Case switch {
-                    BoolValue v => v,
-                    _ => throw new UnreachableException()
-                };
+                int address = stack.Pop().GetValue().AsInt();
+                bool condition = stack.Pop().GetValue().AsBool();
 
-                if ((bool)condition)
+                if (condition)
                     programCounter = address;
                 break;
             }
             case UnsafeOpCode.JMPN: {
-                int address = ((I32Value)stack.Pop().Value).value;
-                BoolValue condition = new BoolType().Constructor(stack.Pop().Value).Case switch {
-                    BoolValue v => v,
-                    _ => throw new UnreachableException()
-                };
+                int address = stack.Pop().GetValue().AsInt();
+                bool condition = stack.Pop().GetValue().AsBool();
 
-                if (!(bool)condition)
+                if (!condition)
                     programCounter = address;
                 break;
             }

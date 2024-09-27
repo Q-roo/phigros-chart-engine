@@ -10,13 +10,13 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info)
     private readonly ByteCodeChunk parent = parent;
     public readonly ChunkInfo info = info;
 
-    private readonly Dictionary<string, CBVariable> variablesWithNames = [];
-    private readonly Dictionary<CBVariable, Address> variableAddressLookup = [];
+    private readonly Dictionary<string, CBObject> variablesWithNames = [];
+    private readonly Dictionary<CBObject, Address> variableAddressLookup = [];
     private readonly Dictionary <string, ValueLink> variableLinks = [];
 
     public void MergeTemporary(ByteCodeChunk chunk) {
         foreach (string name in chunk.variablesWithNames.Keys) {
-            CBVariable variable = chunk.variablesWithNames[name];
+            CBObject variable = chunk.variablesWithNames[name];
 
             variablesWithNames[name] = variable;
             variableAddressLookup[variable] = chunk.variableAddressLookup[variable];
@@ -96,14 +96,14 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info)
         }
     }
 
-    public Address DeclareOrGet(string name, CBVariable variable) {
+    public Address DeclareOrGet(string name, CBObject variable) {
         if (TryGetLink(name, out ValueLink link))
             return link.Address;
 
         return DeclareVariable(name, variable);
     }
 
-    public Address DeclareVariable(string name, CBVariable variable) {
+    public Address DeclareVariable(string name, CBObject variable) {
         // there are cases when temporary chunks are created
         // while these are children of a chunk,
         //they shouldn't be allowed to have duplicate identifiers

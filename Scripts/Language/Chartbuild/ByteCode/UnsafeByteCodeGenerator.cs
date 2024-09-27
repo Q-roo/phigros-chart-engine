@@ -116,10 +116,6 @@ public class UnsafeByteCodeGenerator {
                     builder.Append("LDV");
                     builder.AppendLine($", {chunkInfo.GetVariableName(ReadAddress())}");
                     break;
-                // case UnsafeOpCode.IGET:
-                //     builder.Append("IGET");
-                //     builder.AppendLine($", {chunkInfo.GetConstant(ReadAddress())}");
-                //     break;
                 case UnsafeOpCode.MGET:
                     builder.AppendLine("MGET");
                     break;
@@ -207,10 +203,10 @@ public class UnsafeByteCodeGenerator {
 
         chunk.code.Add(UnsafeOpCode.CPTR.AsByte());
         foreach (FunctionParameter argument in closure.arguments) {
-            chunk.DeclareVariable(argument.name, new(false));
+            chunk.DeclareVariable(argument.name, new());
             // Address address = chunkInfo.AddOrGetConstant(argument.name);
             // chunk.code.Add(UnsafeOpCode.IGET.AsByte());
-            Address address = chunk.DeclareOrGet(argument.name, new(false));
+            Address address = chunk.DeclareOrGet(argument.name, new());
             chunk.code.Add(UnsafeOpCode.LDV.AsByte());
             chunk.code.AddRange(BitConverter.GetBytes(address));
             chunk.code.Add(UnsafeOpCode.SPOP.AsByte());
@@ -239,7 +235,7 @@ public class UnsafeByteCodeGenerator {
                 GenerateExpression(expression.expression, chunk);
                 break;
             case VariableDeclarationStatementNode variableDeclaration: {
-                Address address = chunk.DeclareVariable(variableDeclaration.name, new(variableDeclaration.@readonly));
+                Address address = chunk.DeclareVariable(variableDeclaration.name, new());
                 // TODO: maybe the address and the identifier address should be related
                 chunk.code.Add(UnsafeOpCode.DCLV.AsByte());
                 chunk.code.AddRange(BitConverter.GetBytes(address));
@@ -287,7 +283,7 @@ public class UnsafeByteCodeGenerator {
             case ForeachLoopStatementNode @foreach: {
                 // store the iterable's iterator in a variable
                 // TODO: random name
-                chunk.DeclareVariable("/iter", new(true));
+                chunk.DeclareVariable("/iter", new());
                 // get the variable noto the stack
                 GenerateExpression(new IdentifierExpressionNode("/iter"), chunk);
                 // generate the iterable
