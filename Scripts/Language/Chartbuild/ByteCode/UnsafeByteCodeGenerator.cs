@@ -112,10 +112,14 @@ public class UnsafeByteCodeGenerator {
                     builder.Append("CALLN");
                     builder.AppendLine($", {ReadI32()}");
                     break;
-                case UnsafeOpCode.IGET:
-                    builder.Append("IGET");
-                    builder.AppendLine($", {chunkInfo.GetConstant(ReadAddress())}");
+                    case UnsafeOpCode.LDV:
+                    builder.Append("LDV");
+                    builder.AppendLine($", {chunkInfo.GetVariableName(ReadAddress())}");
                     break;
+                // case UnsafeOpCode.IGET:
+                //     builder.Append("IGET");
+                //     builder.AppendLine($", {chunkInfo.GetConstant(ReadAddress())}");
+                //     break;
                 case UnsafeOpCode.MGET:
                     builder.AppendLine("MGET");
                     break;
@@ -204,8 +208,10 @@ public class UnsafeByteCodeGenerator {
         chunk.code.Add(UnsafeOpCode.CPTR.AsByte());
         foreach (FunctionParameter argument in closure.arguments) {
             chunk.DeclareVariable(argument.name, new(false));
-            Address address = chunkInfo.AddOrGetConstant(argument.name);
-            chunk.code.Add(UnsafeOpCode.IGET.AsByte());
+            // Address address = chunkInfo.AddOrGetConstant(argument.name);
+            // chunk.code.Add(UnsafeOpCode.IGET.AsByte());
+            Address address = chunk.DeclareOrGet(argument.name, new(false));
+            chunk.code.Add(UnsafeOpCode.LDV.AsByte());
             chunk.code.AddRange(BitConverter.GetBytes(address));
             chunk.code.Add(UnsafeOpCode.SPOP.AsByte());
             chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
@@ -481,8 +487,10 @@ public class UnsafeByteCodeGenerator {
                         chunk.code.Add(UnsafeOpCode.DSPN.AsByte());
                         break;
                     default:
-                        Address address = chunkInfo.AddOrGetConstant(value); // the address should exist
-                        chunk.code.Add(UnsafeOpCode.IGET.AsByte());
+                        // Address address = chunkInfo.AddOrGetConstant(value); // the address should exist
+                        // chunk.code.Add(UnsafeOpCode.IGET.AsByte());
+                        Address address = chunk.Lookup(identifier.value);
+                        chunk.code.Add(UnsafeOpCode.LDV.AsByte());
                         chunk.code.AddRange(BitConverter.GetBytes(address));
                         break;
                 }

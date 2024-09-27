@@ -22,11 +22,9 @@ public enum UnsafeOpCode : byte {
     POSOP, // postfix operation (operator)
     CALL, // call method, arg size, ...args
     CALLN, // call native method, arg size, ...args
-    IGET, // identifier get (string constant address)
+    // IGET, // identifier get (string constant address)
+    LDV, // load variable (address)
     MGET, // member get
-    // these were for function calls and returns but this should be handled by the vm instead
-    // APUSH, // push an address onto the jump stack
-    // APOP, // pop an address from the jump stack
     // the values for the jump instructions are on the stack
     JMP, // jump
     JMPI, // jump if
@@ -63,7 +61,8 @@ public static class UnsafeOpCodeExtensions {
         UnsafeOpCode.POSOP => sizeof(byte) + sizeof(byte),
         UnsafeOpCode.CALL => sizeof(byte) + sizeof(int),
         UnsafeOpCode.CALLN => sizeof(byte) + sizeof(int),
-        UnsafeOpCode.IGET => sizeof(byte) + sizeof(Address),
+        // UnsafeOpCode.IGET => sizeof(byte) + sizeof(Address),
+        UnsafeOpCode.LDV => sizeof(byte) + sizeof(Address),
 
         _ => sizeof(byte)
     };

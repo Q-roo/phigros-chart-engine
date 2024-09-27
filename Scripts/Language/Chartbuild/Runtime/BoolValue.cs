@@ -3,16 +3,16 @@ using LanguageExt;
 
 namespace PCE.Chartbuild.Runtime;
 
-public struct BoolValue(bool value) : ICBValue {
-    public readonly BaseType Type => new BoolType();
-    public readonly bool IsReference => false;
+public class BoolValue(bool value) : ICBValue {
+    public BaseType Type => new BoolType();
+    public bool IsReference => false;
 
     private bool value = value;
 
     public BoolValue()
     : this(false) { }
 
-    public readonly object GetValue() => value;
+    public object GetValue() => value;
     public ErrorType SetValue(object value) {
         if (value is bool b) {
             this.value = b;
@@ -22,8 +22,8 @@ public struct BoolValue(bool value) : ICBValue {
         return ErrorType.InvalidType;
     }
 
-    readonly Either<ICBValue, ErrorType> ICBValue.Clone() => Clone();
-    public readonly BoolValue Clone() => new(value);
+    Either<ICBValue, ErrorType> ICBValue.Clone() => Clone();
+    public BoolValue Clone() => new(value);
 
     public static implicit operator bool(BoolValue value) => value.value;
     public static implicit operator BoolValue(bool value) => new(value);
@@ -32,12 +32,12 @@ public struct BoolValue(bool value) : ICBValue {
 
     public static BoolValue operator ==(BoolValue lhs, object rhs) => lhs.value.Equals(rhs) || rhs is BoolValue r && lhs.value == r.value;
     public static BoolValue operator !=(BoolValue lhs, object rhs) => !(lhs == rhs);
-    public override readonly bool Equals(object obj) => value.Equals(obj) || obj is BoolValue v && value == v.value;
-    public override readonly int GetHashCode() => value.GetHashCode();
+    public override bool Equals(object obj) => value.Equals(obj) || obj is BoolValue v && value == v.value;
+    public override int GetHashCode() => value.GetHashCode();
 
-    public override readonly string ToString() => value.ToString();
+    public override string ToString() => value.ToString();
 
-    public readonly Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
+    public Either<ICBValue, ErrorType> ExecuteBinaryOperator(TokenType @operator, ICBValue rhs) {
         bool value = this.value;
         return rhs.TryCastThen<BoolValue, ICBValue>(@bool => @operator switch {
             TokenType.Equal => new BoolValue(@bool.value == value),
@@ -46,7 +46,7 @@ public struct BoolValue(bool value) : ICBValue {
         });
     }
 
-    public readonly ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
+    public ICBValue ExecuteBinaryOperatorUnsafe(TokenType @operator, ICBValue rhs) {
         return @operator switch {
             TokenType.Equal => new BoolValue(Equals(rhs)),
             TokenType.NotEqual => new BoolValue(!Equals(rhs)),
