@@ -12,7 +12,6 @@ public enum UnsafeOpCode : byte {
     DSPD, // direct stack push double (double)
     DSPB, // direct stack push bool (bool)
     DSPN, // direct stack push null
-    SPOP, // stack pop
     LCST, // load constant (address)
     ACOL, // array collect (int)
     TRAN, // to range
@@ -32,16 +31,14 @@ public enum UnsafeOpCode : byte {
     JMPS, // jump to start (current LSTART, replace this with a normal jump)
     JMPE, // jump to end (next LEND, replace this with a normal jump)
     JMPNE, // jump if not to end (next LEND, replace this with a normal jumpn)
-    RET, // return
     ITER, // to iterable (pushes the success to the stack)
     ITERN, // iter next
     // for the first phase, the addresses are relative to their chunk
     // these will be removed once everything is in one chunk
     LSTART, // loop start
     LEND, // loop end
-    CPTR, // capture (all variables and the unused ones will be removed)
-    CSTART, // closure start
-    CEND, // closure end, construct the closure object
+    DECC, // start of a closure declaration
+    CBUILD, // closure declaration end; build the closure object
 }
 
 public static class UnsafeOpCodeExtensions {

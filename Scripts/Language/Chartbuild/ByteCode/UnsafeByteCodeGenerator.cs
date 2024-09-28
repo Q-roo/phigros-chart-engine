@@ -74,9 +74,6 @@ public class UnsafeByteCodeGenerator {
                 case UnsafeOpCode.DSPN:
                     builder.AppendLine("DSPN");
                     break;
-                case UnsafeOpCode.SPOP:
-                    builder.AppendLine("SPOP");
-                    break;
                 case UnsafeOpCode.LCST:
                     Address address = ReadAddress();
                     builder.Append("LCST");
@@ -137,9 +134,6 @@ public class UnsafeByteCodeGenerator {
                 case UnsafeOpCode.JMPNE:
                     builder.AppendLine("JMPNE");
                     break;
-                case UnsafeOpCode.RET:
-                    builder.AppendLine("RET");
-                    break;
                 case UnsafeOpCode.ITER:
                     builder.AppendLine("ITER");
                     break;
@@ -152,14 +146,11 @@ public class UnsafeByteCodeGenerator {
                 case UnsafeOpCode.LEND:
                     builder.AppendLine("LEND");
                     break;
-                case UnsafeOpCode.CPTR:
-                    builder.AppendLine("CPTR");
+                case UnsafeOpCode.DECC:
+                    builder.AppendLine("DECC");
                     break;
-                case UnsafeOpCode.CSTART:
-                    builder.AppendLine("CSTART");
-                    break;
-                case UnsafeOpCode.CEND:
-                    builder.AppendLine("CEND");
+                case UnsafeOpCode.CBUILD:
+                    builder.AppendLine("CBUILD");
                     break;
                 default:
                     builder.AppendLine("unknown");
@@ -201,22 +192,20 @@ public class UnsafeByteCodeGenerator {
     private void GenerateFunctionChunk(ClosureExpressionNode closure, ByteCodeChunk parent) {
         ByteCodeChunk chunk = CreateChunk(parent);
 
-        chunk.code.Add(UnsafeOpCode.CPTR.AsByte());
         foreach (FunctionParameter argument in closure.arguments) {
             chunk.DeclareVariable(argument.name, new());
-            // Address address = chunkInfo.AddOrGetConstant(argument.name);
-            // chunk.code.Add(UnsafeOpCode.IGET.AsByte());
+
             Address address = chunk.DeclareOrGet(argument.name, new());
             chunk.code.Add(UnsafeOpCode.LDV.AsByte());
             chunk.code.AddRange(BitConverter.GetBytes(address));
-            chunk.code.Add(UnsafeOpCode.SPOP.AsByte());
-            chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
+            chunk.code.Add(UnsafeOpCode.ASGN.AsByte()); // the value is already on the stack
         }
 
         GenerateStatement(closure.body, chunk);
 
-        // FIXME: this could result in 2 RET instructions, it won't cause bugs but it does increase the size with 1 byte
-        chunk.code.Add(UnsafeOpCode.RET.AsByte());
+        // FIXME: this could result in 2 HLT instructions, it won't cause bugs but it does increase the size with 1 byte
+        // user declared closures will run in their own vm and HLT returns the value popped from the stack
+        chunk.code.Add(UnsafeOpCode.HLT.AsByte());
 
         parent.Merge(chunk);
     }
@@ -248,10 +237,10 @@ public class UnsafeByteCodeGenerator {
             case FunctionDeclarationStatementNode functionDeclaration: {
                 // declare a variable in the chunk with the name of the function
                 GenerateStatement(new VariableDeclarationStatementNode(true, functionDeclaration.name, null, null), chunk);
-                // load the address of the variable onto the stack
-                GenerateExpression(new IdentifierExpressionNode(functionDeclaration.name), chunk);
                 // construct the closure which will be on the stack
                 GenerateExpression(new ClosureExpressionNode(functionDeclaration.arguments, functionDeclaration.returnType, functionDeclaration.body, functionDeclaration.isLastParams), chunk);
+                // load the address of the variable onto the stack
+                GenerateExpression(new IdentifierExpressionNode(functionDeclaration.name), chunk);
                 // assign the closure to the variable
                 chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
                 break;
@@ -278,18 +267,18 @@ public class UnsafeByteCodeGenerator {
                 if (@return.value is not null)
                     GenerateExpression(@return.value, chunk);
 
-                chunk.code.Add(UnsafeOpCode.RET.AsByte());
+                chunk.code.Add(UnsafeOpCode.HLT.AsByte());
                 break;
             case ForeachLoopStatementNode @foreach: {
                 // store the iterable's iterator in a variable
                 // TODO: random name
                 chunk.DeclareVariable("/iter", new());
-                // get the variable noto the stack
-                GenerateExpression(new IdentifierExpressionNode("/iter"), chunk);
                 // generate the iterable
                 GenerateExpression(@foreach.iterable, chunk);
                 // get the iterator from the iterable
                 chunk.code.Add(UnsafeOpCode.ITER.AsByte());
+                // get the variable noto the stack
+                GenerateExpression(new IdentifierExpressionNode("/iter"), chunk);
                 // assign it to the variable
                 chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
 
@@ -545,16 +534,16 @@ public class UnsafeByteCodeGenerator {
                         _ => throw new UnreachableException()
                     }), assignment.value);
 
-                GenerateExpression(assignment.asignee, chunk);
                 GenerateExpression(assignment.value, chunk);
+                GenerateExpression(assignment.asignee, chunk);
                 chunk.code.Add(UnsafeOpCode.ASGN.AsByte());
                 break;
             }
             case ClosureExpressionNode closure:
-                chunk.code.Add(UnsafeOpCode.CSTART.AsByte());
+                chunk.code.Add(UnsafeOpCode.DECC.AsByte());
                 // the merging happens in the method
                 GenerateFunctionChunk(closure, chunk);
-                chunk.code.Add(UnsafeOpCode.CEND.AsByte());
+                chunk.code.Add(UnsafeOpCode.CBUILD.AsByte());
                 break;
             case EmptyExpressionNode:
                 break;

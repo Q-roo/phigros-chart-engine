@@ -14,8 +14,12 @@ public class UnsafeVM(ByteCodeChunk chunk) {
 
     private readonly Stack<CBObject> stack = new(200);
 
-    public object Run() {
+    public object Run(params CBObject[] startingStack) {
         Reset();
+
+        foreach (CBObject @object in startingStack)
+            stack.Push(@object);
+
         while (programCounter < chunk.code.Count) {
             UnsafeOpCode opCode = (UnsafeOpCode)Read();
             Godot.GD.Print($"{programCounter}: {opCode}");
@@ -71,8 +75,7 @@ public class UnsafeVM(ByteCodeChunk chunk) {
             case UnsafeOpCode.ASGN: { // a
                 // b
                 // asgn
-                CBObject b = stack.Pop();
-                stack.Pop().SetValue(b.GetValue());
+                stack.Pop().SetValue(stack.Pop().GetValue());
                 break;
             }
             case UnsafeOpCode.DSPA:
@@ -90,9 +93,6 @@ public class UnsafeVM(ByteCodeChunk chunk) {
                 break;
             case UnsafeOpCode.DSPN:
                 stack.Push(new());
-                break;
-            case UnsafeOpCode.SPOP:
-                stack.Pop();
                 break;
             case UnsafeOpCode.LCST:
                 stack.Push(ChunkInfo.GetConstant(ReadAddress()) switch {
@@ -128,10 +128,16 @@ public class UnsafeVM(ByteCodeChunk chunk) {
             }
             case UnsafeOpCode.CALL:
             case UnsafeOpCode.CALLN:
-                throw new NotImplementedException();
-            // case UnsafeOpCode.IGET:
-            // TODO: bring back scopes
-            // throw new NotImplementedException();
+                // Func<CBObject[], CBObject> callable = stack.Pop().GetValue().AsCallable();
+                CBObject callable = stack.Pop();
+                int argCount = ReadI32();
+                CBObject[] args = new CBObject[argCount];
+
+                for (int i = 0; i < argCount; i++)
+                    args[i] = stack.Pop();
+
+                stack.Push(callable.GetValue().Call(args));
+                break;
             case UnsafeOpCode.LDV:
                 stack.Push(ChunkInfo.GetVariable(ReadAddress()));
                 break;
@@ -160,17 +166,35 @@ public class UnsafeVM(ByteCodeChunk chunk) {
                     programCounter = address;
                 break;
             }
-            case UnsafeOpCode.RET:
             case UnsafeOpCode.ITER:
             case UnsafeOpCode.ITERN:
                 throw new NotImplementedException();
             case UnsafeOpCode.LSTART:
             case UnsafeOpCode.LEND:
                 break;
-            case UnsafeOpCode.CSTART:
-            case UnsafeOpCode.CEND:
-            case UnsafeOpCode.CPTR:
-                throw new NotImplementedException();
+            case UnsafeOpCode.DECC:
+                int start = programCounter;
+                int end = 0;
+                while (programCounter < chunk.code.Count) {
+                    opCode = (UnsafeOpCode)Read();
+                    if (opCode == UnsafeOpCode.CBUILD) {
+                        end = programCounter - 1; // leace this instruction out
+                        break;
+                    }
+
+                    programCounter += opCode.SizeOf() - 1; // read already increased it by 1 byte
+                }
+
+                stack.Push(new(
+                    new ObjectValueClosure(
+                        new(
+                            new(null, false, ChunkInfo.Copy()) { code = chunk.code[start..end] }
+                        )
+                    )
+                ));
+                break;
+            case UnsafeOpCode.CBUILD:
+                break;
             default:
                 throw new Exception($"unknown opcode: {opCode}");
         }

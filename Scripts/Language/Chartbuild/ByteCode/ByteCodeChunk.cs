@@ -132,9 +132,7 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info)
 
 
     private bool TryGetLink(string name, out ValueLink link) {
-        link = default;
-
-        if (!variableLinks.TryGetValue(name, out ValueLink _)) {
+        if (!variableLinks.TryGetValue(name, out link)) {
             if (parent is null)
                 return false;
 

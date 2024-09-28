@@ -223,8 +223,9 @@ public class ObjectValue {
         throw new UnreachableException();
     }
 
-    public CBObject Call(params CBObject[] args) {
-        throw new NotImplementedException();
+    public virtual CBObject Call(params CBObject[] args) {
+        Func<CBObject[], CBObject> callable = value as Func<CBObject[], CBObject>;
+        return callable(args);
     }
 
     public override string ToString() {
@@ -260,6 +261,20 @@ public class ObjectValueArray : ObjectValue {
     }
 }
 
+public class ObjectValueClosure : ObjectValue {
+    private readonly UnsafeVM vm;
+
+    public ObjectValueClosure(UnsafeVM vm)
+    : base(vm) {
+        this.vm = vm;
+        Type = ValueType.Callable;
+    }
+
+    public override CBObject Call(params CBObject[] args) {
+        return new(vm.Run(args));
+    }
+}
+
 public class CBObject {
     private ObjectValue value;
     // will be set once after the first assignment
@@ -278,6 +293,8 @@ public class CBObject {
     : this(new(value)) { }
     public CBObject()
     : this(new(null)) { }
+
+    public CBObject ShallowCopy() => new(new(value));
 
     public void SetValue(ObjectValue value) {
         if (!initalized) {
