@@ -143,7 +143,7 @@ public class UnsafeVM(ByteCodeChunk chunk) {
                 break;
             case UnsafeOpCode.MGET: {
                 CBObject b = stack.Pop();
-                stack.Push(new(stack.Pop().GetValue().members[b.GetValue().value].Get()));
+                stack.Push(new(stack.Pop().GetValue().members[b.GetValue().Value].Get()));
                 break;
             }
             case UnsafeOpCode.JMP: {

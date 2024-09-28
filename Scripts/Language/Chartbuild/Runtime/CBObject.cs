@@ -40,15 +40,15 @@ public class FunctionalObjectPropertyDescriptor(Func<ObjectValue> getter, Action
 
 public class ObjectValue {
     public ValueType Type { get; init; }
-    public readonly object value;
+    public object Value { get; private set; }
 
     public readonly Dictionary<object, IObjectPropertyDescriptor> members = [];
 
     public ObjectValue(object value) {
         if (value is ObjectValue objectValue)
-            value = objectValue.value;
+            value = objectValue.Value;
 
-        this.value = value;
+        this.Value = value;
 
         Type = value switch {
             null => ValueType.Unset,
@@ -66,31 +66,31 @@ public class ObjectValue {
 
     public string AsString() => Type switch {
         ValueType.Unset => "unset",
-        _ => $"{value}"
+        _ => $"{Value}"
     };
 
     public int AsInt() => Type switch {
         ValueType.Unset => 0,
-        ValueType.I32 => (int)value,
-        ValueType.F32 => (int)(double)value,
-        ValueType.Bool => (bool)value ? 1 : 0,
+        ValueType.I32 => (int)Value,
+        ValueType.F32 => (int)(double)Value,
+        ValueType.Bool => (bool)Value ? 1 : 0,
         _ => throw new UnreachableException()
     };
 
     public double AsDouble() => Type switch {
         ValueType.Unset => 0,
-        ValueType.I32 => (int)value,
-        ValueType.F32 => (double)value,
-        ValueType.Bool => (bool)value ? 1 : 0,
+        ValueType.I32 => (int)Value,
+        ValueType.F32 => (double)Value,
+        ValueType.Bool => (bool)Value ? 1 : 0,
         _ => throw new UnreachableException()
     };
 
     public bool AsBool() => Type switch {
         ValueType.Unset => false,
-        ValueType.Str => !string.IsNullOrEmpty((string)value),
-        ValueType.I32 => (int)value != 0,
-        ValueType.F32 => (double)value != 0,
-        ValueType.Bool => (bool)value,
+        ValueType.Str => !string.IsNullOrEmpty((string)Value),
+        ValueType.I32 => (int)Value != 0,
+        ValueType.F32 => (double)Value != 0,
+        ValueType.Bool => (bool)Value,
         _ => throw new UnreachableException()
     };
 
@@ -101,7 +101,7 @@ public class ObjectValue {
         ValueType.F32 => new(AsDouble()),
         ValueType.Bool => new(AsBool()),
         ValueType.Callable => new(AsCallable()),
-        ValueType.Object => new(value),
+        ValueType.Object => new(Value),
         _ => throw new UnreachableException()
     };
 
@@ -189,24 +189,39 @@ public class ObjectValue {
                 throw new NullReferenceException();
             case ValueType.I32: {
                 int v = AsInt();
-                return @operator switch {
-                    TokenType.BitwiseNot => new(~v),
-                    TokenType.Plus => new(+v),
-                    TokenType.Minus => new(-v),
-                    TokenType.Increment => new(v++),
-                    TokenType.Decrement => new(v--),
-                    _ => throw new NotSupportedException()
-                };
+                switch (@operator) {
+                    case TokenType.BitwiseNot:
+                        return new(~v);
+                    case TokenType.Plus:
+                        return new(+v);
+                    case TokenType.Minus:
+                        return new(-v);
+                    case TokenType.Increment:
+                        Value = v + 1;
+                        return new(v++);
+                    case TokenType.Decrement:
+                        Value = v - 1;
+                        return new(v--);
+                    default:
+                        throw new NotSupportedException();
+                }
             }
             case ValueType.F32: {
                 double v = AsDouble();
-                return @operator switch {
-                    TokenType.Plus => new(+v),
-                    TokenType.Minus => new(-v),
-                    TokenType.Increment => new(v++),
-                    TokenType.Decrement => new(v--),
-                    _ => throw new NotSupportedException(),
-                };
+                switch (@operator) {
+                    case TokenType.Plus:
+                        return new(+v);
+                    case TokenType.Minus:
+                        return new(-v);
+                    case TokenType.Increment:
+                        Value = v + 1;
+                        return new(v++);
+                    case TokenType.Decrement:
+                        Value = v - 1;
+                        return new(v--);
+                    default:
+                        throw new NotSupportedException();
+                }
             }
             case ValueType.Bool: {
                 bool v = AsBool();
@@ -224,7 +239,7 @@ public class ObjectValue {
     }
 
     public virtual CBObject Call(params CBObject[] args) {
-        Func<CBObject[], CBObject> callable = value as Func<CBObject[], CBObject>;
+        Func<CBObject[], CBObject> callable = Value as Func<CBObject[], CBObject>;
         return callable(args);
     }
 
@@ -233,11 +248,11 @@ public class ObjectValue {
     }
 
     public override bool Equals(object obj) {
-        return value.Equals(obj);
+        return Value.Equals(obj);
     }
 
     public override int GetHashCode() {
-        return value.GetHashCode();
+        return Value.GetHashCode();
     }
 }
 
