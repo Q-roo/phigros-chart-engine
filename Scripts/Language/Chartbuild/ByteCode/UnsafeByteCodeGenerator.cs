@@ -75,11 +75,12 @@ public class UnsafeByteCodeGenerator {
                 case UnsafeOpCode.DSPN:
                     builder.AppendLine("DSPN");
                     break;
-                case UnsafeOpCode.LCST:
+                case UnsafeOpCode.LCST: {
                     Address address = ReadAddress();
                     builder.Append("LCST");
                     builder.AppendLine($", {address} ({chunkInfo.GetConstant(address)})");
                     break;
+                }
                 case UnsafeOpCode.ACOL:
                     builder.Append("ACOL");
                     builder.AppendLine($", {ReadI32()}");
@@ -114,10 +115,13 @@ public class UnsafeByteCodeGenerator {
                     builder.Append("LDV");
                     builder.AppendLine($", {chunkInfo.GetVariableName(ReadAddress())}");
                     break;
-                case UnsafeOpCode.LDC:
+                case UnsafeOpCode.LDC: {
+                    Address address = ReadAddress();
+                    builder.AppendLine($"captures ({string.Join(", ", chunkInfo.GetClosureCaptures(address).Map(chunkInfo.GetVariableName))})");
                     builder.Append("LDC");
-                    builder.AppendLine($", {ReadAddress()}");
+                    builder.AppendLine($", {address}");
                     break;
+                }
                 case UnsafeOpCode.MGET:
                     builder.AppendLine("MGET");
                     break;
@@ -172,8 +176,8 @@ public class UnsafeByteCodeGenerator {
         // TODO: functions like print()
     }
 
-    private ByteCodeChunk CreateChunk(ByteCodeChunk parent) => new(parent, false, chunkInfo);
-    private ByteCodeChunk CreateTemporaryChunk(ByteCodeChunk parent) => new(parent, true, chunkInfo);
+    private ByteCodeChunk CreateChunk(ByteCodeChunk parent) => new(parent, false, false, chunkInfo);
+    private ByteCodeChunk CreateTemporaryChunk(ByteCodeChunk parent) => new(parent, true, parent.functionChunk, chunkInfo);
 
     private void GenerateRootChunk() {
         RootChunk = CreateChunk(null);
@@ -189,7 +193,7 @@ public class UnsafeByteCodeGenerator {
 
     // handle all functions as if they were closures
     private void GenerateFunctionChunk(ClosureExpressionNode closure, ByteCodeChunk parent) {
-        ByteCodeChunk chunk = CreateChunk(parent);
+        ByteCodeChunk chunk = new(parent, false, true, chunkInfo);
         List<Address> addresses = new(closure.arguments.Length);
 
         foreach (FunctionParameter argument in closure.arguments) {
@@ -202,16 +206,27 @@ public class UnsafeByteCodeGenerator {
             chunk.code.Add(UnsafeOpCode.ASGN.AsByte()); // the value is already on the stack
         }
 
+        // find the the parent function (if the closure is nested in another one)
+        ByteCodeChunk functionChunk = parent;
+        while (functionChunk is not null) {
+            if (functionChunk.functionChunk) {
+                addresses.AddRange(chunkInfo.GetClosureCaptures(parent.closureAddress));
+                break;
+            }
+
+            functionChunk = functionChunk.parent;
+        }
+
+        // store the captured variablse first
+        chunk.closureAddress = chunkInfo.StoreClosureBody([], [.. addresses]);
         GenerateStatement(closure.body, chunk);
+        chunkInfo.UpdateClosureBody(chunk.closureAddress, [.. chunk.code]);
 
         // FIXME: this could result in 2 HLT instructions, it won't cause bugs but it does increase the size with 1 byte
         // user declared closures will run in their own vm and HLT returns the value popped from the stack
         chunk.code.Add(UnsafeOpCode.HLT.AsByte());
-
-        // parent.Merge(chunk);
         parent.code.Add(UnsafeOpCode.LDC.AsByte());
-        // parent.code.AddRange(BitConverter.GetBytes(chunkInfo.StoreClosureBody([.. chunk.code], parent)));
-        parent.code.AddRange(BitConverter.GetBytes(chunkInfo.StoreClosureBody([.. chunk.code], [.. addresses])));
+        parent.code.AddRange(BitConverter.GetBytes(chunk.closureAddress));
     }
 
     private void GenerateStatement(StatementNode statement, ByteCodeChunk chunk) {

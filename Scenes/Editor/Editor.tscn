@@ -80,23 +80,47 @@ text = "Reload"
 [node name="CodeEdit" type="CodeEdit" parent="Panel/TabContainer/Chartbuild/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-text = "const a = 0;
-const add = |a, b| a + b;
-const inc = |a| a++;
-const inc2 = || a++;
-inc(a); // create a copy of a and increment that
-inc2(); // increment a directly
+text = "//const a = 0;
+//const add = |a, b| a + b;
+//const inc = |a| a++;
+//const inc2 = || a++;
+//inc(a); // create a copy of a and increment that
+//inc2(); // increment a directly
 
-fn make_adder(a: i32) {
-	fn add(b: i32) {
-		return a + b;
+//fn make_adder(a: i32) {
+//	fn add(b: i32) {
+//		return a + b;
+//	}
+//	
+//	return add;
+//}
+
+//make_adder(1)(2);
+
+//const add2 = make_adder(2);
+//const add3 = make_adder(3);
+//add3(1);
+
+fn make_ab_adder() {
+	fn make_a_adder(a: i32) {
+		fn make_b_adder(b: i32) {
+			fn add() {
+				return a + b;
+			}
+			
+			return add;
+		}
+		
+		return make_b_adder;
 	}
 	
-	return add;
+	return make_a_adder;
 }
 
-// FIXME: calling the returned closure results in a null reference exception
-make_adder(1);"
+const add = make_ab_adder()(1)(2);
+const add2 = make_ab_adder()(2)(3);
+add();
+add2();"
 scroll_smooth = true
 scroll_past_end_of_file = true
 minimap_draw = true

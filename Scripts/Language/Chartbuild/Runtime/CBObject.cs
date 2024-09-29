@@ -51,6 +51,13 @@ public class ObjectValue {
     }
 
     public ObjectValue(object value) {
+        // both constructors are needed
+        if (value is ObjectValue @object) {
+            Type = @object.Type;
+            Value = @object.Value;
+            return;
+        }
+
         Value = value;
 
         Type = value switch {

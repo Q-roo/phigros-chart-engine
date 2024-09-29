@@ -43,8 +43,11 @@ public class ChunkInfo {
     // FIXME: currying
     // only make a copy of the variables in the parent chunk
     private ChunkInfo(ChunkInfo chunkInfo, params Address[] capture) {
-        constantPool = new(chunkInfo.constantPool);
-        constantAddressLookup = new(chunkInfo.constantAddressLookup);
+        constantPool = chunkInfo.constantPool;
+        constantAddressLookup = chunkInfo.constantAddressLookup;
+        closureBodies = chunkInfo.closureBodies;
+        captureLookup = chunkInfo.captureLookup;
+        // these might be modifed so make a copy of them
         variables = new(chunkInfo.variables);
         variableAddressLookup = new(chunkInfo.variableAddressLookup);
         variableNameAddressLookup = new(chunkInfo.variableNameAddressLookup);
@@ -104,5 +107,8 @@ public class ChunkInfo {
         return address;
     }
 
-    public ByteCodeChunk GetClosure(Address address) => new(null, false, this/* Copy(captureLookup[address]) */) { code = [.. closureBodies[address]] };
+    public void UpdateClosureBody(Address address, byte[] body) => closureBodies[address] = body;
+
+    public Address[] GetClosureCaptures(Address address) => captureLookup[address];
+    public ByteCodeChunk GetClosure(Address address) => new(null, false, true, Copy(GetClosureCaptures(address))) { code = [.. closureBodies[address]] };
 }

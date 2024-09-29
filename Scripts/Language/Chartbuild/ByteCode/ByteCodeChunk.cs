@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Address = ushort;
 
-public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info) {
+public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, bool functionChunk, ChunkInfo info) {
     public List<byte> code = new(200);
-    private readonly ByteCodeChunk parent = parent;
+    public readonly ByteCodeChunk parent = parent;
     public readonly ChunkInfo info = info;
+    public readonly bool functionChunk = functionChunk;
+    public Address closureAddress;
 
     private readonly Dictionary<string, CBObject> variablesWithNames = [];
     private readonly Dictionary<CBObject, Address> variableAddressLookup = [];
