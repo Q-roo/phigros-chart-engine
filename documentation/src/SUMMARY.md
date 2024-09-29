@@ -12,5 +12,6 @@
     - [Interface](editor/interface.md)
     - [Settings](editor/settings.md)
 - [Chartbuild](chartbuild/README.md)
+    - [Commands](chartbuild/commands.md)
 
 
