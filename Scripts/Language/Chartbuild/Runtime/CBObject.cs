@@ -39,16 +39,19 @@ public class FunctionalObjectPropertyDescriptor(Func<ObjectValue> getter, Action
 }
 
 public class ObjectValue {
+    public static ObjectValue Unset => new((object)null);
     public ValueType Type { get; init; }
     public object Value { get; private set; }
 
     public readonly Dictionary<object, IObjectPropertyDescriptor> members = [];
 
-    public ObjectValue(object value) {
-        if (value is ObjectValue objectValue)
-            value = objectValue.Value;
+    public ObjectValue(ObjectValue @object) {
+        Value = @object.Value;
+        Type = @object.Type;
+    }
 
-        this.Value = value;
+    public ObjectValue(object value) {
+        Value = value;
 
         Type = value switch {
             null => ValueType.Unset,
@@ -307,7 +310,7 @@ public class CBObject {
     public CBObject(object value)
     : this(new(value)) { }
     public CBObject()
-    : this(new(null)) { }
+    : this(ObjectValue.Unset) { }
 
     public CBObject ShallowCopy() => new(new(value));
 

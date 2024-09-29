@@ -80,20 +80,23 @@ text = "Reload"
 [node name="CodeEdit" type="CodeEdit" parent="Panel/TabContainer/Chartbuild/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-text = "#version 0
-fn make_adder(b: f32) -> fn(i32) -> f32 {
-	fn add(a: i32) -> f32 {
+text = "const a = 0;
+const add = |a, b| a + b;
+const inc = |a| a++;
+const inc2 = || a++;
+inc(a); // create a copy of a and increment that
+inc2(); // increment a directly
+
+fn make_adder(a: i32) {
+	fn add(b: i32) {
 		return a + b;
 	}
 	
 	return add;
 }
 
-const add = make_adder(2);
-const add2 = make_adder(3);
-const add3 = |a, b| return a + b;
-dbg_print(add(true));
-dbg_print(add2(5));"
+// FIXME: calling the returned closure results in a null reference exception
+make_adder(1);"
 scroll_smooth = true
 scroll_past_end_of_file = true
 minimap_draw = true

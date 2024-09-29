@@ -23,6 +23,7 @@ public enum UnsafeOpCode : byte {
     CALLN, // call native method, arg size, ...args
     // IGET, // identifier get (string constant address)
     LDV, // load variable (address)
+    LDC, // load closure (address)
     MGET, // member get
     // the values for the jump instructions are on the stack
     JMP, // jump
@@ -37,8 +38,6 @@ public enum UnsafeOpCode : byte {
     // these will be removed once everything is in one chunk
     LSTART, // loop start
     LEND, // loop end
-    DECC, // start of a closure declaration
-    CBUILD, // closure declaration end; build the closure object
 }
 
 public static class UnsafeOpCodeExtensions {

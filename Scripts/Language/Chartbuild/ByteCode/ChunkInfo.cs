@@ -13,28 +13,58 @@ public class ChunkInfo {
     private readonly Dictionary<CBObject, Address> variableAddressLookup = [];
     private readonly Dictionary<CBObject, Address> variableNameAddressLookup = [];
 
+    // these should be only used where they are declared so no need to store any lookups
+    private readonly List<byte[]> closureBodies = [];
+    // the address is the address of the capture body
+    private readonly Dictionary<Address, Address[]> captureLookup = [];
+
     public ChunkInfo() {
 
     }
 
     // make a shallow(-ish) copy
-    private ChunkInfo(ChunkInfo chunkInfo) {
+    // FIXME: the following is broken
+    /*
+    const a = 0;
+    const inc = ||a++;
+    inc();
+    a;
+    */
+    // a also gets copied 
+    // solution: do not copy
+    // it works that way
+    // even this
+    /*
+    const a = 0;
+    const inc = |a|a++;
+    inc(a);
+    a;
+    */
+    // FIXME: currying
+    // only make a copy of the variables in the parent chunk
+    private ChunkInfo(ChunkInfo chunkInfo, params Address[] capture) {
         constantPool = new(chunkInfo.constantPool);
         constantAddressLookup = new(chunkInfo.constantAddressLookup);
+        variables = new(chunkInfo.variables);
+        variableAddressLookup = new(chunkInfo.variableAddressLookup);
+        variableNameAddressLookup = new(chunkInfo.variableNameAddressLookup);
 
-        foreach ((CBObject key, Address address) in chunkInfo.variableAddressLookup)
-            variableAddressLookup[key.ShallowCopy()] = address;
-
-        variables.Capacity = chunkInfo.variables.Count;
-        foreach (CBObject variable in chunkInfo.variables) {
+        foreach (Address address in capture) {
+            CBObject variable = GetVariable(address);
             CBObject copy = variable.ShallowCopy();
-            variables.Add(copy);
-            variableAddressLookup[copy] = chunkInfo.variableAddressLookup[variable];
-            variableNameAddressLookup[copy] = chunkInfo.variableNameAddressLookup[variable];
+            variables[address] = copy;
+
+            Address variableAddress = variableAddressLookup[variable];
+            variableAddressLookup.Remove(variable);
+            variableAddressLookup[copy] = variableAddress;
+
+            Address nameAddress = variableNameAddressLookup[variable];
+            variableNameAddressLookup.Remove(variable);
+            variableNameAddressLookup[copy] = nameAddress;
         }
     }
 
-    public ChunkInfo Copy() => new(this);
+    public ChunkInfo Copy(params Address[] capture) => new(this, capture);
 
     public Address CreateVariable(string name, CBObject variable) {
         // will throw an exception if the key already exists
@@ -63,4 +93,16 @@ public class ChunkInfo {
     public object GetConstant(Address address) => constantPool[address];
     public string GetVariableName(CBObject variable) => (string)GetConstant(variableNameAddressLookup[variable]);
     public string GetVariableName(Address address) => GetVariableName(GetVariable(address));
+
+    public Address StoreClosureBody(byte[] body, /* ByteCodeChunk parent */ Address[] addresses) {
+        Address address = (Address)closureBodies.Count;
+        closureBodies.Add(body);
+        // captureLookup[address] = parent.GetVariableAddresses();
+        captureLookup[address] = addresses;
+
+
+        return address;
+    }
+
+    public ByteCodeChunk GetClosure(Address address) => new(null, false, this/* Copy(captureLookup[address]) */) { code = [.. closureBodies[address]] };
 }

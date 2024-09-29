@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
@@ -109,9 +110,13 @@ public class UnsafeByteCodeGenerator {
                     builder.Append("CALLN");
                     builder.AppendLine($", {ReadI32()}");
                     break;
-                    case UnsafeOpCode.LDV:
+                case UnsafeOpCode.LDV:
                     builder.Append("LDV");
                     builder.AppendLine($", {chunkInfo.GetVariableName(ReadAddress())}");
+                    break;
+                case UnsafeOpCode.LDC:
+                    builder.Append("LDC");
+                    builder.AppendLine($", {ReadAddress()}");
                     break;
                 case UnsafeOpCode.MGET:
                     builder.AppendLine("MGET");
@@ -145,12 +150,6 @@ public class UnsafeByteCodeGenerator {
                     break;
                 case UnsafeOpCode.LEND:
                     builder.AppendLine("LEND");
-                    break;
-                case UnsafeOpCode.DECC:
-                    builder.AppendLine("DECC");
-                    break;
-                case UnsafeOpCode.CBUILD:
-                    builder.AppendLine("CBUILD");
                     break;
                 default:
                     builder.AppendLine("unknown");
@@ -191,11 +190,13 @@ public class UnsafeByteCodeGenerator {
     // handle all functions as if they were closures
     private void GenerateFunctionChunk(ClosureExpressionNode closure, ByteCodeChunk parent) {
         ByteCodeChunk chunk = CreateChunk(parent);
+        List<Address> addresses = new(closure.arguments.Length);
 
         foreach (FunctionParameter argument in closure.arguments) {
             chunk.DeclareVariable(argument.name, new());
 
             Address address = chunk.DeclareOrGet(argument.name, new());
+            addresses.Add(address);
             chunk.code.Add(UnsafeOpCode.LDV.AsByte());
             chunk.code.AddRange(BitConverter.GetBytes(address));
             chunk.code.Add(UnsafeOpCode.ASGN.AsByte()); // the value is already on the stack
@@ -207,7 +208,10 @@ public class UnsafeByteCodeGenerator {
         // user declared closures will run in their own vm and HLT returns the value popped from the stack
         chunk.code.Add(UnsafeOpCode.HLT.AsByte());
 
-        parent.Merge(chunk);
+        // parent.Merge(chunk);
+        parent.code.Add(UnsafeOpCode.LDC.AsByte());
+        // parent.code.AddRange(BitConverter.GetBytes(chunkInfo.StoreClosureBody([.. chunk.code], parent)));
+        parent.code.AddRange(BitConverter.GetBytes(chunkInfo.StoreClosureBody([.. chunk.code], [.. addresses])));
     }
 
     private void GenerateStatement(StatementNode statement, ByteCodeChunk chunk) {
@@ -540,10 +544,8 @@ public class UnsafeByteCodeGenerator {
                 break;
             }
             case ClosureExpressionNode closure:
-                chunk.code.Add(UnsafeOpCode.DECC.AsByte());
-                // the merging happens in the method
+                // there is no merging
                 GenerateFunctionChunk(closure, chunk);
-                chunk.code.Add(UnsafeOpCode.CBUILD.AsByte());
                 break;
             case EmptyExpressionNode:
                 break;

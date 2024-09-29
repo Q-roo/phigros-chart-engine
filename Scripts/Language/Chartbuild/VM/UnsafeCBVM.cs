@@ -141,6 +141,15 @@ public class UnsafeVM(ByteCodeChunk chunk) {
             case UnsafeOpCode.LDV:
                 stack.Push(ChunkInfo.GetVariable(ReadAddress()));
                 break;
+                case UnsafeOpCode.LDC:
+                stack.Push(new(
+                    new ObjectValueClosure(
+                        new(
+                            ChunkInfo.GetClosure(ReadAddress())
+                        )
+                    )
+                ));
+                break;
             case UnsafeOpCode.MGET: {
                 CBObject b = stack.Pop();
                 stack.Push(new(stack.Pop().GetValue().members[b.GetValue().Value].Get()));
@@ -171,29 +180,6 @@ public class UnsafeVM(ByteCodeChunk chunk) {
                 throw new NotImplementedException();
             case UnsafeOpCode.LSTART:
             case UnsafeOpCode.LEND:
-                break;
-            case UnsafeOpCode.DECC:
-                int start = programCounter;
-                int end = 0;
-                while (programCounter < chunk.code.Count) {
-                    opCode = (UnsafeOpCode)Read();
-                    if (opCode == UnsafeOpCode.CBUILD) {
-                        end = programCounter - 1; // leace this instruction out
-                        break;
-                    }
-
-                    programCounter += opCode.SizeOf() - 1; // read already increased it by 1 byte
-                }
-
-                stack.Push(new(
-                    new ObjectValueClosure(
-                        new(
-                            new(null, false, ChunkInfo.Copy()) { code = chunk.code[start..end] }
-                        )
-                    )
-                ));
-                break;
-            case UnsafeOpCode.CBUILD:
                 break;
             default:
                 throw new Exception($"unknown opcode: {opCode}");

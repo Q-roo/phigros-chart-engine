@@ -163,4 +163,6 @@ public class ByteCodeChunk(ByteCodeChunk parent, bool temporary, ChunkInfo info)
     public Address AddOrGetConstant(object constant) {
         return info.AddOrGetConstant(constant);
     }
+
+    // public Address[] GetVariableAddresses() => [..variableAddressLookup.Values];
 }
