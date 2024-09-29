@@ -147,10 +147,9 @@ public class Parser(BaseToken[] tokens) {
     }
 
     private VariableDeclarationStatementNode ParseVariableDeclaration() {
-        bool isReadonly = Advance().Type == TokenType.Const;
+        // bool isReadonly = Advance().Type == TokenType.Const;
         string name = GetIdentifierName();
 
-        BaseType type = null;
         ExpressionNode valueExpression = null;
 
         if (CurrentType == TokenType.Assign) {
@@ -158,19 +157,18 @@ public class Parser(BaseToken[] tokens) {
             valueExpression = ParseExpression(BindingPower.Assignment);
         }
 
-        if (type is null && valueExpression is null)
-            throw new NotImplementedException("TODO: unknown type error: cannot infer type");
+        // if (type is null && valueExpression is null)
+        //     throw new NotImplementedException("TODO: unknown type error: cannot infer type");
 
         Expect(TokenType.Semicolon);
 
-        return new(isReadonly, name, valueExpression, type);
+        return new(name, valueExpression);
     }
 
     private FunctionDeclarationStatementNode ParseFunctionDeclaration() {
         Advance();
         string fnName = GetIdentifierName();
         List<FunctionParameter> arguments = [];
-        BaseType returnType = null;
         bool paramsArg = false;
 
         Expect(TokenType.LeftParenthesis);
@@ -182,7 +180,7 @@ public class Parser(BaseToken[] tokens) {
 
             string argName = GetIdentifierName();
 
-            arguments.Add(new(argName, null));
+            arguments.Add(new(argName));
 
             if (paramsArg) {
                 Expect(TokenType.RightParenthesis, "params argument must be the last argument");
@@ -196,7 +194,7 @@ public class Parser(BaseToken[] tokens) {
         if (!paramsArg) // expect was already called if params arg is true
             Expect(TokenType.RightParenthesis);
 
-        return new(fnName, [.. arguments], paramsArg, ParseBlockStatement(), returnType);
+        return new(fnName, [.. arguments], paramsArg, ParseBlockStatement());
     }
 
     private IfStatementNode ParseIfStatement() {
@@ -257,14 +255,13 @@ public class Parser(BaseToken[] tokens) {
         if (CurrentType != TokenType.Let && CurrentType != TokenType.Const)
             PushError(new(Advance(), ErrorType.UnexpectedToken, "variable needs const or let access modifier"));
 
-        bool constant = Advance().Type == TokenType.Const;
+        // bool constant = Advance().Type == TokenType.Const;
         string name = GetIdentifierName();
-        BaseType type = null;
 
         if (CurrentType == TokenType.Assign) // for (i = 0; i < n; i++)
         {
             Advance();
-            VariableDeclarationStatementNode init = new(constant, name, ParseExpression(BindingPower.Assignment), type);
+            VariableDeclarationStatementNode init = new(name, ParseExpression(BindingPower.Assignment));
             Expect(TokenType.Semicolon);
 
             ExpressionNode condition = null;
@@ -281,12 +278,12 @@ public class Parser(BaseToken[] tokens) {
                 Expect(TokenType.RightParenthesis);
 
             return new ForLoopStatementNode(init, condition, update, ParseStatement());
-        } else // for (i in iter)
-          {
+        } else {
+            // for (i in iter)
             Expect(TokenType.In);
             ExpressionNode iterable = ParseExpression(BindingPower.Default);
             Expect(TokenType.RightParenthesis);
-            return new ForeachLoopStatementNode(new(constant, name, null, type), iterable, ParseStatement());
+            return new ForeachLoopStatementNode(new(name, null), iterable, ParseStatement());
         }
     }
 
@@ -396,7 +393,6 @@ public class Parser(BaseToken[] tokens) {
 
     private ClosureExpressionNode ParseClosureExpression() {
         List<FunctionParameter> parameters = [];
-        BaseType returnType = null;
         bool paramsArg = false;
 
         // 0 parameters: ||
@@ -412,9 +408,8 @@ public class Parser(BaseToken[] tokens) {
                 }
 
                 string name = GetIdentifierName();
-                BaseType type = null;
 
-                parameters.Add(new(name, type));
+                parameters.Add(new(name));
 
                 if (paramsArg) {
                     Expect(TokenType.BitwiseOr, "params argument must be the last argument");
@@ -429,7 +424,7 @@ public class Parser(BaseToken[] tokens) {
                 Expect(TokenType.BitwiseOr);
         }
 
-        return new([.. parameters], returnType, ParseStatement(), paramsArg);
+        return new([.. parameters], ParseStatement(), paramsArg);
     }
 
     #endregion

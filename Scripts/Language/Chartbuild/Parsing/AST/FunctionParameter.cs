@@ -1,7 +1,6 @@
 namespace PCE.Chartbuild;
 
-public class FunctionParameter(string name, BaseType type)
+public class FunctionParameter(string name)
 {
     public readonly string name = name;
-    public BaseType type = type;
 }
