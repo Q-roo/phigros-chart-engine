@@ -1,4 +1,5 @@
 using Godot;
+using PCE.Chartbuild.Runtime;
 using System;
 
 namespace PCE.Editor;
@@ -45,7 +46,7 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 Chartbuild.BaseToken[] tokens = Chartbuild.Lexer.Parse(Text);
                 GD.Print(tokens);
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
-                Chartbuild.Runtime.UnsafeByteCodeGenerator generator = new Chartbuild.Runtime.UnsafeByteCodeGenerator().Generate(ast);
+                UnsafeByteCodeGenerator generator = new UnsafeByteCodeGenerator().Generate(ast);
                 GD.Print(generator.Dump());
                 GD.Print(generator.BuildVM().Run());
             } catch (Exception ex) {
