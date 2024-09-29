@@ -153,11 +153,6 @@ public class Parser(BaseToken[] tokens) {
         BaseType type = null;
         ExpressionNode valueExpression = null;
 
-        if (CurrentType == TokenType.Colon) {
-            Advance();
-            type = ParseType();
-        }
-
         if (CurrentType == TokenType.Assign) {
             Advance();
             valueExpression = ParseExpression(BindingPower.Assignment);
@@ -186,10 +181,8 @@ public class Parser(BaseToken[] tokens) {
             }
 
             string argName = GetIdentifierName();
-            Expect(TokenType.Colon);
-            BaseType argType = ParseType();
 
-            arguments.Add(new(argName, argType));
+            arguments.Add(new(argName, null));
 
             if (paramsArg) {
                 Expect(TokenType.RightParenthesis, "params argument must be the last argument");
@@ -202,11 +195,6 @@ public class Parser(BaseToken[] tokens) {
 
         if (!paramsArg) // expect was already called if params arg is true
             Expect(TokenType.RightParenthesis);
-
-        if (CurrentType == TokenType.RightArrow) {
-            Advance();
-            returnType = ParseType();
-        }
 
         return new(fnName, [.. arguments], paramsArg, ParseBlockStatement(), returnType);
     }
@@ -272,11 +260,6 @@ public class Parser(BaseToken[] tokens) {
         bool constant = Advance().Type == TokenType.Const;
         string name = GetIdentifierName();
         BaseType type = null;
-
-        if (CurrentType == TokenType.Colon) {
-            Advance();
-            type = ParseType();
-        }
 
         if (CurrentType == TokenType.Assign) // for (i = 0; i < n; i++)
         {
@@ -431,11 +414,6 @@ public class Parser(BaseToken[] tokens) {
                 string name = GetIdentifierName();
                 BaseType type = null;
 
-                if (CurrentType == TokenType.Colon) {
-                    Advance();
-                    type = ParseType();
-                }
-
                 parameters.Add(new(name, type));
 
                 if (paramsArg) {
@@ -451,96 +429,8 @@ public class Parser(BaseToken[] tokens) {
                 Expect(TokenType.BitwiseOr);
         }
 
-        if (CurrentType == TokenType.RightArrow) {
-            Advance();
-            returnType = ParseType();
-        }
-
         return new([.. parameters], returnType, ParseStatement(), paramsArg);
     }
-
-    #endregion
-
-    #region type parsers
-
-    private BaseType ParseType() {
-        BaseType left = TypeNud(CurrentType);
-        while (CurrentType.TypeLookup() > BindingPower.Default)
-            left = TypeLed(left, CurrentType);
-
-        return left;
-    }
-
-    private InvalidType CreateInvalidType() {
-        errors.Add(new(ErrorType.InvalidType, "this type does not exist", -1, -1));
-        return new();
-    }
-
-    // T
-    private BaseType ParseIdentifierType() {
-        string typeName = GetIdentifierName();
-        // TODO: better type name lookup
-        return typeName switch {
-            "i32" => new I32Type(),
-            "f32" => new F32Type(),
-            "bool" => new BoolType(),
-            _ => CreateInvalidType(),
-        };
-    }
-
-    // [T]
-    private ArrayType ParseArrayType() {
-        Advance();
-        ArrayType type = new(ParseType());
-        Expect(TokenType.RightBracket);
-        return type;
-    }
-
-    private FunctionType ParseFunctionType() {
-        Advance();
-        Expect(TokenType.LeftParenthesis);
-        List<BaseType> argumentTypes = [];
-        bool isLastParams = false;
-        while (HasTokens && CurrentType != TokenType.RightParenthesis) {
-            if (CurrentType == TokenType.DotDot) {
-                isLastParams = true;
-                Advance();
-            }
-
-            argumentTypes.Add(ParseType());
-
-            if (CurrentType == TokenType.RightParenthesis)
-                break;
-
-            Expect(isLastParams ? TokenType.RightParenthesis : TokenType.Coma);
-        }
-
-        if (!isLastParams)
-            Expect(TokenType.RightParenthesis);
-
-        Expect(TokenType.RightArrow);
-        return new(ParseType(), isLastParams, [.. argumentTypes]);
-    }
-
-    // <T>
-    // private GenericType ParseGenericType(IdentifierType left)
-    // {
-    //     List<BaseType> content = [];
-
-    //     Expect(TokenType.LessThan);
-
-    //     while (HasTokens && CurrentType != TokenType.GreaterThan)
-    //     {
-    //         content.Add(ParseType());
-
-    //         if (CurrentType != TokenType.GreaterThan)
-    //             Expect(TokenType.Coma);
-    //     }
-
-    //     Expect(TokenType.GreaterThan);
-
-    //     return new(left.name, [.. content]);
-    // }
 
     #endregion
 
@@ -637,22 +527,6 @@ public class Parser(BaseToken[] tokens) {
             TokenType.Decrement => ParsePostfixExpression(left),
 
             _ => throw new NotImplementedException($"unimplemented led behaviour for \"{type.ToSourceString()}\"")
-        };
-    }
-
-    private BaseType TypeNud(TokenType type) {
-        return type switch {
-            TokenType.Identifier => ParseIdentifierType(),
-            TokenType.LeftBracket => ParseArrayType(),
-            TokenType.Fn => ParseFunctionType(),
-            _ => throw new NotImplementedException($"unimplemented type nud behaviour for \"{type.ToSourceString()}\""),
-        };
-    }
-
-    private BaseType TypeLed(BaseType left, TokenType type) {
-        return type switch {
-            // TokenType.LessThan => ParseGenericType(left as IdentifierType),
-            _ => throw new NotImplementedException($"unimplemented type led behaviour for \"{type.ToSourceString()}\""),
         };
     }
 }
