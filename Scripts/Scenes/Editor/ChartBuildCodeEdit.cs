@@ -46,9 +46,15 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 Chartbuild.BaseToken[] tokens = Chartbuild.Lexer.Parse(Text);
                 GD.Print(tokens);
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
-                UnsafeByteCodeGenerator generator = new UnsafeByteCodeGenerator().Generate(ast);
-                GD.Print(generator.Dump());
-                GD.Print(generator.BuildVM().Run());
+                // UnsafeByteCodeGenerator generator = new UnsafeByteCodeGenerator().Generate(ast);
+                // GD.Print(generator.Dump());
+                // GD.Print(generator.BuildVM().Run());
+                // dynamic a = 5;
+                // a++;
+                // GD.Print(Convert.ToDecimal(a));
+                // GD.Print(((IConvertible)5).ToBoolean(null));
+                // GD.Print(((dynamic)5) + ((dynamic)6.0));
+                new ASTWalker(ast).Evaluate();
             } catch (Exception ex) {
                 GD.Print(ex);
             }
