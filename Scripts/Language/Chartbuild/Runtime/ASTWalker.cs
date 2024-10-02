@@ -83,7 +83,9 @@ public class ASTWalker {
             AssignmentExpressionNode assignment => EvaluateAssignment(assignment),
             BinaryExpressionNode binary => EvaluateBinary(binary),
             CallExpressionNode call => EvaluateExpression(call.method).GetValue().AsCallable()(call.arguments.Map(it => EvaluateExpression(it).ShallowCopy()).ToArray()),
-            ClosureExpressionNode closure => new(new Func<Value[], Value>(args => CallUserDefinedClosure(closure, args))),
+                                                                // the scope has to be reconstructed for each call
+                                                                // which is done by the ast closure object
+            ClosureExpressionNode closure => new(new ASTClosure(currentScope, closure, this)),
             ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member).GetValue().members[EvaluateExpression(computedMemberAccess.member).GetValue()],
             DoubleExpressionNode @double => new(@double.value),
             IdentifierExpressionNode identifier => currentScope[identifier.value],
@@ -248,9 +250,9 @@ public class ASTWalker {
         };
     }
 
-    private Value CallUserDefinedClosure(ClosureExpressionNode closure, params Value[] args) {
+    public Value CallUserDefinedClosure(Scope scope,ClosureExpressionNode closure, params Value[] args) {
         // declarations
-        Scope scope = new(currentScope);
+        Scope _scope = currentScope;
         Value result = new(ObjectValue.Unset);
 
         // temporary function scope
@@ -277,7 +279,7 @@ public class ASTWalker {
                     // case ErrorType error:
                     //     return error;
                     case Value o:
-                        currentScope = scope.parent;
+                        currentScope = _scope;
                         isInFunction = false;
                         return o;
                     default:
@@ -287,7 +289,7 @@ public class ASTWalker {
         }
 
         // switch back to the previous scope
-        currentScope = scope.parent;
+        currentScope = _scope;
         isInFunction = false;
 
         return result;

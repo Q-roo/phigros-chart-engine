@@ -305,6 +305,25 @@ public class ObjectValueClosure : ObjectValue {
     }
 }
 
+public class ASTClosure: ObjectValue {
+    private readonly Scope scope;
+    private readonly ClosureExpressionNode closure;
+    private readonly ASTWalker walker;
+
+    public ASTClosure(Scope scope, ClosureExpressionNode closure, ASTWalker walker)
+    : base(scope) {
+        this.scope = scope;
+        this.closure = closure;
+        this.walker = walker;
+        Type = ValueType.Callable;
+    }
+
+    public override CBObject Call(params CBObject[] args) {
+        // scopes need to be reconstructed
+        return walker.CallUserDefinedClosure(new(scope), closure, args);
+    }
+}
+
 public class CBObject {
     private ObjectValue value;
     // will be set once after the first assignment
