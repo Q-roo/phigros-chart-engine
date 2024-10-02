@@ -249,6 +249,7 @@ public static class Lexer
                 {
                     tokens.Add(new Token(line, column, _type));
                     brokenNested = true;
+                    break;
                 }
             }
 

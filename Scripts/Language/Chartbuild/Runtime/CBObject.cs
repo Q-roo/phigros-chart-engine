@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Godot;
@@ -16,34 +17,34 @@ public enum ValueType {
     Object
 }
 
-public interface IObjectPropertyDescriptor {
-    public void Set(ObjectValue value);
-    public ObjectValue Get();
+public abstract class ObjectPropertyDescriptor : CBObject {
+    public abstract override ObjectValue GetValue();
+    public abstract override void SetValue(ObjectValue value);
 }
 
-public class DefaultObjectPropertyDescriptor(ObjectValue value) : IObjectPropertyDescriptor {
+public class DefaultObjectPropertyDescriptor(ObjectValue value) : ObjectPropertyDescriptor {
     public ObjectValue value = value;
-    public virtual ObjectValue Get() => value;
-    public virtual void Set(ObjectValue value) => this.value = value;
+    public override ObjectValue GetValue() => value;
+    public override void SetValue(ObjectValue value) => this.value = value;
 }
 
-public class FunctionalObjectPropertyDescriptor(Func<ObjectValue> getter, Action<ObjectValue> setter) : IObjectPropertyDescriptor {
+public class FunctionalObjectPropertyDescriptor(Func<ObjectValue> getter, Action<ObjectValue> setter) : ObjectPropertyDescriptor {
     private readonly Func<ObjectValue> getter = getter;
     private readonly Action<ObjectValue> setter = setter;
 
     public FunctionalObjectPropertyDescriptor(Func<ObjectValue> getter)
     : this(getter, value => throw new InvalidOperationException("cannot set a read-only property")) { }
 
-    public void Set(ObjectValue value) => setter(value);
-    public ObjectValue Get() => getter();
+    public override void SetValue(ObjectValue value) => setter(value);
+    public override ObjectValue GetValue() => getter();
 }
 
 public class ObjectValue {
     public static ObjectValue Unset => new((object)null);
     public ValueType Type { get; init; }
-    public object Value { get; private set; }
+    public virtual object Value { get; private set; }
 
-    public readonly Dictionary<object, IObjectPropertyDescriptor> members = [];
+    public readonly Dictionary<object, CBObject> members = [];
 
     public ObjectValue(ObjectValue @object) {
         Value = @object.Value;
@@ -266,7 +267,7 @@ public class ObjectValue {
     }
 }
 
-public class ObjectValueArray : ObjectValue {
+public class ObjectValueArray : ObjectValue, IEnumerable<ObjectValue> {
     private readonly List<ObjectValue> values;
     public ObjectValueArray(List<ObjectValue> content)
     : base(content) {
@@ -281,9 +282,13 @@ public class ObjectValueArray : ObjectValue {
             members[i] = new DefaultObjectPropertyDescriptor(content[i]);
     }
 
+    public IEnumerator<ObjectValue> GetEnumerator() => values.GetEnumerator();
+
     public override string ToString() {
         return $"[{string.Join(", ", values)}]";
     }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
 public class ObjectValueClosure : ObjectValue {
@@ -321,7 +326,7 @@ public class CBObject {
 
     public CBObject ShallowCopy() => new(new(value));
 
-    public void SetValue(ObjectValue value) {
+    public virtual void SetValue(ObjectValue value) {
         if (!initalized) {
             InitalType = value.Type;
             initalized = true;
@@ -330,5 +335,7 @@ public class CBObject {
         this.value = value.Cast(InitalType);
     }
 
-    public ObjectValue GetValue() => value;
+    public virtual ObjectValue GetValue() => value;
+
+    public override string ToString() => $"{value}";
 }

@@ -147,6 +147,7 @@ public class Parser(BaseToken[] tokens) {
     }
 
     private VariableDeclarationStatementNode ParseVariableDeclaration() {
+        Advance();
         // bool isReadonly = Advance().Type == TokenType.Const;
         string name = GetIdentifierName();
 

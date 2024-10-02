@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using DotNext.Collections.Generic;
 using LanguageExt;
@@ -7,22 +7,23 @@ using LanguageExt;
 namespace PCE.Chartbuild.Runtime;
 
 // TODO: dynamic is really hurting the preformace. Create a new wrapper object
-using Value = dynamic;
-using Result = Either<dynamic, ErrorType>;
+using Value = CBObject;
+using Result = Either<CBObject, ErrorType>;
 
 public class ASTWalker {
     private readonly ASTRoot ast;
     private readonly Scope rootScope;
     private Scope currentScope;
+    private bool isInFunction;
 
     public ASTWalker(ASTRoot ast) {
         this.ast = ast;
         rootScope = new(null);
         currentScope = rootScope;
-        currentScope["dbg_print"] = new Func<Value[], Value>(args => {
+        currentScope["dbg_print"] = new(new Func<Value[], Value>(args => {
             Godot.GD.Print(args);
-            return null;
-        });
+            return new(ObjectValue.Unset);
+        }));
     }
 
     public void Evaluate() {
@@ -33,129 +34,66 @@ public class ASTWalker {
         EvaluateBlock(ast);
     }
 
-    private List<Value> EvaluateArrayLiteral(ArrayLiteralExpressionNode arrayLiteral) {
-        return arrayLiteral.content.Map(EvaluateExpression).ToList();
-    }
+    private ObjectValueArray EvaluateArrayLiteral(ArrayLiteralExpressionNode arrayLiteral) => new(arrayLiteral.content.Map(it => EvaluateExpression(it).GetValue()).ToList());
 
     private Value EvaluateAssignment(AssignmentExpressionNode assignment) {
-        Value key = EvaluateExpression(assignment.asignee);
-        Value value = currentScope[key];
+        Value asignee = EvaluateExpression(assignment.asignee);
+        Value oldValue = new(asignee.GetValue());
 
-        currentScope[key] = assignment.@operator.Type switch {
-            TokenType.DotAssign => EvaluateExpression(new CallExpressionNode(
-                new ComputedMemberAccessExpressionNode(
-                    assignment.asignee,
-                    ((CallExpressionNode)assignment.value).method
-                ),
-                ((CallExpressionNode)assignment.value).arguments
-            )),
-            TokenType.Assign => EvaluateExpression(assignment.value),
-            TokenType token => EvaluateBinary(new(value, new Token(-1, -1, token switch {
-                TokenType.PlusAssign => TokenType.Plus,
-                TokenType.MinusAssign => TokenType.Minus,
-                TokenType.MultiplyAssign => TokenType.Multiply,
-                TokenType.PowerAssign => TokenType.Power,
-                TokenType.DivideAssign => TokenType.Divide,
-                TokenType.ModuloAssign => TokenType.Modulo,
-                TokenType.ShiftLeftAssign => TokenType.ShiftLeft,
-                TokenType.ShiftRightAssign => TokenType.ShiftRight,
-                TokenType.BitwiseAndAssign => TokenType.BitwiseAnd,
-                TokenType.BitwiseOrAssign => TokenType.BitwiseOr,
-                TokenType.BitwiseXorAssign => TokenType.BitwiseXor,
-                TokenType.BitwiseNotAssign => TokenType.BitwiseNot,
-                _ => throw new NotSupportedException($"{token.ToSourceString()} cannot be turned into a binary operator"),
-            }), assignment.value))
-        };
+        asignee.SetValue(
+            assignment.@operator.Type switch {
+                TokenType.DotAssign => EvaluateExpression(
+                    new CallExpressionNode(
+                        new ComputedMemberAccessExpressionNode(assignment.asignee, ((CallExpressionNode)assignment.value).method),
+                        ((CallExpressionNode)assignment.value).arguments
+                    )
+                ).GetValue(),
+                TokenType.Assign => EvaluateExpression(assignment.value).GetValue(),
+                TokenType token => EvaluateBinary(new(new ValueExpressionNode<Value>(asignee), new Token(-1, -1, token switch {
+                    TokenType.PlusAssign => TokenType.Plus,
+                    TokenType.MinusAssign => TokenType.Minus,
+                    TokenType.MultiplyAssign => TokenType.Multiply,
+                    TokenType.PowerAssign => TokenType.Power,
+                    TokenType.DivideAssign => TokenType.Divide,
+                    TokenType.ModuloAssign => TokenType.Modulo,
+                    TokenType.ShiftLeftAssign => TokenType.ShiftLeft,
+                    TokenType.ShiftRightAssign => TokenType.ShiftRight,
+                    TokenType.BitwiseAndAssign => TokenType.BitwiseAnd,
+                    TokenType.BitwiseOrAssign => TokenType.BitwiseOr,
+                    TokenType.BitwiseXorAssign => TokenType.BitwiseXor,
+                    TokenType.BitwiseNotAssign => TokenType.BitwiseNot,
+                    _ => throw new NotSupportedException($"{token.ToSourceString()} cannot be turned into a binary operator"),
+                }), assignment.value)).GetValue()
+            }
+        );
 
-        return value;
+        return oldValue;
     }
 
-    private Value EvaluateBinary(BinaryExpressionNode binaryExpression) {
-        return binaryExpression.@operator.Type switch {
-            TokenType.LessThan => EvaluateExpression(binaryExpression.left) < EvaluateExpression(binaryExpression.right),
-            TokenType.LessThanOrEqual => EvaluateExpression(binaryExpression.left) <= EvaluateExpression(binaryExpression.right),
-            TokenType.GreaterThan => EvaluateExpression(binaryExpression.left) > EvaluateExpression(binaryExpression.right),
-            TokenType.GreaterThanOrEqual => EvaluateExpression(binaryExpression.left) >= EvaluateExpression(binaryExpression.right),
-            TokenType.Equal => EvaluateExpression(binaryExpression.left) == EvaluateExpression(binaryExpression.right),
-            TokenType.NotEqual => EvaluateExpression(binaryExpression.left) != EvaluateExpression(binaryExpression.right),
-            TokenType.BitwiseAnd => EvaluateExpression(binaryExpression.left) & EvaluateExpression(binaryExpression.right),
-            TokenType.BitwiseOr => EvaluateExpression(binaryExpression.left) | EvaluateExpression(binaryExpression.right),
-            TokenType.BitwiseXor => EvaluateExpression(binaryExpression.left) ^ EvaluateExpression(binaryExpression.right),
-            TokenType.ShiftLeft => EvaluateExpression(binaryExpression.left) << EvaluateExpression(binaryExpression.right),
-            TokenType.ShiftRight => EvaluateExpression(binaryExpression.left) >> EvaluateExpression(binaryExpression.right),
-            TokenType.Plus => EvaluateExpression(binaryExpression.left) + EvaluateExpression(binaryExpression.right),
-            TokenType.Minus => EvaluateExpression(binaryExpression.left) - EvaluateExpression(binaryExpression.right),
-            TokenType.Multiply => EvaluateExpression(binaryExpression.left) * EvaluateExpression(binaryExpression.right),
-            TokenType.Power => Math.Pow(EvaluateExpression(binaryExpression.left), EvaluateExpression(binaryExpression.right)),
-            TokenType.Divide => EvaluateExpression(binaryExpression.left) / EvaluateExpression(binaryExpression.right),
-            TokenType.Modulo => EvaluateExpression(binaryExpression.left) % EvaluateExpression(binaryExpression.right),
-            _ => throw new NotSupportedException($"{binaryExpression.@operator.Type.ToSourceString()} is not a supported binary operator"),
-        };
-    }
+    private Value EvaluateBinary(BinaryExpressionNode binary) => new(EvaluateExpression(binary.left).GetValue().ExecuteBinaryOperator(binary.@operator.Type, EvaluateExpression(binary.right).GetValue()));
 
-    private Value EvaluateUnary(UnaryExpressionNode unary) {
-        Value value = EvaluateExpression(unary.expression);
-
-        throw unary.@operator.Type switch {
-            TokenType.Increment => value++,
-            TokenType.Decrement => value--,
-            TokenType.Not => !value,
-            TokenType.BitwiseNot => ~value,
-            TokenType.Plus => +value,
-            TokenType.Minus => -value,
-            _ => new NotSupportedException($"{unary.@operator.Type.ToSourceString()} is not a supported unary operator"),
-        };
-    }
+    private Value EvaluateUnary(UnaryExpressionNode unary) => new(EvaluateExpression(unary.expression).GetValue().ExecuteUnaryOperator(unary.@operator.Type));
 
     private Value EvaluateExpression(ExpressionNode expression) {
         if (expression.IsNullOrEmpty())
             return null;
 
         return expression switch {
-            ArrayLiteralExpressionNode arrayLiteral => EvaluateArrayLiteral(arrayLiteral),
+            ArrayLiteralExpressionNode arrayLiteral => new(EvaluateArrayLiteral(arrayLiteral)),
             AssignmentExpressionNode assignment => EvaluateAssignment(assignment),
             BinaryExpressionNode binary => EvaluateBinary(binary),
-            CallExpressionNode call => EvaluateExpression(call.method)(call.arguments.Map(EvaluateExpression).ToArray()),
-            ClosureExpressionNode closure => new Func<Value[], Value>(args => {
-                currentScope = new(currentScope);
-                Value result = null;
-                if (!closure.isLastParams)
-                    for (int i = 0; i < closure.arguments.Length; i++)
-                        currentScope[closure.arguments[i].name] = args[i];
-                else {
-                    for (int i = 0; i < closure.arguments.Length - 1; i++)
-                        currentScope[closure.arguments[i].name] = args[i];
-
-                    currentScope[closure.arguments[^1].name] = args.Slice(new(closure.arguments.Length - 1, args.Length - 1));
-                }
-
-                currentScope = currentScope.parent;
-
-                // cannot use evaluate block because a new scope is already declared
-                if (closure.body is BlockStatementNode block) {
-                    foreach (StatementNode statement in block.body) {
-                        switch (EvaluateStatement(statement).Case) {
-                            case ErrorType.NoError:
-                                break;
-                            case ErrorType error:
-                                return error;
-                            case object o:
-                                return o;
-                        }
-                    }
-                }
-
-                return result;
-            }),
-            ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member).GetProperty(EvaluateExpression(computedMemberAccess.member)),
-            DoubleExpressionNode @double => @double.value,
+            CallExpressionNode call => EvaluateExpression(call.method).GetValue().AsCallable()(call.arguments.Map(it => EvaluateExpression(it).ShallowCopy()).ToArray()),
+            ClosureExpressionNode closure => new(new Func<Value[], Value>(args => CallUserDefinedClosure(closure, args))),
+            ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member).GetValue().members[EvaluateExpression(computedMemberAccess.member).GetValue()],
+            DoubleExpressionNode @double => new(@double.value),
             IdentifierExpressionNode identifier => currentScope[identifier.value],
-            IntExpressionNode @int => @int.value,
+            IntExpressionNode @int => new(@int.value),
             MemberAccessExpressionNode memberAccess => EvaluateExpression(new ComputedMemberAccessExpressionNode(memberAccess.member, new StringExpressionNode(memberAccess.property))),
             UnaryExpressionNode unary => EvaluateUnary(unary),
             RangeLiteralExpressionNode rangeLiteral => throw new NotImplementedException(),
-            StringExpressionNode @string => @string.value,
-            TernaryExpressionNode ternary => EvaluateExpression(ternary.condition) ? EvaluateExpression(ternary.@true) : EvaluateExpression(ternary.@false),
+            StringExpressionNode @string => new(@string.value),
+            TernaryExpressionNode ternary => EvaluateExpression(ternary.condition).GetValue().AsBool() ? EvaluateExpression(ternary.@true) : EvaluateExpression(ternary.@false),
+            ValueExpressionNode<Value> value => value.value,
             _ => throw new NotSupportedException($"evaluation of {expression.GetType()} is not supported")
         };
     }
@@ -169,8 +107,13 @@ public class ASTWalker {
                     break;
                 case ErrorType error:
                     return error;
-                case object o:
-                    return o;
+                case Value o:
+                    if (isInFunction)
+                        return o;
+
+                    break;
+                default:
+                    throw new UnreachableException();
             }
         }
 
@@ -184,13 +127,13 @@ public class ASTWalker {
     }
 
     private Result EvaluateIf(IfStatementNode @if) {
-        return EvaluateStatement(EvaluateExpression(@if.condition) ? @if.@true : @if.@false);
+        return EvaluateStatement(EvaluateExpression(@if.condition).GetValue().AsBool() ? @if.@true : @if.@false);
     }
 
     private Result EvaluateForEach(ForeachLoopStatementNode foreachLoop) {
         currentScope[foreachLoop.value.name] = null;
-        foreach (Value it in EvaluateExpression(foreachLoop.iterable)) {
-            currentScope[foreachLoop.value.name] = it;
+        foreach (ObjectValue it in (ObjectValueArray)EvaluateExpression(foreachLoop.iterable).GetValue()) {
+            currentScope[foreachLoop.value.name] = new(it);
 
             switch (EvaluateStatement(foreachLoop.body).Case) {
                 case ErrorType.NoError:
@@ -201,8 +144,13 @@ public class ASTWalker {
                     continue;
                 case ErrorType error:
                     return error;
-                case object o:
-                    return o;
+                case Value o:
+                    if (isInFunction)
+                        return o;
+
+                    break;
+                default:
+                    throw new UnreachableException();
             }
         }
 
@@ -213,7 +161,7 @@ public class ASTWalker {
         if (!forLoop.init.IsNullOrEmpty())
             DeclareVariable(forLoop.init);
 
-        for (; EvaluateExpression(forLoop.condition) ?? true; EvaluateExpression(forLoop.update)) {
+        for (; forLoop.condition.IsNullOrEmpty() || EvaluateExpression(forLoop.condition).GetValue().AsBool(); EvaluateExpression(forLoop.update)) {
             switch (EvaluateStatement(forLoop.body).Case) {
                 case ErrorType.NoError:
                     break;
@@ -223,8 +171,13 @@ public class ASTWalker {
                     return ErrorType.NoError;
                 case ErrorType error:
                     return error;
-                case object o:
-                    return o;
+                case Value o:
+                    if (isInFunction)
+                        return o;
+
+                    break;
+                default:
+                    throw new UnreachableException();
             }
         }
 
@@ -233,7 +186,7 @@ public class ASTWalker {
 
     private Result EvaluateWhile(WhileLoopStatementNode whileLoop) {
         while (true) {
-            if (EvaluateExpression(whileLoop.condition) ?? true)
+            if (whileLoop.condition.IsNullOrEmpty() || EvaluateExpression(whileLoop.condition).GetValue().AsBool())
                 return ErrorType.NoError;
 
             switch (EvaluateStatement(whileLoop.body).Case) {
@@ -245,8 +198,13 @@ public class ASTWalker {
                     return ErrorType.NoError;
                 case ErrorType error:
                     return error;
-                case object o:
-                    return o;
+                case Value o:
+                    if (isInFunction)
+                        return o;
+
+                    break;
+                default:
+                    throw new UnreachableException();
             }
         }
     }
@@ -261,7 +219,7 @@ public class ASTWalker {
     }
 
     private ErrorType DeclareVariable(VariableDeclarationStatementNode variableDeclaration) {
-        currentScope[variableDeclaration.name] = EvaluateExpression(variableDeclaration.valueExpression);
+        currentScope.DeclareVariable(variableDeclaration.name, EvaluateExpression(variableDeclaration.valueExpression));
         return ErrorType.NoError;
     }
 
@@ -288,5 +246,50 @@ public class ASTWalker {
             WhileLoopStatementNode whileLoop => EvaluateWhile(whileLoop),
             _ => throw new NotSupportedException($"evaluation of {statement.GetType()} is not supported"),
         };
+    }
+
+    private Value CallUserDefinedClosure(ClosureExpressionNode closure, params Value[] args) {
+        // declarations
+        Scope scope = new(currentScope);
+        Value result = new(ObjectValue.Unset);
+
+        // temporary function scope
+        currentScope = scope;
+        isInFunction = true;
+
+        if (!closure.isLastParams)
+            for (int i = 0; i < closure.arguments.Length; i++)
+                scope.DeclareVariable(closure.arguments[i].name, args[i]);
+        else {
+            for (int i = 0; i < closure.arguments.Length - 1; i++)
+                scope.DeclareVariable(closure.arguments[i].name, args[i]);
+
+            scope.DeclareVariable(closure.arguments[^1].name, new(new ObjectValueArray(args.Slice(new(closure.arguments.Length - 1, args.Length - 1)).Map(it => it.GetValue()).ToList())));
+        }
+
+
+        // cannot use evaluate block because a new scope is already declared
+        if (closure.body is BlockStatementNode block) {
+            foreach (StatementNode statement in block.body) {
+                switch (EvaluateStatement(statement).Case) {
+                    case ErrorType.NoError:
+                        break;
+                    // case ErrorType error:
+                    //     return error;
+                    case Value o:
+                        currentScope = scope.parent;
+                        isInFunction = false;
+                        return o;
+                    default:
+                        throw new UnreachableException();
+                }
+            }
+        }
+
+        // switch back to the previous scope
+        currentScope = scope.parent;
+        isInFunction = false;
+
+        return result;
     }
 }
