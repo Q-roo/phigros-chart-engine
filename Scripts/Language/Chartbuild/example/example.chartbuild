@@ -1,0 +1,196 @@
+#version 0 // format version
+#target 0 // how compatible the chart is with other chart players
+#enable example_features/feature1
+#disable example_features/feature2
+
+// line comment
+/*
+block comment
+*/
+
+/*
+use '#' to configure
+* configurations:
+* - version:
+*   the format this file is written in
+*   this ensures backward compatibilitiy
+*   as if anything were to change, the engine
+*   could still load it properly and then could save it
+*   with the updated format
+* - target:
+*   feature compatibility compared to other formats
+*   number or an alias:
+*   0 = PCE
+*   1 = RPE
+*   2 = PHI
+* - enable/disable:
+*   enable or disable features
+*   - the features:
+*     - auto_format_update:
+*       update the format automatically
+*     - logging: logging utilities
+* - judgeline/strip_name
+*/
+
+/*
+globals
+* - logging:
+*   info, warn, error, log, print
+*   log also needs to take in a level
+*   LogLevelEnum, which is needed for the log function
+*   print(args): alias for logger.log(info,args)
+* - chart: the chart instance
+* - PLATFORM: the current platform the chart is played on (platforms need to implement it)
+*   alias for chart.platform
+* - copy([shallow/deep]=shallow, object, ...properties)
+*   creates a copy of an object
+*   it will create a shallow or deep copy
+*   of the properties on the object
+*   depending wether the first argument is shallow or deep
+*   the properties in the properties array will get cloned
+*   the opposite way
+* - current_seconds: current time in seconds (runtime)
+*/
+
+/*
+variable declaration:
+let [name];
+-- or --
+let [name] = [value]
+*/
+var variable1 = 'string';
+var variable2 = 0; // int
+var variable3 = 0.0; //float
+var variablr4 = []; // list
+const variable6 = 0; // immutable
+
+variable1 = 'assignment';
+
+/*
+flow control
+* - if [expression] {...}
+* - else {...}
+* - else if [expression] {...}
+* - while [expression] {...}
+* - for [optional init]; [optional condition]; [optional after] {...}
+*   runs
+*   init
+*   if !condition: break
+*   run block
+*   run after
+*   repeat
+* - or: for(variable in iterable) {...}
+* - break
+* - continue
+*/
+
+/*
+times
+* load: when the chart is being loaded
+* run: when the chart is being played
+*/
+
+/*
+judgeline id: name if it's unique else index
+*/
+
+/*
+note id: index
+*/
+
+/*
+chart:
+* - platform: readonly
+* - groups: transform groups (values must be unique)
+*   - add(string: name)
+*   - remove(string: name)
+* - judgelines: judgeline list
+*   - add(instance)
+*   - remove(id)
+*   - get [id] // get the judgeline based on the id
+*   - set [id] = [judgeline]
+*/
+
+/*
+judgeline:
+* - id: readonly => name if it's unique else index
+* - unique_name: readonly => is the name unique
+* - name: string
+* - index: readonly => int
+* - current_time => current time in beats
+* - notes: all notes
+* - notes_above
+* - notes_below
+* all 3 of the note lists have
+*   - get[note id]
+*   - set[note id] = [note] // above and below will forcibly change the direction
+*   - add([note]) // above and below will forcibly change the direction
+*   - remove([note id])
+* - BPM_list: => bpm change events only
+*   - get[time in seconds]
+*   - set[time in seconds] = [float] // modify or create new
+* - events
+*   - add([event])
+*   - remove([event])
+*/
+
+/*
+event trigger
+
+* - start: trigger as soon as the runtime phase starts
+* - song_end: trigger after the song has ended
+* - [float] // time in beats
+*              (except in BPM change events wher it's in seconds)
+* - pause // pause button pressed
+* - resume // resume button pressed + after resume countdown
+* - touch // this one passes in the touch object into the callback
+* - touch_move // trigger when the finger on the screen moves
+*/
+
+/*
+custom event triggers (also event triggers)
+* - delay([event trigger], [event trigger])
+*   - delay an event trigger until another event
+*     trigger get's activated
+* - condition([function([args])], [event trigger], [max_retries: int?])
+*   - when the event is elligible to be activated
+*     run the condition before doing so
+*     if the function returns false,
+*     prevent the event from activating
+*     the event will try to activate again when
+*     the trigger gets triggered.
+*     but if the max_retries is given a value and it get's to it
+*     the event won't try to trigger again
+*     the callback has access to context such as
+*     the judgeline, the event, it's attached to
+*     and the attached object
+* - capture_touch(release_on_move_end?)
+*   - catures the touch on touch and
+*     only executes exec_update on touch move if
+*     the moved touch is the same as the captured one
+*     after the touch is released, the event drops the
+*     touch as well unless release_on_move_end is defined
+*     and set to false
+* - signal(string)
+*   - some elements can broadcast signals
+*     this can turn recieving signals into triggers
+*/
+
+/*
+events
+
+trigger_start: [event trigger]
+trigger_end?: [event trigger] //optional
+target: object // a chart object the event is attached to (eg: judgeline, note, ...etc)
+
+exec_update_count?: [int]
+- the exec_update runs every frame
+  set this property to set a max count
+
+exec_start?: [function]
+exec_end?: [function]
+exec_update?: [function([args])]
+- each callback has access to the touch object if either
+  start or end derives from the touch event
+  it has mutable access to the event
+*/

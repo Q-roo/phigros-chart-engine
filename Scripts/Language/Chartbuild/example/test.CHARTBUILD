@@ -1,0 +1,208 @@
+#version 1 // format version
+/*
+must be defined at the first line with a valid version
+*/
+//"^(?:(?<![[:alnum:]])|[[:alnum:]][\\t ]*;)?[\\t ]*(#[\\t ]*\\S+)(?:[\\t ]*(.*))?$"
+#target CHART_ENGINE // the target platform this chart is intended for
+/*
+optional
+default value is CHART_ENGINE
+
+when the chart is loaded on a different platform with a lower compatibility level, it will send a warning but will try to load regardless
+once something incompatible is encountered, an exception will be thrown
+TODO: extension should show an error when incompatible features are being used
+
+the value must be a member of the Platform enum
+enum Platform {
+    CHART_ENGINE    = 0
+    PHIRA           = 1
+    PHIGROS         = 2
+}
+the members are ordered based on how compatible are with other formats
+all features that are supported in the phigros format are also supported in other formats
+the same can't be said backwards
+*/
+
+#IF PLATFORM == 2 // load time evaluation
+    #enable event_callbacks
+#ELIF PLATFORM == PHIRA
+#ELSE
+    #enable compatibility/linear_events
+#ENDIF
+#enable editor/logger // should this be renamed to console?...
+/*
+not only that, but what if another platform want to implement an output for it?
+*/
+#disable autoplay
+
+{
+    #test // error: preprocessors should only be in the global scope
+}
+
+"was\n"
+''
+wws
+print
+copy
+new
+0x0
+0b1
+1.2
+true
+false
+unset // basicaly, null
+var /**/ a /**/ = 0;
+const /**/ a /**/ = unset;
+
+
+logger.log('level', "message");
+logger.debug("message"); // alias for logger.log('debug', "message")
+logger.info("message"); // alias for logger.log('info', "message")
+logger.warn("message"); // alias for logger.log('warn', "message")
+logger.error("message"); // alias for logger.log('error', "message")
+print("message"); // alias for logger.info("message")
+
+chart.groups.add('foo');
+chart.groups.add('foo'); // error: groups must have unique names
+chart.groups.remove('bar'); // error: 'bar' group doesn't exist
+chart.groups.remove('foo');
+
+chart.groups['foo2']; // getter, error: 'foo2' group doesn't exist
+chart.groups.add('foo2');
+chart.groups['bar'] = unset; // error: 'bar' group doesn't exist
+chart.groups['foo2'] = unset; // setting an element in a list to unset automatically removes it
+
+for (var i = 0; i < 10; i++)
+{
+    const j: judgeline = new($'jl_{i}', 120); // or const j = new judgeline($'jl_{i}', 120)
+    /*
+        create a new judgeline instance
+        no paramaters required aka new() is valid
+        params: new(name = '', bpm = unset)
+        setting bpm is equal to this.bpm_list[0] = bpm
+    */
+
+    //j.index is -1 because it's not added to the judgeline list
+    chart.judgelines.add(j); // error: judgeline has no valid bpm set
+
+    j.bpm_list[-1]; // error: time is out of range
+    j.bpm_list[70]; // 120
+    j.bpm_list[60.5] = 240; // [time in seconds]=bpm;
+    j.bpm_list[70]; // 240
+
+    chart.judgelines.add(j);
+    //j.index is i
+
+    const n = new note();
+    j.notes.add(note); // error: note direction is not set
+    j.notes.add(above, note);
+    // note.direction = above; j.notes.add(note);
+    j.notes.add(below, note); // warning: the same note is used multiple times
+    /*
+        note.direction = below;
+        note is already in above!;
+        transfer note from above to below;
+        j.notes.add(note);
+        
+        not only will the note be present twice, but one will even be transfered
+    */
+
+    j.notes.add(below, copy(note));
+
+    j.events.add(new(start, () => print('callback')));
+    /*
+        event constructor params:
+        trigger
+        on_start?
+        on_update?
+        on_end?
+        target?
+
+        on_* callbacks have access to the event object itself
+        event callbacks are run during runtime
+        because of that, it is possible to mutate the chart or the event itself
+        but this is only supported for Platform 0
+
+        if target is not set, events.add will set it but it would leave it alone otherwise
+    */
+}
+
+chart.events.add(event(song_end, () => print("end")));
+/*
+event is a function created to make creating events easier
+depending on the trigger, the rest of the parameters also change
+
+it takes in a start and an end trigger
+on_start will be called extended by the triggers arguments
+one_end will be called once the end trigger is triggered
+on_update will run every frame once the start trigger has been triggered until the end trigger is triggreed as well
+
+trigger:params table
+start:      callback()
+song_end:   callback()
+pause:      callback()
+resume:     callback() this one triggers right after the resume countdown ends
+press:      callback(touch)
+release:    callback(touch)
+move:       callback(touch) this one get's called whenever any of the current touches move, it is not recommended to use by itself
+time:       callback() time is in seconds
+
+custom triggers:
+capture_signal: callback()
+
+
+special cases:
+condition: callback()->boolean, ...rest this one takes a callback which runs and returns a boolean value which determines wether the event can run, after that, it takes in the arguments of the original method
+delay: trigger, ...rest // after the trigger could activate, waits for the daly trigger to activate as well
+*/
+
+/*
+custom event class methods:
+
+capture_touch: callback(touch), callback(touch), callback(touch) // on_touch_start, on_touch_move, on_touch_end; unlike the base custom events, this event will track only a specific touch until it's released
+repeat: count, prevent_on_end=false, event takes in an event and repeats on_update until the set count is reached or the even's end is triggered, by deffault it will let on end run
+*/
+
+//
+
+/*
+enum TimeUnit {
+    Second,
+    Beat
+}
+*/
+
+/*
+time
+an object wich convertes between different time units
+
+params
+from: value: float, TimeUnit, to: TimeUnit, converter: judgeline | bpm
+
+note: when using a judgeline, it will always use the current bpm
+
+NOTE: don't recalculate the values every time, only when the bpm changes
+*/
+
+emit("signal");
+
+
+[]
+for (var i in 0..10)
+{
+    
+}
+
+if (true) {
+
+}
+else if  (false) {
+
+}
+else {
+
+}
+
+while (true) break
+for (;;)
+    continue;
