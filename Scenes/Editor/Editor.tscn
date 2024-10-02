@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://gusv6rnm1xsq"]
+[gd_scene load_steps=6 format=3 uid="uid://gusv6rnm1xsq"]
 
 [ext_resource type="Texture2D" uid="uid://xke63uh4jrch" path="res://icon.svg" id="1_4h052"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
 [ext_resource type="CodeHighlighter" uid="uid://bla2abm5ap8df" path="res://Themes/code_highlighter.tres" id="2_ohngm"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartBuildCodeEdit.cs" id="3_c2gp3"]
+[ext_resource type="PackedScene" uid="uid://b0xttc7rt3d3v" path="res://Scenes/ChartRender/ChartRender.tscn" id="5_dqvj3"]
 
 [node name="Editor" type="Control"]
 layout_mode = 3
@@ -211,3 +212,5 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 10
 text = "Ln 0; Col 0"
+
+[node name="ChartRender" parent="." instance=ExtResource("5_dqvj3")]

@@ -33,10 +33,26 @@ public class FunctionalObjectPropertyDescriptor(Func<ObjectValue> getter, Action
     private readonly Action<ObjectValue> setter = setter;
 
     public FunctionalObjectPropertyDescriptor(Func<ObjectValue> getter)
-    : this(getter, value => throw new InvalidOperationException("cannot set a read-only property")) { }
+    : this(getter, _ => throw new InvalidOperationException("cannot set a read-only property")) { }
 
     public override void SetValue(ObjectValue value) => setter(value);
     public override ObjectValue GetValue() => getter();
+}
+
+public class FunctionalCBObject(Func<ObjectValue, ObjectValue> getter, Action<ObjectValue, ObjectValue> setter) : CBObject {
+    private readonly Func<ObjectValue, ObjectValue> getter = getter;
+    private readonly Action<ObjectValue, ObjectValue> setter = setter;
+
+    public FunctionalCBObject(Func<ObjectValue, ObjectValue> getter)
+    : this(getter, (_, _) => throw new InvalidOperationException("cannot set a read-only property")) { }
+
+    public override ObjectValue GetValue() {
+        throw new NotImplementedException();
+    }
+
+    public override void SetValue(ObjectValue value) {
+        throw new NotImplementedException();
+    }
 }
 
 public class ObjectValue {
@@ -44,7 +60,10 @@ public class ObjectValue {
     public ValueType Type { get; init; }
     public virtual object Value { get; private set; }
 
-    public readonly Dictionary<object, CBObject> members = [];
+    private readonly Dictionary<object, CBObject> members = [];
+
+    public virtual CBObject GetMember(object key) => members[key];
+    public virtual void SetMember(object key, CBObject value) => members[key] = value;
 
     public ObjectValue(ObjectValue @object) {
         Value = @object.Value;
@@ -273,13 +292,24 @@ public class ObjectValueArray : ObjectValue, IEnumerable<ObjectValue> {
     : base(content) {
         Type = ValueType.Array;
         values = content;
+    }
 
-        members["length"] = new FunctionalObjectPropertyDescriptor(() => new(values.Count));
+    public override CBObject GetMember(object key) {
+        return key switch {
+            "length" => new(values.Count),
+            int idx => new(values[idx]),
+            _ => throw new MemberAccessException($"{key}")
+        };
+    }
 
-        // TODO: add, remove, ...etc
-
-        for (int i = 0; i < content.Count; i++)
-            members[i] = new DefaultObjectPropertyDescriptor(content[i]);
+    public override void SetMember(object key, CBObject value) {
+        switch (key) {
+            case int idx:
+                values[idx] = value.GetValue();
+                break;
+            default:
+                throw new MemberAccessException($"{key}");
+        }
     }
 
     public IEnumerator<ObjectValue> GetEnumerator() => values.GetEnumerator();
@@ -305,7 +335,7 @@ public class ObjectValueClosure : ObjectValue {
     }
 }
 
-public class ASTClosure: ObjectValue {
+public class ASTClosure : ObjectValue {
     private readonly Scope scope;
     private readonly ClosureExpressionNode closure;
     private readonly ASTWalker walker;

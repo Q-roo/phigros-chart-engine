@@ -20,10 +20,15 @@ public class ASTWalker {
         this.ast = ast;
         rootScope = new(null);
         currentScope = rootScope;
-        currentScope["dbg_print"] = new(new Func<Value[], Value>(args => {
+        InsertValue("dbg_print", new(new Func<Value[], Value>(args => {
             Godot.GD.Print(args);
             return new(ObjectValue.Unset);
-        }));
+        })));
+    }
+
+    public ASTWalker InsertValue(object key, Value value) {
+        currentScope[key] = value;
+        return this;
     }
 
     public void Evaluate() {
@@ -83,10 +88,10 @@ public class ASTWalker {
             AssignmentExpressionNode assignment => EvaluateAssignment(assignment),
             BinaryExpressionNode binary => EvaluateBinary(binary),
             CallExpressionNode call => EvaluateExpression(call.method).GetValue().AsCallable()(call.arguments.Map(it => EvaluateExpression(it).ShallowCopy()).ToArray()),
-                                                                // the scope has to be reconstructed for each call
-                                                                // which is done by the ast closure object
+            // the scope has to be reconstructed for each call
+            // which is done by the ast closure object
             ClosureExpressionNode closure => new(new ASTClosure(currentScope, closure, this)),
-            ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member).GetValue().members[EvaluateExpression(computedMemberAccess.member).GetValue()],
+            ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member).GetValue().GetMember(EvaluateExpression(computedMemberAccess.member).GetValue()),
             DoubleExpressionNode @double => new(@double.value),
             IdentifierExpressionNode identifier => currentScope[identifier.value],
             IntExpressionNode @int => new(@int.value),
@@ -250,7 +255,7 @@ public class ASTWalker {
         };
     }
 
-    public Value CallUserDefinedClosure(Scope scope,ClosureExpressionNode closure, params Value[] args) {
+    public Value CallUserDefinedClosure(Scope scope, ClosureExpressionNode closure, params Value[] args) {
         // declarations
         Scope _scope = currentScope;
         Value result = new(ObjectValue.Unset);

@@ -1,4 +1,5 @@
 using Godot;
+using PCE.Chart;
 using PCE.Chartbuild.Runtime;
 using System;
 
@@ -45,16 +46,19 @@ public partial class ChartBuildCodeEdit : CodeEdit {
             try {
                 Chartbuild.BaseToken[] tokens = Chartbuild.Lexer.Parse(Text);
                 GD.Print(tokens);
+
+                Chart.Chart chart = GetNode<Chart.Chart>("../../../../../ChartRender");
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
-                // UnsafeByteCodeGenerator generator = new UnsafeByteCodeGenerator().Generate(ast);
-                // GD.Print(generator.Dump());
-                // GD.Print(generator.BuildVM().Run());
-                // dynamic a = 5;
-                // a++;
-                // GD.Print(Convert.ToDecimal(a));
-                // GD.Print(((IConvertible)5).ToBoolean(null));
-                // GD.Print(((dynamic)5) + ((dynamic)6.0));
-                new ASTWalker(ast).Evaluate();
+                new ASTWalker(ast)
+                .InsertValue("true", new(true))
+                .InsertValue("false", new(false))
+                .InsertValue("unset", new(ObjectValue.Unset))
+                .InsertValue("chart", chart.ToCBObject())
+                .InsertValue("PLATFORM", new(chart.platform)) // should be fine since it's not going to change
+                .InsertValue("PCE", new(CompatibilityLevel.PCE))
+                .InsertValue("RPE", new(CompatibilityLevel.RPE))
+                .InsertValue("PHI", new(CompatibilityLevel.PHI))
+                .Evaluate();
             } catch (Exception ex) {
                 GD.Print(ex);
             }

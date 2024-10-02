@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://b0xttc7rt3d3v"]
+
+[ext_resource type="Script" path="res://Scripts/Chart/Chart.cs" id="1_giqgq"]
+
+[node name="ChartRender" type="Node2D"]
+script = ExtResource("1_giqgq")
+
+[node name="Line2D" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 1000, 0)
