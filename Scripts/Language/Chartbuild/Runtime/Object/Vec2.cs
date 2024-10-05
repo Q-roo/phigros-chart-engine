@@ -33,11 +33,6 @@ public class Vec2(Vector2 value) : Object {
         }
     }
 
-    protected override Object RequestSetValue(Object value) {
-        this.value = value.ToVec2().value;
-        return value;
-    }
-
     public override object Value => value;
 
     public override Object Call(params Object[] args) {

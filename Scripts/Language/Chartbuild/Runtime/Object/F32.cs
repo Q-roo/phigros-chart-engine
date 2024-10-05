@@ -8,11 +8,6 @@ public class F32(float value) : Object {
 
     public override Object this[object key] { get => throw KeyNotFound(key); set => throw KeyNotFound(key); }
 
-    protected override Object RequestSetValue(Object value) {
-        this.value = value.ToF32().value;
-        return value;
-    }
-
     public override object Value => value;
 
     public override Object Copy(bool shallow = true, params object[] keys) {

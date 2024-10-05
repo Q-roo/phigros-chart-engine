@@ -7,17 +7,10 @@ using Object = PCE.Chartbuild.Runtime.Object;
 namespace PCE.Chartbuild.Bindings;
 
 public class NativeFunction : Object {
-    // public delegate Object Function(params Object[] args);
-    // public delegate void FunctionImplicitNullReturn(params Object[] args);
-
     private readonly Func<Object[], Object> function;
     public override object Value => function;
 
     public override Object this[object key] { get => throw KeyNotFound(key); set => throw KeyNotFound(key); }
-
-    protected override Object RequestSetValue(Object value) {
-        throw ReadOnlyValue();
-    }
 
     public NativeFunction(Func<Object[], Object> function) {
         this.function = function;

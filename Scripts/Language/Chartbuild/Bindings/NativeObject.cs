@@ -47,10 +47,6 @@ public class NativeObject(object value, Func<object, Object> getter, Action<obje
         throw NotIterable();
     }
 
-    protected override Object RequestSetValue(Object value) {
-        throw ReadOnlyValue();
-    }
-
     public override string ToString() {
         return value.ToString();
     }

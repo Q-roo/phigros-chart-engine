@@ -26,11 +26,6 @@ public class Array : Object {
         }
     }
 
-    protected override Object RequestSetValue(Object value) {
-        content = value.ToArray().content;
-        return value;
-    }
-
     public Array() {
         content = [];
     }

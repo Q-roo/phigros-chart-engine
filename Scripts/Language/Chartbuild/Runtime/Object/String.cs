@@ -16,11 +16,6 @@ public class Str(string value) : Object {
         set => throw ReadOnlyProperty(key); // NOTE: will also thorw this to nonexistent properties but eh, who cares?
     }
 
-    protected override Object RequestSetValue(Object value) {
-        this.value = value.ToStr().value;
-        return value;
-    }
-
     public override Object Copy(bool shallow = true, params object[] keys) {
         return new Str(shallow ? value : new string(value));
     }

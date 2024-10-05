@@ -5,10 +5,6 @@ namespace PCE.Chartbuild.Runtime;
 public class Unset : Object {
     public override Object this[object key] { get => throw KeyNotFound(key); set => throw KeyNotFound(key); }
 
-    protected override Object RequestSetValue(Object value) {
-        throw ReadOnlyValue();
-    }
-
     public override object Value => null;
 
     public override Object Copy(bool shallow = true, params object[] keys) {

@@ -20,9 +20,6 @@ public abstract class Object : IEnumerable<Object> {
         return value;
     }
 
-    [Obsolete("it's the parent's job to set the value now")]
-    protected abstract Object RequestSetValue(Object value);
-
     // make a copy of the object
     // either a shallow or a deep one
     // the values passed into keys will use the opposite copying strategy

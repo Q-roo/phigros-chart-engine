@@ -8,11 +8,6 @@ public class Bool(bool value) : Object {
 
     public override Object this[object key] { get => throw KeyNotFound(key); set => throw KeyNotFound(key); }
 
-    protected override Object RequestSetValue(Object value) {
-        this.value = value.ToBool().value;
-        return value;
-    }
-
     public override Object Copy(bool shallow = true, params object[] keys) {
         return new Bool(value);
     }

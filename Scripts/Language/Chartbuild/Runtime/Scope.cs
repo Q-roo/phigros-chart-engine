@@ -51,10 +51,6 @@ public class Scope(Scope parent) : Value {
         return false;
     }
 
-    protected override Value RequestSetValue(Value value) {
-        throw ReadOnlyValue();
-    }
-
     public override Value Copy(bool shallow = true, params object[] keys) {
         throw new NotImplementedException();
     }

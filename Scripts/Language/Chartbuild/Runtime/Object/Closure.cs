@@ -10,10 +10,6 @@ public class Closure(Scope scope, ClosureExpressionNode closure, ASTWalker walke
 
     public override Object this[object key] { get => throw KeyNotFound(key); set => throw KeyNotFound(key); }
 
-    protected override Object RequestSetValue(Object value) {
-        throw ReadOnlyValue();
-    }
-
     public override Object Copy(bool shallow = true, params object[] keys) {
         return this; // NOTE: this one shouldn't be copied
     }
