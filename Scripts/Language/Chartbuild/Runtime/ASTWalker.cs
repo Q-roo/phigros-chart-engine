@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using DotNext.Collections.Generic;
+using Godot;
 using LanguageExt;
 
 namespace PCE.Chartbuild.Runtime;
@@ -13,7 +15,15 @@ using Result = Either<Object, ErrorType>;
 public class ASTWalker {
     private readonly ASTRoot ast;
     private readonly Scope rootScope;
-    public Scope CurrentScope {get; private set;}
+    private Scope _currentScope;
+    public Scope CurrentScope {
+        get => _currentScope;
+        set {
+            _currentScope = value;
+            // in case a child scope sets it, roll it back
+            _currentScope.rules.UpdateAspectRatio();
+        }
+    }
     private bool isInFunction;
 
     public ASTWalker(ASTRoot ast) {
@@ -126,13 +136,42 @@ public class ASTWalker {
     }
 
     private ErrorType EvaluateCommand(CommandStatementNode command) {
-        // TODO: #set aspect_ratio=f32 (default: 1.777778)
-        // TODO: #set default_judgeline_width=f32 (default: 4000)
-        // TODO: #set default_judgeline_bpm=f32 (default: 120)
-        // NOTE: #meta allows values to be defined only once
+        // NOTE: unlike #set, #meta allows values to be defined only once
         // but it should be fine to let users redefine these
         // just imagine changing the aspect ratio for a gimmick
-        throw new NotImplementedException();
+        switch (command.name) {
+            case "set":
+                if (
+                    command.expression is not AssignmentExpressionNode assignment
+                    || assignment.asignee is not IdentifierExpressionNode identifier
+                    || assignment.@operator.Type != TokenType.Assign
+                )
+                    throw new InvalidOperationException("set commands must be assignment expressions with identifiers as asignees and use \"=\" for asignment");
+                switch (identifier.value) {
+                    case "aspect_ratio":
+                        CurrentScope.rules.AspectRatio = EvaluateExpression(assignment.value).ToF32().value;
+                        break;
+                    case "default_judgeline_width":
+                        CurrentScope.rules.DefaultJudgelineSize = EvaluateExpression(assignment.value).ToF32().value;
+                        break;
+                    case "default_judgeline_bpm":
+                        CurrentScope.rules.DefaultJudgelineBpm = EvaluateExpression(assignment.value).ToF32().value;
+                        break;
+                    default:
+                        throw new KeyNotFoundException($"there is no value with the name \"{identifier.value}\"");
+                }
+                break;
+            case "version":
+            case "meta":
+            case "enable":
+            case "disable":
+                throw new NotImplementedException();
+            default:
+                throw new InvalidOperationException($"unknown command: {command.name}");
+
+        }
+
+        return ErrorType.NoError;
     }
 
     private Result EvaluateIf(IfStatementNode @if) {

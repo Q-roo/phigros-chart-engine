@@ -66,7 +66,11 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
     }
 
     NativeObject AddJudgeline_Binding(params Object[] args) {
-        if (args.Length == 0 || args[0] is not NativeObject native || native.Value is not Judgeline judgeline)
+        if (
+            args.Length == 0
+            || args[0] is not NativeObject native
+            || native.Value is not Judgeline judgeline
+        )
         throw new ArgumentException("this method requires one judgeline instance");
 
         return AddJudgeline(judgeline).ToObject();

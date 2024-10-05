@@ -22,6 +22,7 @@ public class Scope : Value {
     : this() {
         this.parent = parent;
         rules = new(parent.rules);
+        rules.UpdateAspectRatio();
     }
 
     public override object Value => this;
