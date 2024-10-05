@@ -1,6 +1,7 @@
 using System;
+using PCE.Chartbuild.Runtime;
 
-namespace PCE.Chartbuild.Runtime;
+namespace PCE.Chartbuild.Bindings;
 
 public class CBObjectBuilder(object value) {
     private CBObject @object;

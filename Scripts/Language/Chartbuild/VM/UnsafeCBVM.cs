@@ -143,7 +143,7 @@ public class UnsafeVM(ByteCodeChunk chunk) {
                 break;
                 case UnsafeOpCode.LDC:
                 stack.Push(new(
-                    new ObjectValueClosure(
+                    new ByteCodeClosureValue(
                         new(
                             ChunkInfo.GetClosure(ReadAddress())
                         )

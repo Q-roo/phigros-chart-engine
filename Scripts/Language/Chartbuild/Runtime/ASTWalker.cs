@@ -90,8 +90,8 @@ public class ASTWalker {
             CallExpressionNode call => EvaluateExpression(call.method).GetValue().AsCallable()(call.arguments.Map(it => EvaluateExpression(it).ShallowCopy()).ToArray()),
             // the scope has to be reconstructed for each call
             // which is done by the ast closure object
-            ClosureExpressionNode closure => new(new ASTClosure(currentScope, closure, this)),
-            ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member).GetValue().GetMember(EvaluateExpression(computedMemberAccess.member).GetValue()),
+            ClosureExpressionNode closure => new(new ASTClosureValue(currentScope, closure, this)),
+            ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member).GetValue().GetMember(EvaluateExpression(computedMemberAccess.property).GetValue().Value),
             DoubleExpressionNode @double => new(@double.value),
             IdentifierExpressionNode identifier => currentScope[identifier.value],
             IntExpressionNode @int => new(@int.value),
