@@ -13,7 +13,7 @@ public class CBObjectBuilder(object value) {
         return this;
     }
 
-    public CBObjectBuilder Addproperty(string name, FunctionalObjectPropertyDescriptor descriptor) {
+    public CBObjectBuilder Addproperty(string name, FunctionalCBObjectProperty descriptor) {
         Value.SetMember(name, descriptor);
         return this;
     }

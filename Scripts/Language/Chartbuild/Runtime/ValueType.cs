@@ -8,5 +8,6 @@ public enum ValueType {
     Bool,
     Callable,
     Array,
-    Object
+    Object,
+    Property,
 }
