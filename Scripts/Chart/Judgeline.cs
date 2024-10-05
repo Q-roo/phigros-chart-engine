@@ -6,6 +6,7 @@ using PCE.Chartbuild.Runtime;
 namespace PCE.Chart;
 
 public partial class Judgeline : Line2D, ICBExposeable {
+    public TransformGroup parent;
     private float _size;
     public float Size {
         get => _size;
@@ -17,11 +18,19 @@ public partial class Judgeline : Line2D, ICBExposeable {
             ];
         }
     }
+    public readonly StringName name;
+    public float bpm;
 
-    public Judgeline() {
-        // TODO: get default size
-        Size = 3000;
+    public Judgeline(StringName name, float bpm, float size) {
+        Size = size;
+        Width = 5;
+        this.bpm = bpm;
+        this.name = name;
+        Name = name;
     }
+
+    public Judgeline()
+    : this(ChartContext.GetJudgelineName(), 120, 4000) {}
 
     public NativeObject ToObject() {
         return new(
@@ -44,5 +53,12 @@ public partial class Judgeline : Line2D, ICBExposeable {
                 }
             }
         );
+    }
+
+    public override int GetHashCode() {
+        return name.GetHashCode();
+    }
+    public override string ToString() {
+        return $"judgeline({name} ({bpm})";
     }
 }

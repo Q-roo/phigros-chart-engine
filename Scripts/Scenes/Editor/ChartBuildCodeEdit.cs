@@ -52,7 +52,8 @@ public partial class ChartBuildCodeEdit : CodeEdit {
 
                 Chart.Chart chart = GetNode<Chart.Chart>("../../../../../ChartRenderer");
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
-                new ASTWalker(ast)
+                ASTWalker walker = new(ast);
+                walker
                 // default values
                 .InsertValue(true, "true", new Bool(true))
                 .InsertValue(true, "false", new Bool(false))
@@ -70,6 +71,30 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                         return args[0].ToVec2();
                     else
                         return new Vec2(new(args[0].ToF32().value, args[1].ToF32().value));
+                }))
+                .InsertValue(true, "judgeline", new NativeFunction(args => {
+                    // signature: ()
+                    switch (args.Length) {
+                        case 0:
+                            return new Judgeline(ChartContext.GetJudgelineName(), walker.CurrentScope.rules.DefaultJudgelineBpm, walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
+                        // signature: (name) or (bpm)
+                        case 1: {
+                            if (args[0] is Str str)
+                                return new Judgeline(str.value, walker.CurrentScope.rules.DefaultJudgelineBpm, walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
+                            else
+                                return new Judgeline(ChartContext.GetJudgelineName(), args[0].ToF32().value, walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
+                        }
+                        // signature (name, bpm) or (bpm, size)
+                        case 2: {
+                            if (args[0] is Str str)
+                                return new Judgeline(str.value, args[1].ToF32().value, walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
+                            else
+                                return new Judgeline(ChartContext.GetJudgelineName(), args[0].ToF32().value, args[1].ToF32().value).ToObject();
+                        }
+                        // signature(name, bpm, size, ...rest)
+                        default:
+                            return new Judgeline(args[0].ToStr().value, args[1].ToF32().value, args[2].ToF32().value).ToObject();
+                    }
                 }))
                 // default functions
                 .InsertValue(true, "dbg_print", new NativeFunction(new Action<Object[]>(args => {

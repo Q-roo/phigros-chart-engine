@@ -81,12 +81,12 @@ text = "Reload"
 [node name="CodeEdit" type="CodeEdit" parent="Panel/TabContainer/Chartbuild/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-text = "let jl = chart.groups['a/aa/@Line2D@309'];
+text = "let jl = chart.groups['a/aa/jl#0'];
 
 if (jl == unset) {
 	dbg_print(chart.groups.add_subgroup('a').add_subgroup('aa'));
 	dbg_print(chart.groups['a/aa'].add_subgroup('aaa'));
-	jl = chart.groups['a/aa'].add_judgeline();
+	jl = chart.groups['a/aa'].add_judgeline(judgeline());
 }
 
 dbg_print(jl);

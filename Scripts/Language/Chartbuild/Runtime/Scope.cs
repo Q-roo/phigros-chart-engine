@@ -5,10 +5,24 @@ namespace PCE.Chartbuild.Runtime;
 
 using Value = Object;
 
-public class Scope(Scope parent) : Value {
-    private readonly Dictionary<object, Value> variables = [];
-    private readonly HashSet<object> readOnlyVariableKeys = [];
-    public readonly Scope parent = parent;
+public class Scope : Value {
+    private readonly Dictionary<object, Value> variables;
+    private readonly HashSet<object> readOnlyVariableKeys;
+    public readonly Scope parent;
+    public readonly ScopeRules rules;
+
+    public Scope() {
+        parent = null;
+        rules = new();
+        variables = [];
+        readOnlyVariableKeys = [];
+    }
+
+    public Scope(Scope parent)
+    : this() {
+        this.parent = parent;
+        rules = new(parent.rules);
+    }
 
     public override object Value => this;
 

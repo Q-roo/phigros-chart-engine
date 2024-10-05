@@ -13,17 +13,17 @@ using Result = Either<Object, ErrorType>;
 public class ASTWalker {
     private readonly ASTRoot ast;
     private readonly Scope rootScope;
-    private Scope currentScope;
+    public Scope CurrentScope {get; private set;}
     private bool isInFunction;
 
     public ASTWalker(ASTRoot ast) {
         this.ast = ast;
-        rootScope = new(null);
-        currentScope = rootScope;
+        rootScope = new();
+        CurrentScope = rootScope;
     }
 
     public ASTWalker InsertValue(bool @readonly, object key, Value value) {
-        currentScope.DeclareVariable(key, value, @readonly);
+        CurrentScope.DeclareVariable(key, value, @readonly);
         return this;
     }
 
@@ -86,10 +86,10 @@ public class ASTWalker {
             CallExpressionNode call => EvaluateExpression(call.method).Call(call.arguments.Map(it => EvaluateExpression(it).Copy()).ToArray()),
             // the scope has to be reconstructed for each call
             // which is done by the ast closure object
-            ClosureExpressionNode closure => new Closure(currentScope, closure, this),
+            ClosureExpressionNode closure => new Closure(CurrentScope, closure, this),
             ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member)[EvaluateExpression(computedMemberAccess.property).Value],
             DoubleExpressionNode @double => new F32((float)@double.value),
-            IdentifierExpressionNode identifier => currentScope[identifier.value],
+            IdentifierExpressionNode identifier => CurrentScope[identifier.value],
             IntExpressionNode @int => new I32(@int.value),
             MemberAccessExpressionNode memberAccess => EvaluateExpression(new ComputedMemberAccessExpressionNode(memberAccess.member, new StringExpressionNode(memberAccess.property))),
             UnaryExpressionNode unary => EvaluateUnary(unary),
@@ -102,7 +102,7 @@ public class ASTWalker {
     }
 
     private Result EvaluateBlock(BlockStatementNode block) {
-        currentScope = new(currentScope);
+        CurrentScope = new(CurrentScope);
 
         foreach (StatementNode statement in block.body) {
             switch (EvaluateStatement(statement).Case) {
@@ -120,14 +120,15 @@ public class ASTWalker {
             }
         }
 
-        currentScope = currentScope.parent;
+        CurrentScope = CurrentScope.parent;
 
         return ErrorType.NoError;
     }
 
     private ErrorType EvaluateCommand(CommandStatementNode command) {
-        // TODO: #set aspect_ratio=f32
-        // TODO: #set default_judgeline_width=f32
+        // TODO: #set aspect_ratio=f32 (default: 1.777778)
+        // TODO: #set default_judgeline_width=f32 (default: 4000)
+        // TODO: #set default_judgeline_bpm=f32 (default: 120)
         // NOTE: #meta allows values to be defined only once
         // but it should be fine to let users redefine these
         // just imagine changing the aspect ratio for a gimmick
@@ -139,9 +140,9 @@ public class ASTWalker {
     }
 
     private Result EvaluateForEach(ForeachLoopStatementNode foreachLoop) {
-        currentScope[foreachLoop.value.name] = null;
+        CurrentScope[foreachLoop.value.name] = null;
         foreach (Value it in EvaluateExpression(foreachLoop.iterable).ToArray().content) {
-            currentScope[foreachLoop.value.name] = it.Copy();
+            CurrentScope[foreachLoop.value.name] = it.Copy();
 
             switch (EvaluateStatement(foreachLoop.body).Case) {
                 case ErrorType.NoError:
@@ -228,7 +229,7 @@ public class ASTWalker {
     }
 
     private ErrorType DeclareVariable(VariableDeclarationStatementNode variableDeclaration) {
-        currentScope.DeclareVariable(variableDeclaration.name, EvaluateExpression(variableDeclaration.valueExpression), variableDeclaration.@readonly);
+        CurrentScope.DeclareVariable(variableDeclaration.name, EvaluateExpression(variableDeclaration.valueExpression), variableDeclaration.@readonly);
         return ErrorType.NoError;
     }
 
@@ -259,11 +260,11 @@ public class ASTWalker {
 
     public Value CallUserDefinedClosure(Scope scope, ClosureExpressionNode closure, params Value[] args) {
         // declarations
-        Scope _scope = currentScope;
+        Scope _scope = CurrentScope;
         Value result = new Unset();
 
         // temporary function scope
-        currentScope = scope;
+        CurrentScope = scope;
         isInFunction = true;
 
         if (!closure.isLastParams)
@@ -286,7 +287,7 @@ public class ASTWalker {
                     // case ErrorType error:
                     //     return error;
                     case Value o:
-                        currentScope = _scope;
+                        CurrentScope = _scope;
                         isInFunction = false;
                         return o;
                     default:
@@ -296,7 +297,7 @@ public class ASTWalker {
         }
 
         // switch back to the previous scope
-        currentScope = _scope;
+        CurrentScope = _scope;
         isInFunction = false;
 
         return result;

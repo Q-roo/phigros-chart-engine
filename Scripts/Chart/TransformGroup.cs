@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using PCE.Chartbuild.Bindings;
 using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chart;
+
+using Object = Chartbuild.Runtime.Object;
 
 public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
     public readonly HashSet<TransformGroup> subGroups = [];
@@ -27,8 +30,7 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
     }
 
     public Judgeline AddJudgeline(Judgeline judgeline) {
-        judgelines.Add(judgeline);
-        AddChild(judgeline);
+        judgeline.AttachTo(this);
         return judgeline;
     }
 
@@ -64,6 +66,9 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
     }
 
     NativeObject AddJudgeline_Binding(params Object[] args) {
-        return AddJudgeline(new()).ToObject();
+        if (args.Length == 0 || args[0] is not NativeObject native || native.Value is not Judgeline judgeline)
+        throw new ArgumentException("this method requires one judgeline instance");
+
+        return AddJudgeline(judgeline).ToObject();
     }
 }
