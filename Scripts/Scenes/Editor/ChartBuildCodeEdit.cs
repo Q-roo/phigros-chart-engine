@@ -1,9 +1,12 @@
 using Godot;
 using PCE.Chart;
+using PCE.Chartbuild.Bindings;
 using PCE.Chartbuild.Runtime;
 using System;
 
 namespace PCE.Editor;
+
+using Object = Chartbuild.Runtime.Object;
 
 public partial class ChartBuildCodeEdit : CodeEdit {
     [GetNode("./VBoxContainer/Toolbar/HBoxContainer/Run")] private Button runButton;
@@ -50,14 +53,17 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 Chart.Chart chart = GetNode<Chart.Chart>("../../../../../ChartRender");
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
                 new ASTWalker(ast)
-                .InsertValue("true", new(true))
-                .InsertValue("false", new(false))
-                .InsertValue("unset", new(ObjectValue.Unset))
-                .InsertValue("chart", chart.ToCBObject())
-                .InsertValue("PLATFORM", new(chart.Platform)) // should be fine since it's not going to change
-                .InsertValue("PCE", new(CompatibilityLevel.PCE))
-                .InsertValue("RPE", new(CompatibilityLevel.RPE))
-                .InsertValue("PHI", new(CompatibilityLevel.PHI))
+                .InsertValue("true", new Bool(true))
+                .InsertValue("false", new Bool(false))
+                .InsertValue("unset", new Unset())
+                .InsertValue("dbg_print", new NativeFunction(new Action<Object[]>(args => {
+                    GD.Print(string.Join<Object>(", ", args));
+                })))
+                .InsertValue("chart", chart.ToObject())
+                .InsertValue("PLATFORM", new I32((int)chart.Platform)) // should be fine since it's not going to change
+                .InsertValue("PCE", new I32((int)CompatibilityLevel.PCE))
+                .InsertValue("RPE", new I32((int)CompatibilityLevel.RPE))
+                .InsertValue("PHI", new I32((int)CompatibilityLevel.PHI))
                 .Evaluate();
             } catch (Exception ex) {
                 GD.Print(ex);

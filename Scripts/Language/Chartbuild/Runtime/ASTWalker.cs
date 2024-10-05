@@ -7,8 +7,8 @@ using LanguageExt;
 namespace PCE.Chartbuild.Runtime;
 
 // TODO: dynamic is really hurting the preformace. Create a new wrapper object
-using Value = CBObject;
-using Result = Either<CBObject, ErrorType>;
+using Value = Object;
+using Result = Either<Object, ErrorType>;
 
 public class ASTWalker {
     private readonly ASTRoot ast;
@@ -20,10 +20,6 @@ public class ASTWalker {
         this.ast = ast;
         rootScope = new(null);
         currentScope = rootScope;
-        InsertValue("dbg_print", new(new Func<Value[], Value>(args => {
-            Godot.GD.Print(args);
-            return new(ObjectValue.Unset);
-        })));
     }
 
     public ASTWalker InsertValue(object key, Value value) {
@@ -39,11 +35,11 @@ public class ASTWalker {
         EvaluateBlock(ast);
     }
 
-    private ObjectValueArray EvaluateArrayLiteral(ArrayLiteralExpressionNode arrayLiteral) => new(arrayLiteral.content.Map(it => EvaluateExpression(it).GetValue()).ToList());
+    private Array EvaluateArrayLiteral(ArrayLiteralExpressionNode arrayLiteral) => new(arrayLiteral.content.Map(EvaluateExpression));
 
     private Value EvaluateAssignment(AssignmentExpressionNode assignment) {
         Value asignee = EvaluateExpression(assignment.asignee);
-        Value oldValue = new(asignee.GetValue());
+        Value oldValue = asignee.Copy();
 
         asignee.SetValue(
             assignment.@operator.Type switch {
@@ -52,8 +48,8 @@ public class ASTWalker {
                         new ComputedMemberAccessExpressionNode(assignment.asignee, ((CallExpressionNode)assignment.value).method),
                         ((CallExpressionNode)assignment.value).arguments
                     )
-                ).GetValue(),
-                TokenType.Assign => EvaluateExpression(assignment.value).GetValue(),
+                ),
+                TokenType.Assign => EvaluateExpression(assignment.value),
                 TokenType token => EvaluateBinary(new(new ValueExpressionNode<Value>(asignee), new Token(-1, -1, token switch {
                     TokenType.PlusAssign => TokenType.Plus,
                     TokenType.MinusAssign => TokenType.Minus,
@@ -68,38 +64,38 @@ public class ASTWalker {
                     TokenType.BitwiseXorAssign => TokenType.BitwiseXor,
                     TokenType.BitwiseNotAssign => TokenType.BitwiseNot,
                     _ => throw new NotSupportedException($"{token.ToSourceString()} cannot be turned into a binary operator"),
-                }), assignment.value)).GetValue()
+                }), assignment.value))
             }
         );
 
         return oldValue;
     }
 
-    private Value EvaluateBinary(BinaryExpressionNode binary) => new(EvaluateExpression(binary.left).GetValue().ExecuteBinaryOperator(binary.@operator.Type, EvaluateExpression(binary.right).GetValue()));
+    private Value EvaluateBinary(BinaryExpressionNode binary) => EvaluateExpression(binary.left).ExecuteBinary(binary.@operator.Type.ToOperator(), EvaluateExpression(binary.right));
 
-    private Value EvaluateUnary(UnaryExpressionNode unary) => new(EvaluateExpression(unary.expression).GetValue().ExecuteUnaryOperator(unary.@operator.Type));
+    private Value EvaluateUnary(UnaryExpressionNode unary) => EvaluateExpression(unary.expression).ExecuteUnary(unary.@operator.Type.ToOperator(), unary.prefix);
 
     private Value EvaluateExpression(ExpressionNode expression) {
         if (expression.IsNullOrEmpty())
             return null;
 
         return expression switch {
-            ArrayLiteralExpressionNode arrayLiteral => new(EvaluateArrayLiteral(arrayLiteral)),
+            ArrayLiteralExpressionNode arrayLiteral => EvaluateArrayLiteral(arrayLiteral),
             AssignmentExpressionNode assignment => EvaluateAssignment(assignment),
             BinaryExpressionNode binary => EvaluateBinary(binary),
-            CallExpressionNode call => EvaluateExpression(call.method).GetValue().AsCallable()(call.arguments.Map(it => EvaluateExpression(it).ShallowCopy()).ToArray()),
+            CallExpressionNode call => EvaluateExpression(call.method).Call(call.arguments.Map(it => EvaluateExpression(it).Copy()).ToArray()),
             // the scope has to be reconstructed for each call
             // which is done by the ast closure object
-            ClosureExpressionNode closure => new(new ASTClosureValue(currentScope, closure, this)),
-            ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member).GetValue().GetMember(EvaluateExpression(computedMemberAccess.property).GetValue().Value),
-            DoubleExpressionNode @double => new(@double.value),
+            ClosureExpressionNode closure => new Closure(currentScope, closure, this),
+            ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member)[EvaluateExpression(computedMemberAccess.property).Value],
+            DoubleExpressionNode @double => new F32((float)@double.value),
             IdentifierExpressionNode identifier => currentScope[identifier.value],
-            IntExpressionNode @int => new(@int.value),
+            IntExpressionNode @int => new I32(@int.value),
             MemberAccessExpressionNode memberAccess => EvaluateExpression(new ComputedMemberAccessExpressionNode(memberAccess.member, new StringExpressionNode(memberAccess.property))),
             UnaryExpressionNode unary => EvaluateUnary(unary),
             RangeLiteralExpressionNode rangeLiteral => throw new NotImplementedException(),
-            StringExpressionNode @string => new(@string.value),
-            TernaryExpressionNode ternary => EvaluateExpression(ternary.condition).GetValue().AsBool() ? EvaluateExpression(ternary.@true) : EvaluateExpression(ternary.@false),
+            StringExpressionNode @string => new Str(@string.value),
+            TernaryExpressionNode ternary => EvaluateExpression(ternary.condition).ToBool().value ? EvaluateExpression(ternary.@true) : EvaluateExpression(ternary.@false),
             ValueExpressionNode<Value> value => value.value,
             _ => throw new NotSupportedException($"evaluation of {expression.GetType()} is not supported")
         };
@@ -134,13 +130,13 @@ public class ASTWalker {
     }
 
     private Result EvaluateIf(IfStatementNode @if) {
-        return EvaluateStatement(EvaluateExpression(@if.condition).GetValue().AsBool() ? @if.@true : @if.@false);
+        return EvaluateStatement(EvaluateExpression(@if.condition).ToBool().value ? @if.@true : @if.@false);
     }
 
     private Result EvaluateForEach(ForeachLoopStatementNode foreachLoop) {
         currentScope[foreachLoop.value.name] = null;
-        foreach (ObjectValue it in (ObjectValueArray)EvaluateExpression(foreachLoop.iterable).GetValue()) {
-            currentScope[foreachLoop.value.name] = new(it);
+        foreach (Value it in EvaluateExpression(foreachLoop.iterable).ToArray().content) {
+            currentScope[foreachLoop.value.name] = it.Copy();
 
             switch (EvaluateStatement(foreachLoop.body).Case) {
                 case ErrorType.NoError:
@@ -168,7 +164,7 @@ public class ASTWalker {
         if (!forLoop.init.IsNullOrEmpty())
             DeclareVariable(forLoop.init);
 
-        for (; forLoop.condition.IsNullOrEmpty() || EvaluateExpression(forLoop.condition).GetValue().AsBool(); EvaluateExpression(forLoop.update)) {
+        for (; forLoop.condition.IsNullOrEmpty() || EvaluateExpression(forLoop.condition).ToBool().value; EvaluateExpression(forLoop.update)) {
             switch (EvaluateStatement(forLoop.body).Case) {
                 case ErrorType.NoError:
                     break;
@@ -193,7 +189,7 @@ public class ASTWalker {
 
     private Result EvaluateWhile(WhileLoopStatementNode whileLoop) {
         while (true) {
-            if (whileLoop.condition.IsNullOrEmpty() || EvaluateExpression(whileLoop.condition).GetValue().AsBool())
+            if (whileLoop.condition.IsNullOrEmpty() || EvaluateExpression(whileLoop.condition).ToBool().value)
                 return ErrorType.NoError;
 
             switch (EvaluateStatement(whileLoop.body).Case) {
@@ -258,7 +254,7 @@ public class ASTWalker {
     public Value CallUserDefinedClosure(Scope scope, ClosureExpressionNode closure, params Value[] args) {
         // declarations
         Scope _scope = currentScope;
-        Value result = new(ObjectValue.Unset);
+        Value result = new Unset();
 
         // temporary function scope
         currentScope = scope;
@@ -271,7 +267,7 @@ public class ASTWalker {
             for (int i = 0; i < closure.arguments.Length - 1; i++)
                 scope.DeclareVariable(closure.arguments[i].name, args[i]);
 
-            scope.DeclareVariable(closure.arguments[^1].name, new(new ObjectValueArray(args.Slice(new(closure.arguments.Length - 1, args.Length - 1)).Map(it => it.GetValue()).ToList())));
+            scope.DeclareVariable(closure.arguments[^1].name, new Array(args.Slice(new(closure.arguments.Length - 1, args.Length - 1))));
         }
 
 

@@ -1,3 +1,5 @@
+using System;
+
 namespace PCE.Chartbuild;
 
 public static class TokenTypeExtensions
@@ -82,4 +84,43 @@ public static class TokenTypeExtensions
             _                            => "???"
         };
     }
+
+    public static OperatorType ToOperator(this TokenType token) => token switch {
+            TokenType.LessThan           => OperatorType.LessThan,
+            TokenType.LessThanOrEqual    => OperatorType.LessThanOrEqual,
+            TokenType.GreaterThan        => OperatorType.GreaterThan,
+            TokenType.GreaterThanOrEqual => OperatorType.GreaterThanOrEqual,
+            TokenType.Equal              => OperatorType.Equal,
+            TokenType.NotEqual           => OperatorType.NotEqual,
+            TokenType.And                => OperatorType.And,
+            TokenType.Or                 => OperatorType.Or,
+            TokenType.Not                => OperatorType.Not,
+            TokenType.BitwiseAnd         => OperatorType.BitwiseAnd,
+            TokenType.BitwiseOr          => OperatorType.BitwiseOr,
+            TokenType.BitwiseNot         => OperatorType.BitwiseNot,
+            TokenType.BitwiseXor         => OperatorType.BitwiseXor,
+            TokenType.ShiftLeft          => OperatorType.ShiftLeft,
+            TokenType.ShiftRight         => OperatorType.ShiftRight,
+            TokenType.Plus               => OperatorType.Plus,
+            TokenType.Minus              => OperatorType.Minus,
+            TokenType.Multiply           => OperatorType.Multiply,
+            TokenType.Power              => OperatorType.Power,
+            TokenType.Divide             => OperatorType.Divide,
+            TokenType.Modulo             => OperatorType.Modulo,
+            TokenType.Increment          => OperatorType.Increment,
+            TokenType.Decrement          => OperatorType.Decrement,
+            // assignments
+            TokenType.PlusAssign         => OperatorType.Plus,
+            TokenType.MinusAssign        => OperatorType.Minus,
+            TokenType.MultiplyAssign     => OperatorType.Multiply,
+            TokenType.PowerAssign        => OperatorType.Power,
+            TokenType.DivideAssign       => OperatorType.Divide,
+            TokenType.ModuloAssign       => OperatorType.Modulo,
+            TokenType.ShiftLeftAssign    => OperatorType.ShiftLeft,
+            TokenType.ShiftRightAssign   => OperatorType.ShiftRight,
+            TokenType.BitwiseAndAssign   => OperatorType.BitwiseAnd,
+            TokenType.BitwiseOrAssign    => OperatorType.BitwiseOr,
+            TokenType.BitwiseXorAssign   => OperatorType.BitwiseXor,
+            _ => throw new InvalidOperationException($"{token.ToSourceString()} is not an operator")
+    };
 }

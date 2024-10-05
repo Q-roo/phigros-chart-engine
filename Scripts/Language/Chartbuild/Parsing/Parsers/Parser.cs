@@ -339,11 +339,11 @@ public class Parser(BaseToken[] tokens) {
         return new([.. content]);
     }
 
-    private PrefixExpressionNode ParsePostfixExpression(ExpressionNode left) {
+    private PostfixExpressionNode ParsePostfixExpression(ExpressionNode left) {
         BaseToken @operator = CurrentToken;
         // Advance();
         Advance();
-        return new(@operator, left);
+        return new(left, @operator);
     }
 
     private AssignmentExpressionNode ParseAssignmentExpression(ExpressionNode left) {

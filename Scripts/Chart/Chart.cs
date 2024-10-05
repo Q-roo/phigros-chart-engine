@@ -9,15 +9,18 @@ public partial class Chart : Node2D, ICBExposeable {
     public CompatibilityLevel Platform => CompatibilityLevel.PCE;
     public readonly TransformGroup rootGroup = new("root");
 
-    public CBObject ToCBObject() {
-        return new(new FunctionalObjectValue(
+    public NativeObject ToObject() {
+        return new(
             this,
             key => key switch {
-                "platform" => new(Platform),
-                "groups" => rootGroup.ToCBObject(),
+                "platform" => new I32((int)Platform),
+                "groups" => rootGroup.ToObject(),
                 _ => throw new KeyNotFoundException()
+            },
+            (Key, value) => {
+
             }
-        ));
+        );
     }
 
     public override void _Ready() {

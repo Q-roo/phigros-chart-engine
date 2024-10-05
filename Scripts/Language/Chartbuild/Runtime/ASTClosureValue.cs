@@ -14,7 +14,8 @@ public class ASTClosureValue : ObjectValue {
     }
 
     public override CBObject Call(params CBObject[] args) {
-        // scopes need to be reconstructed
-        return walker.CallUserDefinedClosure(new(scope), closure, args);
+        // // scopes need to be reconstructed
+        // return walker.CallUserDefinedClosure(new(scope), closure, args);
+        throw new System.Exception("");
     }
 }
