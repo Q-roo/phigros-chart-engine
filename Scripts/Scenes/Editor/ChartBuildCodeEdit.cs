@@ -54,7 +54,7 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 .InsertValue("false", new(false))
                 .InsertValue("unset", new(ObjectValue.Unset))
                 .InsertValue("chart", chart.ToCBObject())
-                .InsertValue("PLATFORM", new(chart.platform)) // should be fine since it's not going to change
+                .InsertValue("PLATFORM", new(chart.Platform)) // should be fine since it's not going to change
                 .InsertValue("PCE", new(CompatibilityLevel.PCE))
                 .InsertValue("RPE", new(CompatibilityLevel.RPE))
                 .InsertValue("PHI", new(CompatibilityLevel.PHI))

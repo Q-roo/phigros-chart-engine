@@ -7,7 +7,6 @@ namespace PCE.Chartbuild.Runtime;
 
 public class ObjectValue {
     public static ObjectValue Unset => new((object)null);
-    public static ObjectValue Property => new(Unset) { Type = ValueType.Property };
 
     public ValueType Type { get; init; }
     public virtual object Value { get; private set; }
