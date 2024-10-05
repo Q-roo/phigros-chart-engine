@@ -9,7 +9,7 @@ public class I32(int value) : Object {
 
     public override Object this[object key] { get => throw KeyNotFound(key); set => throw KeyNotFound(key); }
 
-    public override Object SetValue(Object value) {
+    protected override Object RequestSetValue(Object value) {
         this.value = value.ToI32().value;
         return value;
     }

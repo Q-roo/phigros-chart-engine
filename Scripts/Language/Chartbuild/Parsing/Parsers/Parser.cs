@@ -147,8 +147,7 @@ public class Parser(BaseToken[] tokens) {
     }
 
     private VariableDeclarationStatementNode ParseVariableDeclaration() {
-        Advance();
-        // bool isReadonly = Advance().Type == TokenType.Const;
+        bool @readonly = Advance().Type == TokenType.Const;
         string name = GetIdentifierName();
 
         ExpressionNode valueExpression = null;
@@ -163,7 +162,7 @@ public class Parser(BaseToken[] tokens) {
 
         Expect(TokenType.Semicolon);
 
-        return new(name, valueExpression);
+        return new(name, valueExpression, @readonly);
     }
 
     private FunctionDeclarationStatementNode ParseFunctionDeclaration() {
@@ -256,13 +255,13 @@ public class Parser(BaseToken[] tokens) {
         if (CurrentType != TokenType.Let && CurrentType != TokenType.Const)
             PushError(new(Advance(), ErrorType.UnexpectedToken, "variable needs const or let access modifier"));
 
-        // bool constant = Advance().Type == TokenType.Const;
+        bool @readonly = Advance().Type == TokenType.Const;
         string name = GetIdentifierName();
 
         if (CurrentType == TokenType.Assign) // for (i = 0; i < n; i++)
         {
             Advance();
-            VariableDeclarationStatementNode init = new(name, ParseExpression(BindingPower.Assignment));
+            VariableDeclarationStatementNode init = new(name, ParseExpression(BindingPower.Assignment), @readonly);
             Expect(TokenType.Semicolon);
 
             ExpressionNode condition = null;
@@ -284,7 +283,7 @@ public class Parser(BaseToken[] tokens) {
             Expect(TokenType.In);
             ExpressionNode iterable = ParseExpression(BindingPower.Default);
             Expect(TokenType.RightParenthesis);
-            return new ForeachLoopStatementNode(new(name, null), iterable, ParseStatement());
+            return new ForeachLoopStatementNode(new(name, null, false), iterable, ParseStatement());
         }
     }
 

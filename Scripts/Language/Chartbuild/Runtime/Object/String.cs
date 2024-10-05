@@ -16,7 +16,7 @@ public class Str(string value) : Object {
         set => throw ReadOnlyProperty(key); // NOTE: will also thorw this to nonexistent properties but eh, who cares?
     }
 
-    public override Object SetValue(Object value) {
+    protected override Object RequestSetValue(Object value) {
         this.value = value.ToStr().value;
         return value;
     }
@@ -30,6 +30,11 @@ public class Str(string value) : Object {
     }
 
     public override Object ExecuteBinary(OperatorType @operator, Object rhs) {
+        if (@operator == OperatorType.Equal)
+            return new Bool(this.value.Equals(rhs.Value));
+        else if (@operator == OperatorType.Equal)
+            return new Bool(!this.value.Equals(rhs.Value));
+
         string value = rhs.ToStr().value;
         return @operator switch {
             OperatorType.Equal => new Bool(value.Equals(rhs.Value)),

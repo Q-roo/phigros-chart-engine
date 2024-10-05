@@ -50,20 +50,31 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 Chartbuild.BaseToken[] tokens = Chartbuild.Lexer.Parse(Text);
                 GD.Print(tokens);
 
-                Chart.Chart chart = GetNode<Chart.Chart>("../../../../../ChartRender");
+                Chart.Chart chart = GetNode<Chart.Chart>("../../../../../ChartRenderer");
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
                 new ASTWalker(ast)
-                .InsertValue("true", new Bool(true))
-                .InsertValue("false", new Bool(false))
-                .InsertValue("unset", new Unset())
-                .InsertValue("dbg_print", new NativeFunction(new Action<Object[]>(args => {
+                // default values
+                .InsertValue(true, "true", new Bool(true))
+                .InsertValue(true, "false", new Bool(false))
+                .InsertValue(true, "unset", new Unset())
+                .InsertValue(true, "chart", chart.ToObject())
+                .InsertValue(true, "PLATFORM", new I32((int)chart.Platform)) // should be fine since it's not going to change
+                .InsertValue(true, "PCE", new I32((int)CompatibilityLevel.PCE))
+                .InsertValue(true, "RPE", new I32((int)CompatibilityLevel.RPE))
+                .InsertValue(true, "PHI", new I32((int)CompatibilityLevel.PHI))
+                // default constructors
+                .InsertValue(true, "vec2", new NativeFunction(args => {
+                    if (args.Length == 0)
+                        return new Vec2(Vector2.Zero);
+                    else if (args.Length == 1)
+                        return args[0].ToVec2();
+                    else
+                        return new Vec2(new(args[0].ToF32().value, args[1].ToF32().value));
+                }))
+                // default functions
+                .InsertValue(true, "dbg_print", new NativeFunction(new Action<Object[]>(args => {
                     GD.Print(string.Join<Object>(", ", args));
                 })))
-                .InsertValue("chart", chart.ToObject())
-                .InsertValue("PLATFORM", new I32((int)chart.Platform)) // should be fine since it's not going to change
-                .InsertValue("PCE", new I32((int)CompatibilityLevel.PCE))
-                .InsertValue("RPE", new I32((int)CompatibilityLevel.RPE))
-                .InsertValue("PHI", new I32((int)CompatibilityLevel.PHI))
                 .Evaluate();
             } catch (Exception ex) {
                 GD.Print(ex);

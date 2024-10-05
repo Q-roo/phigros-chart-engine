@@ -15,7 +15,7 @@ public class NativeFunction : Object {
 
     public override Object this[object key] { get => throw KeyNotFound(key); set => throw KeyNotFound(key); }
 
-    public override Object SetValue(Object value) {
+    protected override Object RequestSetValue(Object value) {
         throw ReadOnlyValue();
     }
 

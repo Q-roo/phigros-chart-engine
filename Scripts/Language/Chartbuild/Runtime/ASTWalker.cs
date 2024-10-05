@@ -22,8 +22,8 @@ public class ASTWalker {
         currentScope = rootScope;
     }
 
-    public ASTWalker InsertValue(object key, Value value) {
-        currentScope[key] = value;
+    public ASTWalker InsertValue(bool @readonly, object key, Value value) {
+        currentScope.DeclareVariable(key, value, @readonly);
         return this;
     }
 
@@ -126,6 +126,11 @@ public class ASTWalker {
     }
 
     private ErrorType EvaluateCommand(CommandStatementNode command) {
+        // TODO: #set aspect_ratio=f32
+        // TODO: #set default_judgeline_width=f32
+        // NOTE: #meta allows values to be defined only once
+        // but it should be fine to let users redefine these
+        // just imagine changing the aspect ratio for a gimmick
         throw new NotImplementedException();
     }
 
@@ -216,13 +221,14 @@ public class ASTWalker {
         return DeclareVariable(
             new(
                 functionDeclaration.name,
-                new ClosureExpressionNode(functionDeclaration.arguments, functionDeclaration.body, functionDeclaration.isLastParams)
+                new ClosureExpressionNode(functionDeclaration.arguments, functionDeclaration.body, functionDeclaration.isLastParams),
+                true
             )
         );
     }
 
     private ErrorType DeclareVariable(VariableDeclarationStatementNode variableDeclaration) {
-        currentScope.DeclareVariable(variableDeclaration.name, EvaluateExpression(variableDeclaration.valueExpression));
+        currentScope.DeclareVariable(variableDeclaration.name, EvaluateExpression(variableDeclaration.valueExpression), variableDeclaration.@readonly);
         return ErrorType.NoError;
     }
 
@@ -262,12 +268,12 @@ public class ASTWalker {
 
         if (!closure.isLastParams)
             for (int i = 0; i < closure.arguments.Length; i++)
-                scope.DeclareVariable(closure.arguments[i].name, args[i]);
+                scope.DeclareVariable(closure.arguments[i].name, args[i], false);
         else {
             for (int i = 0; i < closure.arguments.Length - 1; i++)
-                scope.DeclareVariable(closure.arguments[i].name, args[i]);
+                scope.DeclareVariable(closure.arguments[i].name, args[i], false);
 
-            scope.DeclareVariable(closure.arguments[^1].name, new Array(args.Slice(new(closure.arguments.Length - 1, args.Length - 1))));
+            scope.DeclareVariable(closure.arguments[^1].name, new Array(args.Slice(new(closure.arguments.Length - 1, args.Length - 1))), false);
         }
 
 

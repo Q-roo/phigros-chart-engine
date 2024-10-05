@@ -1,40 +1,79 @@
+using System;
 using System.Collections.Generic;
 
 namespace PCE.Chartbuild.Runtime;
 
 using Value = Object;
 
-public class Scope(Scope parent) {
-    // object is CBObject.GetValue()
+public class Scope(Scope parent) : Value {
     private readonly Dictionary<object, Value> variables = [];
+    private readonly HashSet<object> readOnlyVariableKeys = [];
     public readonly Scope parent = parent;
 
-    public Value this[object key] {
+    public override object Value => this;
+
+    public override Value this[object key] {
         get {
-            GetVariableStore(key, out Dictionary<object, Value> variables);
-            return variables[key];
+            GetVariableStore(key, out Scope parent);
+            return parent.variables[key];
         }
         set {
-            GetVariableStore(key, out Dictionary<object, Value> variables);
-            variables[key] = value;
+            GetVariableStore(key, out Scope parent);
+            if (parent.readOnlyVariableKeys.Contains(key))
+                throw ReadOnlyProperty(key);
+
+            parent.variables[key] = value;
+            value.parentKey = key;
+            value.parentObject = parent;
         }
     }
 
-    public void DeclareVariable(object key, Value value) {
+    public void DeclareVariable(object key, Value value, bool @readonly) {
         variables[key] = value;
+        value.parentKey = key;
+        value.parentObject = this;
+
+        if (@readonly)
+            readOnlyVariableKeys.Add(key);
     }
 
     // TODO: a better name
     // get the dictionary which contains the variable
-    private bool GetVariableStore(object key, out Dictionary<object, Value> variables) {
-        variables = this.variables;
-        if (variables.ContainsKey(key))
+    private bool GetVariableStore(object key, out Scope scope) {
+        scope = this;
+        if (scope.variables.ContainsKey(key))
             return true;
-        else if (parent is not null && parent.GetVariableStore(key, out Dictionary<object, Value> parentVariables)) {
-            variables = parentVariables;
+        else if (parent is not null && parent.GetVariableStore(key, out Scope parentScope)) {
+            scope = parentScope;
             return true;
         }
 
         return false;
     }
+
+    protected override Value RequestSetValue(Value value) {
+        throw ReadOnlyValue();
+    }
+
+    public override Value Copy(bool shallow = true, params object[] keys) {
+        throw new NotImplementedException();
+    }
+
+    public override Value Call(params Value[] args) {
+        throw NotCallable();
+    }
+
+    public override Value ExecuteBinary(OperatorType @operator, Value rhs) {
+        throw NotSupportedOperator(@operator);
+    }
+
+    public override Value ExecuteUnary(OperatorType @operator, bool prefix) {
+        throw NotSupportedOperator(@operator);
+    }
+
+    public override IEnumerator<Value> GetEnumerator() {
+        throw NotIterable();
+    }
+
+    public override string ToString() => "scope";
 }

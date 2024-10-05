@@ -21,8 +21,11 @@ PCE_ErrorDialog="*res://Scripts/Scenes/Global/ErrorDialog.cs"
 
 [display]
 
+window/size/viewport_width=1920
+window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/stretch/scale=1.78
 
 [dotnet]
 

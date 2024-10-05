@@ -112,7 +112,7 @@ public class UnsafeByteCodeGenerator {
             }
             case FunctionDeclarationStatementNode functionDeclaration: {
                 // declare a variable in the chunk with the name of the function
-                GenerateStatement(new VariableDeclarationStatementNode(functionDeclaration.name, null), chunk);
+                GenerateStatement(new VariableDeclarationStatementNode(functionDeclaration.name, null, true), chunk);
                 // construct the closure which will be on the stack
                 GenerateExpression(new ClosureExpressionNode(functionDeclaration.arguments, functionDeclaration.body, functionDeclaration.isLastParams), chunk);
                 // load the address of the variable onto the stack

@@ -26,7 +26,7 @@ public class Array : Object {
         }
     }
 
-    public override Object SetValue(Object value) {
+    protected override Object RequestSetValue(Object value) {
         content = value.ToArray().content;
         return value;
     }

@@ -8,7 +8,7 @@ public class Bool(bool value) : Object {
 
     public override Object this[object key] { get => throw KeyNotFound(key); set => throw KeyNotFound(key); }
 
-    public override Object SetValue(Object value) {
+    protected override Object RequestSetValue(Object value) {
         this.value = value.ToBool().value;
         return value;
     }
@@ -22,6 +22,11 @@ public class Bool(bool value) : Object {
     }
 
     public override Object ExecuteBinary(OperatorType @operator, Object rhs) {
+        if (@operator == OperatorType.Equal)
+            return new Bool(this.value.Equals(rhs.Value));
+        else if (@operator == OperatorType.NotEqual)
+            return new Bool(!this.value.Equals(rhs.Value));
+
         // if rhs is a number, do math
         if (rhs is I32 || rhs is F32)
             return ToI32().ExecuteBinary(@operator, rhs);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chartbuild.Bindings;
 
@@ -9,7 +10,16 @@ public class NativeObject(object value, Func<object, Object> getter, Action<obje
     private readonly object value = value;
     private readonly Func<object, Object> getter = getter;
     private readonly Action<object, Object> setter = setter;
-    public override Object this[object key] { get => getter(key); set => setter(key, value); }
+    public override Object this[object key] {
+        get {
+            Object result = getter(key);
+            result.parentKey = key;
+            result.parentObject = this;
+
+            return result;
+        }
+        set => setter(key, value);
+    }
 
     public override object Value => value;
 
@@ -22,7 +32,11 @@ public class NativeObject(object value, Func<object, Object> getter, Action<obje
     }
 
     public override Object ExecuteBinary(OperatorType @operator, Object rhs) {
-        throw NotSupportedOperator(@operator);
+        return @operator switch {
+            OperatorType.Equal => new Bool(value.Equals(rhs.Value)),
+            OperatorType.NotEqual => new Bool(!value.Equals(rhs.Value)),
+            _ => throw NotSupportedOperator(@operator)
+        };
     }
 
     public override Object ExecuteUnary(OperatorType @operator, bool prefix) {
@@ -33,7 +47,7 @@ public class NativeObject(object value, Func<object, Object> getter, Action<obje
         throw NotIterable();
     }
 
-    public override Object SetValue(Object value) {
+    protected override Object RequestSetValue(Object value) {
         throw ReadOnlyValue();
     }
 

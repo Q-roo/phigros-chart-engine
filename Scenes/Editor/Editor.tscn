@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
 [ext_resource type="CodeHighlighter" uid="uid://bla2abm5ap8df" path="res://Themes/code_highlighter.tres" id="2_ohngm"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartBuildCodeEdit.cs" id="3_c2gp3"]
-[ext_resource type="PackedScene" uid="uid://b0xttc7rt3d3v" path="res://Scenes/ChartRender/ChartRender.tscn" id="5_dqvj3"]
+[ext_resource type="PackedScene" uid="uid://b0xttc7rt3d3v" path="res://Scenes/ChartRender/ChartRenderer.tscn" id="5_dqvj3"]
 
 [node name="Editor" type="Control"]
 layout_mode = 3
@@ -31,11 +31,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 tab_alignment = 2
-current_tab = 1
+current_tab = 0
 tabs_position = 1
 
 [node name="Chartbuild" type="Panel" parent="Panel/TabContainer"]
-visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -82,8 +81,20 @@ text = "Reload"
 [node name="CodeEdit" type="CodeEdit" parent="Panel/TabContainer/Chartbuild/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-text = "dbg_print(chart.groups.add_subgroup('a').add_subgroup('aa'));
-dbg_print(chart.groups['a/aa'].add_subgroup('aaa'));"
+text = "let jl = chart.groups['a/aa/@Line2D@309'];
+
+if (jl == unset) {
+	dbg_print(chart.groups.add_subgroup('a').add_subgroup('aa'));
+	dbg_print(chart.groups['a/aa'].add_subgroup('aaa'));
+	jl = chart.groups['a/aa'].add_judgeline();
+}
+
+dbg_print(jl);
+jl.position = vec2(500, 250);
+jl.size = 200
+dbg_print(jl.position);
+dbg_print(chart.groups['b'] == unset)
+"
 scroll_smooth = true
 scroll_past_end_of_file = true
 minimap_draw = true
@@ -106,6 +117,7 @@ auto_brace_completion_highlight_matching = true
 script = ExtResource("3_c2gp3")
 
 [node name="GUI" type="Panel" parent="Panel/TabContainer"]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
@@ -174,4 +186,4 @@ layout_mode = 2
 size_flags_horizontal = 10
 text = "Ln 0; Col 0"
 
-[node name="ChartRender" parent="." instance=ExtResource("5_dqvj3")]
+[node name="ChartRenderer" parent="." instance=ExtResource("5_dqvj3")]

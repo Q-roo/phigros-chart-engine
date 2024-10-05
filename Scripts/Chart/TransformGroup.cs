@@ -7,6 +7,7 @@ namespace PCE.Chart;
 
 public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
     public readonly HashSet<TransformGroup> subGroups = [];
+    public readonly HashSet<Judgeline> judgelines = [];
     public readonly StringName name = name;
 
     public override void _Ready() {
@@ -23,6 +24,12 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
 
     public TransformGroup AddSubGroup(StringName name) {
         return AddSubGroup(new TransformGroup(name));
+    }
+
+    public Judgeline AddJudgeline(Judgeline judgeline) {
+        judgelines.Add(judgeline);
+        AddChild(judgeline);
+        return judgeline;
     }
 
     public Node2D GetMember(NodePath nodePath) {
@@ -42,7 +49,8 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
 
                 return property switch {
                     "add_subgroup" => new NativeFunction(AddSubgroup_Binding),
-                    _ => ((ICBExposeable)GetMember(property)).ToObject()
+                    "add_judgeline" => new NativeFunction(AddJudgeline_Binding),
+                    _ => GetMember(property) is ICBExposeable exposeable ? exposeable.ToObject() : new Unset()
                 };
             },
             (Key, value) => {
@@ -53,5 +61,9 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
 
     NativeObject AddSubgroup_Binding(params Object[] args) {
         return AddSubGroup((string)args[0].Value).ToObject();
+    }
+
+    NativeObject AddJudgeline_Binding(params Object[] args) {
+        return AddJudgeline(new()).ToObject();
     }
 }

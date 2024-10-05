@@ -9,7 +9,19 @@ public abstract class Object : IEnumerable<Object> {
     public abstract Object this[object key] { get; set; }
     public abstract object Value { get; }
 
-    public abstract Object SetValue(Object value);
+    public Object parentObject;
+    public object parentKey;
+
+    public Object SetValue(Object value) {
+        parentObject[parentKey] = value;
+        value.parentObject = parentObject;
+        value.parentKey = parentKey;
+
+        return value;
+    }
+
+    [Obsolete("it's the parent's job to set the value now")]
+    protected abstract Object RequestSetValue(Object value);
 
     // make a copy of the object
     // either a shallow or a deep one
@@ -26,7 +38,7 @@ public abstract class Object : IEnumerable<Object> {
 
     protected static KeyNotFoundException KeyNotFound(object key) => new($"key \"{key}\" is not associated with any properties");
     protected static InvalidOperationException ReadOnlyProperty(object key) => new($"{key} is a read-only property");
-    protected InvalidOperationException ReadOnlyValue() => new($"{GetType()} is a read-only valuw");
+    protected InvalidOperationException ReadOnlyValue() => new($"{GetType()} is a read-only value");
     protected static NotSupportedException NotSupportedOperator(OperatorType @operator) => new($"{@operator.ToSourceString()} is not supported");
     protected NotSupportedException NotCallable() => new($"{GetType()} is not callable");
     protected NotSupportedException NotIterable() => new($"{GetType()} is not iterable");
@@ -39,6 +51,7 @@ public abstract class Object : IEnumerable<Object> {
     public virtual F32 ToF32()=> throw NotCastable(typeof(F32));
     public virtual I32 ToI32()=> throw NotCastable(typeof(I32));
     public virtual Str ToStr() => new(ToString());
+    public virtual Vec2 ToVec2() => new(new(ToF32().value, ToF32().value));
 
     public abstract override string ToString();
 }

@@ -10,7 +10,7 @@ public class Closure(Scope scope, ClosureExpressionNode closure, ASTWalker walke
 
     public override Object this[object key] { get => throw KeyNotFound(key); set => throw KeyNotFound(key); }
 
-    public override Object SetValue(Object value) {
+    protected override Object RequestSetValue(Object value) {
         throw ReadOnlyValue();
     }
 
@@ -25,7 +25,11 @@ public class Closure(Scope scope, ClosureExpressionNode closure, ASTWalker walke
     }
 
     public override Object ExecuteBinary(OperatorType @operator, Object rhs) {
-        throw NotSupportedOperator(@operator);
+        return @operator switch {
+            OperatorType.Equal => new Bool(Equals(rhs.Value)),
+            OperatorType.NotEqual => new Bool(!Equals(rhs.Value)),
+            _ => throw NotSupportedOperator(@operator)
+        };
     }
 
     public override Object ExecuteUnary(OperatorType @operator, bool prefix) {
