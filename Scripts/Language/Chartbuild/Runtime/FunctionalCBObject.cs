@@ -2,18 +2,11 @@ using System;
 
 namespace PCE.Chartbuild.Runtime;
 
-public class FunctionalCBObject(Func<ObjectValue, ObjectValue> getter, Action<ObjectValue, ObjectValue> setter) : CBObject {
-    private readonly Func<ObjectValue, ObjectValue> getter = getter;
-    private readonly Action<ObjectValue, ObjectValue> setter = setter;
-
-    public FunctionalCBObject(Func<ObjectValue, ObjectValue> getter)
-    : this(getter, (_, _) => throw new InvalidOperationException("cannot set a read-only property")) { }
-
-    public override ObjectValue GetValue() {
-        throw new NotImplementedException();
-    }
+public class FunctionalCBObject(FunctionalObjectValue value) : CBObject(value) {
+    private readonly FunctionalObjectValue value = value;
+    public override ObjectValue GetValue() =>value;
 
     public override void SetValue(ObjectValue value) {
-        throw new NotImplementedException();
+        throw new InvalidOperationException("cannot set a read-only value");
     }
 }

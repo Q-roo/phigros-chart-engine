@@ -1,6 +1,11 @@
+using System;
+
 namespace PCE.Chartbuild.Runtime;
 
 public class CBObject {
+    public delegate CBObject CBFunction(params CBObject[] args);
+    public delegate void CBFunctionImplicitNullReturn(params CBObject[] args);
+
     private ObjectValue value;
     // will be set once after the first assignment
     public ValueType InitalType { get; private set; }
@@ -15,11 +20,15 @@ public class CBObject {
         }
     }
     public CBObject(object value)
-    : this(new(value)) { }
+    : this(new ObjectValue(value)) { }
+    public CBObject(CBFunction function)
+    : this(new ObjectValue(new Func<CBObject[], CBObject>(function))) { }
+    public CBObject(CBFunctionImplicitNullReturn function)
+    : this(new ObjectValue(new Func<CBObject[], CBObject>(args => { function(args); return new(); }))) { }
     public CBObject()
     : this(ObjectValue.Unset) { }
 
-    public CBObject ShallowCopy() => new(new(value));
+    public CBObject ShallowCopy() => new(new ObjectValue(value));
 
     public virtual void SetValue(ObjectValue value) {
         if (!initalized) {
