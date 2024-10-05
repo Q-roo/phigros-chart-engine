@@ -8,6 +8,7 @@ namespace PCE.Chart;
 public partial class Chart : Node2D, ICBExposeable {
     public CompatibilityLevel Platform => CompatibilityLevel.PCE;
     public readonly TransformGroup rootGroup = new("root");
+    public double CurrentTime { get; private set; }
 
     public NativeObject ToObject() {
         return new(
@@ -25,5 +26,14 @@ public partial class Chart : Node2D, ICBExposeable {
 
     public override void _Ready() {
         AddChild(rootGroup);
+        SetProcess(false);
+    }
+
+    public void BeginRender() {
+        SetProcess(true);
+    }
+
+    public override void _Process(double delta) {
+        CurrentTime += delta;
     }
 }

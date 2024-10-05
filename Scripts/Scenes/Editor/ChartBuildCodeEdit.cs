@@ -59,7 +59,8 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 .InsertValue(true, "false", new Bool(false))
                 .InsertValue(true, "unset", new Unset())
                 .InsertValue(true, "chart", chart.ToObject())
-                .InsertValue(true, "PLATFORM", new I32((int)chart.Platform)) // should be fine since it's not going to change
+                .InsertProperty("PLATFORM", () => new I32((int)chart.Platform))
+                .InsertProperty("current_time_in_seconds", () => new F32((float)chart.CurrentTime)) // TODO: give this a shorter name
                 .InsertValue(true, "PCE", new I32((int)CompatibilityLevel.PCE))
                 .InsertValue(true, "RPE", new I32((int)CompatibilityLevel.RPE))
                 .InsertValue(true, "PHI", new I32((int)CompatibilityLevel.PHI))

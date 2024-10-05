@@ -8,6 +8,7 @@ using Value = Object;
 public class Scope : Value {
     private readonly Dictionary<object, Value> variables;
     private readonly HashSet<object> readOnlyVariableKeys;
+    private readonly Dictionary<object, Func<Value>> properties;
     public readonly Scope parent;
     public readonly ScopeRules rules;
 
@@ -15,6 +16,7 @@ public class Scope : Value {
         parent = null;
         rules = new();
         variables = [];
+        properties = [];
         readOnlyVariableKeys = [];
     }
 
@@ -30,11 +32,14 @@ public class Scope : Value {
     public override Value this[object key] {
         get {
             GetVariableStore(key, out Scope parent);
+            if (parent.properties.TryGetValue(key, out Func<Value> getter))
+                return getter();
+
             return parent.variables[key];
         }
         set {
             GetVariableStore(key, out Scope parent);
-            if (parent.readOnlyVariableKeys.Contains(key))
+            if (parent.readOnlyVariableKeys.Contains(key) || parent.properties.ContainsKey(key))
                 throw ReadOnlyProperty(key);
 
             parent.variables[key] = value;
@@ -52,11 +57,15 @@ public class Scope : Value {
             readOnlyVariableKeys.Add(key);
     }
 
+    public void DeclareProperty(object key, Func<Value> getter) {
+        properties[key] = getter;
+    }
+
     // TODO: a better name
     // get the dictionary which contains the variable
     private bool GetVariableStore(object key, out Scope scope) {
         scope = this;
-        if (scope.variables.ContainsKey(key))
+        if (scope.variables.ContainsKey(key) || scope.properties.ContainsKey(key))
             return true;
         else if (parent is not null && parent.GetVariableStore(key, out Scope parentScope)) {
             scope = parentScope;

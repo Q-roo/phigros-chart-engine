@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using DotNext.Collections.Generic;
-using Godot;
 using LanguageExt;
 
 namespace PCE.Chartbuild.Runtime;
@@ -34,6 +33,11 @@ public class ASTWalker {
 
     public ASTWalker InsertValue(bool @readonly, object key, Value value) {
         CurrentScope.DeclareVariable(key, value, @readonly);
+        return this;
+    }
+
+    public ASTWalker InsertProperty(object key, Func<Value> getter) {
+        CurrentScope.DeclareProperty(key, getter);
         return this;
     }
 
