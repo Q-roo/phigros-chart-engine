@@ -327,8 +327,6 @@ public class ASTWalker {
                 switch (EvaluateStatement(statement).Case) {
                     case ErrorType.NoError:
                         break;
-                    // case ErrorType error:
-                    //     return error;
                     case Value o:
                         CurrentScope = _scope;
                         isInFunction = false;
@@ -336,6 +334,17 @@ public class ASTWalker {
                     default:
                         throw new UnreachableException();
                 }
+            }
+        } else {
+            switch (EvaluateStatement(closure.body).Case) {
+                case ErrorType.NoError:
+                    break;
+                case Value o:
+                    CurrentScope = _scope;
+                    isInFunction = false;
+                    return o;
+                default:
+                    throw new UnreachableException();
             }
         }
 

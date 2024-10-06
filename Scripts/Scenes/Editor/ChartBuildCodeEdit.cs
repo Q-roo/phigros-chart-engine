@@ -53,17 +53,48 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 Chart.Chart chart = GetNode<Chart.Chart>("../../../../../ChartRenderer");
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
                 ASTWalker walker = new(ast);
+                chart.Reset();
                 walker
                 // default values
                 .InsertValue(true, "true", new Bool(true))
                 .InsertValue(true, "false", new Bool(false))
                 .InsertValue(true, "unset", new Unset())
                 .InsertValue(true, "chart", chart.ToObject())
-                .InsertProperty("PLATFORM", () => new I32((int)chart.Platform))
+                .InsertProperty("PLATFORM", () => new I32((int)Chart.Chart.Platform))
                 .InsertProperty("current_time_in_seconds", () => new F32((float)chart.CurrentTime)) // TODO: give this a shorter name
                 .InsertValue(true, "PCE", new I32((int)CompatibilityLevel.PCE))
                 .InsertValue(true, "RPE", new I32((int)CompatibilityLevel.RPE))
                 .InsertValue(true, "PHI", new I32((int)CompatibilityLevel.PHI))
+                // event trigger constructors
+                .InsertProperty("begin", () => new OnChartBegin().ToObject())
+                .InsertProperty("end", () => new OnChartEnd().ToObject())
+                .InsertProperty("pause", () => new OnPause().ToObject())
+                .InsertProperty("resume", () => new OnResume().ToObject())
+                // TODO: touch events
+                .InsertValue(true, "signal", new NativeFunction(args => {
+                    // signature (str, ...rest)
+                    return new OnSignal(args[0].ToStr().value).ToObject();
+                }))
+                .InsertValue(true, "delay", new NativeFunction(args => {
+                    // signature (trigger, trigger, ...rest)
+                    if (args.Length < 2)
+                        throw new ArgumentException("insufficient arguments");
+
+                    if (args[0].Value is not EventTrigger delay)
+                        throw new ArgumentException("first argument needs to be an event trigger");
+
+                    if (args[0].Value is not EventTrigger trigger)
+                        throw new ArgumentException("first argument needs to be an event trigger");
+
+                    return new OnDelayed(delay, trigger).ToObject();
+                }))
+                .InsertValue(true, "condition", new NativeFunction(args => {
+                    // signature: (() => bool, ...rest)
+                    if (args.Length == 0)
+                        throw new ArgumentException("first argument needs to be a callable that returns a bool value");
+
+                    return new OnCondition(() => args[0].Call().ToBool().value).ToObject();
+                }))
                 // default constructors
                 .InsertValue(true, "vec2", new NativeFunction(args => {
                     if (args.Length == 0)
@@ -97,11 +128,31 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                             return new Judgeline(args[0].ToStr().value, args[1].ToF32().value, args[2].ToF32().value).ToObject();
                     }
                 }))
+                .InsertValue(true, "event", new NativeFunction(args => {
+                    // signature: (trigger, trigger, callback, ...rest)
+                    if (args.Length < 3)
+                        throw new ArgumentException("insufficient arguments");
+
+                    if (args[0].Value is not EventTrigger start)
+                        throw new ArgumentException("first argument needs to be an event trigger");
+
+                    if (args[1].Value is not EventTrigger end)
+                        throw new ArgumentException("second argument needs to be an event trigger");
+
+                    return new Event(start, end, () => {
+                        args[2].Call();
+                    }).ToObject();
+                }))
                 // default functions
                 .InsertValue(true, "dbg_print", new NativeFunction(new Action<Object[]>(args => {
                     GD.Print(string.Join<Object>(", ", args));
                 })))
+                .InsertValue(true, "emit", new NativeFunction(args => {
+                    // signature: (str, ...rest)
+                    chart.signals.Add(args[0].ToStr().value);
+                }))
                 .Evaluate();
+                chart.BeginRender();
             } catch (Exception ex) {
                 GD.Print(ex);
             }

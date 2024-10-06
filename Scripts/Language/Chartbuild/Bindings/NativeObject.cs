@@ -23,6 +23,9 @@ public class NativeObject(object value, Func<object, Object> getter, Action<obje
 
     public override object Value => value;
 
+    public NativeObject(object value)
+    : this(value, key => throw KeyNotFound(key), (key, _) => throw KeyNotFound(key)) { }
+
     public override Object Call(params Object[] args) {
         throw NotCallable();
     }

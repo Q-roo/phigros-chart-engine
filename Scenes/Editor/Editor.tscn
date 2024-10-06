@@ -96,7 +96,9 @@ dbg_print(jl.position);
 dbg_print(chart.groups['b'] == unset);
 dbg_print(judgeline(\"main\"));
 #set default_judgeline_bpm = 60;
-dbg_print(judgeline('main'));"
+dbg_print(judgeline('main'));
+dbg_print(event(begin, end, ||dbg_print('t')));
+chart.add_event(event(begin, end, ||dbg_print('t')));"
 scroll_smooth = true
 scroll_past_end_of_file = true
 minimap_draw = true

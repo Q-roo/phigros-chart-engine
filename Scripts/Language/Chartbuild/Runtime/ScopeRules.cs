@@ -34,7 +34,6 @@ public class ScopeRules {
         _defaultJudgelineSize = parent._defaultJudgelineSize;
         _defaultJudgelineBpm = parent._defaultJudgelineBpm;
         _aspectRatio = parent._aspectRatio;
-        UpdateAspectRatio();
     }
 
     public void UpdateAspectRatio() {
