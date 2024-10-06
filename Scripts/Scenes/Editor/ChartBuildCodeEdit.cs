@@ -73,6 +73,14 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 .InsertProperty("end", () => new OnChartEnd().ToObject())
                 .InsertProperty("pause", () => new OnPause().ToObject())
                 .InsertProperty("resume", () => new OnResume().ToObject())
+                .InsertValue(true, "before", new NativeFunction(args => {
+                    // signature: (float, ...rest)
+                    return new OnTimeBefore(args[0].ToF32().value).ToObject();
+                }))
+                .InsertValue(true, "after", new NativeFunction(args => {
+                    // signature: (float, ...rest)
+                    return new OnTimeAfter(args[0].ToF32().value).ToObject();
+                }))
                 // TODO: touch events
                 .InsertValue(true, "signal", new NativeFunction(args => {
                     // signature (str, ...rest)
@@ -132,15 +140,15 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                     }
                 }))
                 .InsertValue(true, "event", new NativeFunction(args => {
-                    // signature: (trigger, trigger, callback, ...rest)
+                    // signature: (trigger | number, trigger | number, callback, ...rest)
                     if (args.Length < 3)
                         throw new ArgumentException("insufficient arguments");
 
                     if (args[0].Value is not EventTrigger start)
-                        throw new ArgumentException("first argument needs to be an event trigger");
+                        start = new OnTimeAfter(args[0].ToF32().value);
 
                     if (args[1].Value is not EventTrigger end)
-                        throw new ArgumentException("second argument needs to be an event trigger");
+                        end = new OnTimeBefore(args[1].ToF32().value);
 
                     return new Event(start, end, @this => {
                         args[2].Call(@this);

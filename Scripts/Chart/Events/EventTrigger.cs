@@ -36,10 +36,17 @@ public class OnChartBegin : EventTrigger {
 
 public class OnChartEnd : ManuallyTriggredEvent; // TODO
 
-public class OnTime(double time) : EventTrigger {
+public class OnTimeAfter(double time) : EventTrigger {
     private readonly double time = time;
     public override bool IsTriggered(Chart chart) {
         return time >= chart.CurrentTime;
+    }
+}
+
+public class OnTimeBefore(double time) : EventTrigger {
+    private readonly double time = time;
+    public override bool IsTriggered(Chart chart) {
+        return time <= chart.CurrentTime;
     }
 }
 
