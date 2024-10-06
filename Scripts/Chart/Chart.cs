@@ -9,7 +9,9 @@ namespace PCE.Chart;
 public partial class Chart : Node2D, ICBExposeable {
     public static CompatibilityLevel Platform => CompatibilityLevel.PCE;
     public readonly TransformGroup rootGroup = new("root");
+    // time is in seconds
     public double CurrentTime { get; private set; }
+    public double DeltaTime {get; private set; }
     public bool JustStarted { get; private set; }
 
     private readonly List<Event> inactiveEvents = [];
@@ -67,6 +69,7 @@ public partial class Chart : Node2D, ICBExposeable {
 
     public override void _Process(double delta) {
         CurrentTime += delta;
+        DeltaTime = delta;
         AddEvents();
         signals.Clear();
         FlushEvents();

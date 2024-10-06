@@ -62,6 +62,7 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 .InsertValue(true, "chart", chart.ToObject())
                 .InsertProperty("PLATFORM", () => new I32((int)Chart.Chart.Platform))
                 .InsertProperty("current_time_in_seconds", () => new F32((float)chart.CurrentTime)) // TODO: give this a shorter name
+                .InsertProperty("delta_time_in_seconds", () => new F32((float)chart.DeltaTime)) // TODO: give this a shorter name
                 .InsertValue(true, "PCE", new I32((int)CompatibilityLevel.PCE))
                 .InsertValue(true, "RPE", new I32((int)CompatibilityLevel.RPE))
                 .InsertValue(true, "PHI", new I32((int)CompatibilityLevel.PHI))

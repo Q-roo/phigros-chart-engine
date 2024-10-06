@@ -27,10 +27,11 @@ public partial class Judgeline : Line2D, ICBExposeable {
         this.bpm = bpm;
         this.name = name;
         Name = name;
+        Antialiased = true;
     }
 
     public Judgeline()
-    : this(ChartContext.GetJudgelineName(), 120, 4000) {}
+    : this(ChartContext.GetJudgelineName(), 120, 4000) { }
 
     public NativeObject ToObject() {
         return new(
@@ -38,6 +39,7 @@ public partial class Judgeline : Line2D, ICBExposeable {
             key => key switch {
                 "size" => new F32(Size),
                 "position" => new Vec2(Position),
+                "rotation" => new F32(RotationDegrees),
                 _ => throw new KeyNotFoundException()
             },
             (key, value) => {
@@ -47,6 +49,9 @@ public partial class Judgeline : Line2D, ICBExposeable {
                         break;
                     case "position":
                         Position = value.ToVec2().value;
+                        break;
+                    case "rotation":
+                        RotationDegrees = value.ToF32().value;
                         break;
                     default:
                         throw new KeyNotFoundException();
