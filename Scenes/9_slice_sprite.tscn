@@ -1,0 +1,78 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8riyjfjw773"]
+
+[ext_resource type="Texture2D" uid="uid://xke63uh4jrch" path="res://icon.svg" id="1_wk7gg"]
+
+[node name="VBoxContainer" type="VBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/separation = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="NinePatchRect6" type="NinePatchRect" parent="HBoxContainer"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+texture = ExtResource("1_wk7gg")
+region_rect = Rect2(0, 0, 17, 17)
+
+[node name="NinePatchRect4" type="NinePatchRect" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("1_wk7gg")
+region_rect = Rect2(17, 0, 94, 20)
+
+[node name="NinePatchRect7" type="NinePatchRect" parent="HBoxContainer"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+texture = ExtResource("1_wk7gg")
+region_rect = Rect2(111, 0, 17, 17)
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="NinePatchRect2" type="NinePatchRect" parent="HBoxContainer2"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+texture = ExtResource("1_wk7gg")
+region_rect = Rect2(0, 20, 17, 88)
+
+[node name="NinePatchRect" type="NinePatchRect" parent="HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("1_wk7gg")
+region_rect = Rect2(17, 20, 94, 88)
+
+[node name="NinePatchRect3" type="NinePatchRect" parent="HBoxContainer2"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+texture = ExtResource("1_wk7gg")
+region_rect = Rect2(111, 20, 17, 88)
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="NinePatchRect8" type="NinePatchRect" parent="HBoxContainer3"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+texture = ExtResource("1_wk7gg")
+region_rect = Rect2(0, 108, 17, 20)
+
+[node name="NinePatchRect5" type="NinePatchRect" parent="HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("1_wk7gg")
+region_rect = Rect2(17, 108, 94, 20)
+
+[node name="NinePatchRect9" type="NinePatchRect" parent="HBoxContainer3"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+texture = ExtResource("1_wk7gg")
+region_rect = Rect2(111, 108, 18, 20)
