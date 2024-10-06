@@ -35,7 +35,7 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
     }
 
     public Node2D GetMember(NodePath nodePath) {
-        return GetNode<Node2D>(nodePath);
+        return GetNodeOrNull<Node2D>(nodePath);
     }
 
     public override int GetHashCode() {

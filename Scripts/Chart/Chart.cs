@@ -31,7 +31,7 @@ public partial class Chart : Node2D, ICBExposeable {
                     if (args[0].Value is not Event @event)
                         throw new ArgumentException("first argument needs to be an event");
 
-                    inactiveEvents.Add(@event);
+                    ChartContext.AddEvent(this, @event);
                 }),
                 _ => throw new KeyNotFoundException()
             },
@@ -63,20 +63,20 @@ public partial class Chart : Node2D, ICBExposeable {
         SetProcess(true);
         // add on start events
         JustStarted = true;
-        AddEvents();
+        AddActiveEvents();
         JustStarted = false;
     }
 
     public override void _Process(double delta) {
         CurrentTime += delta;
         DeltaTime = delta;
-        AddEvents();
+        AddActiveEvents();
         signals.Clear();
         FlushEvents();
     }
 
     // add the events that got activated
-    private void AddEvents() {
+    private void AddActiveEvents() {
         for (int i = 0; i < inactiveEvents.Count; i++) {
             Event @event = inactiveEvents[i];
             if (@event.strart.IsTriggered(this)) {
@@ -108,8 +108,12 @@ public partial class Chart : Node2D, ICBExposeable {
                 continue; // don't let update run once more
             }
 
-            @event.update();
+            @event.Update();
             @event.executionCount++;
         }
+    }
+
+    public void RegisterEvent(Event @event) {
+        inactiveEvents.Add(@event);
     }
 }

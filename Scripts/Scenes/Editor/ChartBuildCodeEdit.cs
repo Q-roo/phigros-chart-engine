@@ -51,6 +51,8 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 GD.Print(tokens);
 
                 Chart.Chart chart = GetNode<Chart.Chart>("../../../../../ChartRenderer");
+                ChartContext.Reset();
+                ChartContext.Init(chart);
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
                 ASTWalker walker = new(ast);
                 chart.Reset();
@@ -140,8 +142,8 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                     if (args[1].Value is not EventTrigger end)
                         throw new ArgumentException("second argument needs to be an event trigger");
 
-                    return new Event(start, end, () => {
-                        args[2].Call();
+                    return new Event(start, end, @this => {
+                        args[2].Call(@this);
                     }).ToObject();
                 }))
                 // default functions

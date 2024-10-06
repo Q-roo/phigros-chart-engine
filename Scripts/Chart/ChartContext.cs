@@ -1,4 +1,5 @@
 using Godot;
+using PCE.Chartbuild.Bindings;
 
 namespace PCE.Chart;
 
@@ -9,6 +10,10 @@ public static class ChartContext {
     public static void Reset() {
         Chart = null;
         JudgelineCount = 0;
+    }
+
+    public static void Init(Chart chart) {
+        Chart = chart;
     }
 
     public static void AttachTo(this Judgeline judgeline, TransformGroup group) {
@@ -24,4 +29,9 @@ public static class ChartContext {
     }
 
     public static StringName GetJudgelineName() => $"jl#{JudgelineCount++}"; // ensure that each name is unique
+
+    public static void AddEvent(ICBExposeable bindTo, Event @event) {
+        @event.Bind(bindTo);
+        Chart.RegisterEvent(@event);
+    }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using PCE.Chartbuild.Bindings;
@@ -40,6 +41,15 @@ public partial class Judgeline : Line2D, ICBExposeable {
                 "size" => new F32(Size),
                 "position" => new Vec2(Position),
                 "rotation" => new F32(RotationDegrees),
+                "add_event" => new NativeFunction(args => {
+                    if (args.Length == 0)
+                    throw new ArgumentException("insufficient arguments");
+
+                    if (args[0].Value is not Event @event)
+                    throw new ArgumentException("the first argument needs to be an event");
+
+                    ChartContext.AddEvent(this, @event);
+                }),
                 _ => throw new KeyNotFoundException()
             },
             (key, value) => {
