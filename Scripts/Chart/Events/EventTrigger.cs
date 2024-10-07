@@ -8,6 +8,7 @@ public delegate void OnTriggerTriggered();
 
 public abstract class EventTrigger : ICBExposeable {
     public event OnTriggerTriggered OnTriggerTriggered;
+    protected Event @event;
     public abstract bool IsTriggered(Chart chart);
     public void InvokeTrigger() {
         OnTriggerTriggered?.Invoke();
@@ -15,6 +16,10 @@ public abstract class EventTrigger : ICBExposeable {
 
     public NativeObject ToObject() {
         return new(this);
+    }
+
+    public void Bind(Event @event) {
+        this.@event = @event;
     }
 }
 
@@ -96,6 +101,14 @@ public class OnSignal(StringName signal) : EventTrigger {
     private readonly StringName signal = signal;
     public override bool IsTriggered(Chart chart) {
         return chart.signals.Contains(signal);
+    }
+}
+
+public class OnExecCount(int count) : EventTrigger {
+    private readonly int count = count;
+
+    public override bool IsTriggered(Chart chart) {
+        return @event.executionCount >= count;
     }
 }
 

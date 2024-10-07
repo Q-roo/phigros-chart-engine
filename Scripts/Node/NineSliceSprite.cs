@@ -4,11 +4,11 @@ namespace PCE;
 
 [Tool]
 public partial class NineSliceSprite : Node2D {
-    [Export] Texture2D texture;
-    [Export] float left = 17;
-    [Export] float right = 17;
-    [Export] float top = 20;
-    [Export] float bottom = 20;
+    [Export] protected Texture2D texture;
+    [Export] private float left = 17;
+    [Export] private float right = 17;
+    [Export] private float top = 20;
+    [Export] private float bottom = 20;
 
     // icon.svg: 128 x 028
     // t 20

@@ -3,15 +3,25 @@ using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chart;
 
-public class Event(EventTrigger strart, EventTrigger end, Event.EventCallback update) : ICBExposeable {
+public class Event : ICBExposeable {
     private ICBExposeable boundTo;
     private NativeObject cachedObject;
     public delegate void EventCallback(Object @this);
-    public bool active = false;
-    public int executionCount = 0;
-    public readonly EventTrigger strart = strart;
-    public readonly EventTrigger end = end;
-    private readonly EventCallback update = update;
+    public bool active;
+    public int executionCount;
+    public readonly EventTrigger strart;
+    public readonly EventTrigger end;
+    private readonly EventCallback update;
+
+    public Event(EventTrigger strart, EventTrigger end, EventCallback update) {
+        this.strart = strart;
+        this.end = end;
+        this.update = update;
+        active = false;
+        executionCount = 0;
+        strart.Bind(this);
+        end.Bind(this);
+    }
 
     public NativeObject ToObject() {
         return new NativeObject(this);

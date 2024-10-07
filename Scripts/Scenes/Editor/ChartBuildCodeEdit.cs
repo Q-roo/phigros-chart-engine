@@ -81,6 +81,11 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                     // signature: (float, ...rest)
                     return new OnTimeAfter(args[0].ToF32().value).ToObject();
                 }))
+                .InsertValue(true, "exec", new NativeFunction(args => {
+                    // singature: (int, ...rest)
+                    return new OnExecCount(args[0].ToI32().value).ToObject();
+                }))
+                .InsertProperty("once", () => new OnExecCount(1).ToObject())
                 // TODO: touch events
                 .InsertValue(true, "signal", new NativeFunction(args => {
                     // signature (str, ...rest)
@@ -153,6 +158,9 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                     return new Event(start, end, @this => {
                         args[2].Call(@this);
                     }).ToObject();
+                }))
+                .InsertValue(true, "note", new NativeFunction(args => {
+                    return new Note().ToObject();
                 }))
                 // default functions
                 .InsertValue(true, "dbg_print", new NativeFunction(new Action<Object[]>(args => {

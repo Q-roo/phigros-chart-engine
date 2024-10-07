@@ -11,8 +11,9 @@ public partial class Chart : Node2D, ICBExposeable {
     public readonly TransformGroup rootGroup = new("root");
     // time is in seconds
     public double CurrentTime { get; private set; }
-    public double DeltaTime {get; private set; }
+    public double DeltaTime { get; private set; }
     public bool JustStarted { get; private set; }
+    public bool IsInitalized { get; private set; }
 
     private readonly List<Event> inactiveEvents = [];
     private readonly List<Event> activeEvents = [];
@@ -48,11 +49,12 @@ public partial class Chart : Node2D, ICBExposeable {
 
     public void Reset() {
         foreach (Node child in rootGroup.GetChildren()) {
-            child.QueueFree();
+            child.Free(); // the script's execution will start in this frame
         }
 
         SetProcess(false);
         JustStarted = false;
+        IsInitalized = false;
         CurrentTime = 0;
         inactiveEvents.Clear();
         activeEvents.Clear();
@@ -65,6 +67,7 @@ public partial class Chart : Node2D, ICBExposeable {
         JustStarted = true;
         AddActiveEvents();
         JustStarted = false;
+        IsInitalized = true;
     }
 
     public override void _Process(double delta) {

@@ -21,6 +21,14 @@ public partial class Judgeline : Line2D, ICBExposeable {
     }
     public readonly StringName name;
     public float bpm;
+    public readonly List<Note> notes;
+    // time in seconds, bpm
+    public readonly Dictionary<double, float> bpmChanges;
+
+    public Note this[int index] {
+        get => notes[index];
+        set => notes[index] = value;
+    }
 
     public Judgeline(StringName name, float bpm, float size) {
         Size = size;
@@ -29,6 +37,10 @@ public partial class Judgeline : Line2D, ICBExposeable {
         this.name = name;
         Name = name;
         Antialiased = true;
+        notes = [];
+        bpmChanges = new() {
+            { 0, bpm }
+        };
     }
 
     public Judgeline()
@@ -43,13 +55,24 @@ public partial class Judgeline : Line2D, ICBExposeable {
                 "rotation" => new F32(RotationDegrees),
                 "add_event" => new NativeFunction(args => {
                     if (args.Length == 0)
-                    throw new ArgumentException("insufficient arguments");
+                        throw new ArgumentException("insufficient arguments");
 
                     if (args[0].Value is not Event @event)
-                    throw new ArgumentException("the first argument needs to be an event");
+                        throw new ArgumentException("the first argument needs to be an event");
 
                     ChartContext.AddEvent(this, @event);
                 }),
+                "add_note" => new NativeFunction(args => {
+                    if (args.Length == 0)
+                        throw new ArgumentException("insufficient arguments");
+
+                    if (args[0].Value is not Note note)
+                        throw new ArgumentException("the first argument needs to be a note");
+
+                    note.AttachTo(this);
+                }),
+                int time => new F32(GetClosestBpm(time)),
+                float time => new F32(GetClosestBpm(time)),
                 _ => throw new KeyNotFoundException()
             },
             (key, value) => {
@@ -63,11 +86,45 @@ public partial class Judgeline : Line2D, ICBExposeable {
                     case "rotation":
                         RotationDegrees = value.ToF32().value;
                         break;
+                    case int time:
+                        if (ChartContext.Chart.IsInitalized)
+                            throw new InvalidOperationException("cannot change bpm values after initalization");
+
+                        bpmChanges[time] = value.ToF32().value;
+                        break;
+                    case float time:
+                        if (ChartContext.Chart.IsInitalized)
+                            throw new InvalidOperationException("cannot change bpm values after initalization");
+
+                        bpmChanges[time] = value.ToF32().value;
+                        break;
                     default:
                         throw new KeyNotFoundException();
                 }
             }
         );
+    }
+
+    public float GetClosestBpm(double time) {
+        float bpm = bpmChanges[0];
+
+        if (bpmChanges.TryGetValue(time, out bpm))
+            return bpm;
+
+        double[] keys = [.. bpmChanges.Keys];
+
+        for (int i = 0; i < keys.Length - 1; i++) {
+            double current = keys[i];
+            double next = keys[i + 1];
+
+            if (next > time)
+                return bpmChanges[current];
+
+            bpm = bpmChanges[next];
+        }
+
+        // there should always be a bpm at 0
+        return bpm;
     }
 
     public override int GetHashCode() {

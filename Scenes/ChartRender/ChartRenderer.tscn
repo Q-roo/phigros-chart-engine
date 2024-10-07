@@ -1,13 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://b0xttc7rt3d3v"]
+[gd_scene load_steps=2 format=3 uid="uid://b0xttc7rt3d3v"]
 
 [ext_resource type="Script" path="res://Scripts/Chart/Chart.cs" id="1_giqgq"]
-[ext_resource type="Script" path="res://Scripts/Node/NineSliceSprite.cs" id="2_ouw5g"]
-[ext_resource type="Texture2D" uid="uid://xke63uh4jrch" path="res://icon.svg" id="3_ty24x"]
 
 [node name="ChartRenderer" type="Node2D"]
 script = ExtResource("1_giqgq")
-
-[node name="Node2D" type="Node2D" parent="."]
-scale = Vector2(2, 2)
-script = ExtResource("2_ouw5g")
-texture = ExtResource("3_ty24x")

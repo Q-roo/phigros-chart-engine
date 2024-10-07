@@ -99,7 +99,11 @@ dbg_print(judgeline(\"main\"));
 dbg_print(judgeline('main'));
 dbg_print(event(begin, end, || dbg_print('t')));
 chart.add_event(event(begin, end, || jl.rotation += 5 * delta_time_in_seconds;));
-jl.add_event(event(1, 5, |line| line.position += vec2(10) * delta_time_in_seconds));"
+jl.add_event(event(1, 5, |line| line.position += vec2(10) * delta_time_in_seconds));
+jl.add_note(note());
+jl.add_event(event(begin, once, || dbg_print('t')));
+jl.add_event(event(begin, exec(5), ||dbg_print('a')));
+jl.add_event(event(begin, exec(4), ||dbg_print('b')));"
 scroll_smooth = true
 scroll_past_end_of_file = true
 minimap_draw = true
