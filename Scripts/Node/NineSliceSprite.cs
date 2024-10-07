@@ -46,9 +46,13 @@ public partial class NineSliceSprite : Node2D {
         DrawTextureRectRegion(texture, rect, middleCenter); // middle-center
         rect = new(rect.Position.X - left / 2, rect.Position.Y, middleLeft.Size.X / Scale.X, rect.Size.Y);
         DrawTextureRectRegion(texture, rect, middleLeft); // left-center
-        rect = new(rect.Position.X, rect.Position.Y + rect.Size.Y, rect.Size.X, bottomLeft.Size.X / Scale.X);
+        rect = new(rect.Position.X, size.Y - bottom / 2, bottomLeft.Size / Scale);
         DrawTextureRectRegion(texture, rect, bottomLeft); // bottom-left
-        DrawTextureRectRegion(texture, rect, bottomRight); // bottom-right
+        rect = new(rect.Position.X + left / 2, rect.Position.Y, bottomCenter.Size.X + right, bottomCenter.Size.Y / Scale.Y);
         DrawTextureRectRegion(texture, rect, bottomCenter); // bottom-center
+        rect = new(rect.Position.X + rect.Size.X, rect.Position.Y, bottomRight.Size / Scale);
+        DrawTextureRectRegion(texture, rect, bottomRight); // bottom-right
+        // FIXME: godot's whacky scaling
+        // DrawRect(new(Vector2.Zero, new Vector2(left, top) / Scale), new(0, 0, 0)); // does not remain at the original scale
     }
 }
