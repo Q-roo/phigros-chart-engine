@@ -68,6 +68,7 @@ public partial class Chart : Node2D, ICBExposeable {
         AddActiveEvents();
         JustStarted = false;
         IsInitalized = true;
+        // TODO: calculate note y positions and heights
     }
 
     public override void _Process(double delta) {

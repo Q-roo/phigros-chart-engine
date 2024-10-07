@@ -23,6 +23,8 @@ public partial class Judgeline : Line2D, ICBExposeable {
     public float bpm;
     public readonly List<Note> notes;
     // time in seconds, bpm
+    // this should become read-only once the chart starts
+    // to be able to calculate note y positions and hold heights
     public readonly Dictionary<double, float> bpmChanges;
 
     public Note this[int index] {

@@ -5,6 +5,8 @@ namespace PCE.Chart;
 
 public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
     public Judgeline parent;
+    public float speed;
+
     public override void _Ready() {
         // TODO: note sprites
         // texture = GD.Load<Texture2D>("res://icon.svg");
