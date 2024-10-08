@@ -68,6 +68,10 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 .InsertValue(true, "PCE", new I32((int)CompatibilityLevel.PCE))
                 .InsertValue(true, "RPE", new I32((int)CompatibilityLevel.RPE))
                 .InsertValue(true, "PHI", new I32((int)CompatibilityLevel.PHI))
+                .InsertValue(true, "tap", new I32((int)NoteType.Tap))
+                .InsertValue(true, "drag", new I32((int)NoteType.Drag))
+                .InsertValue(true, "hold", new I32((int)NoteType.Hold))
+                .InsertValue(true, "flick", new I32((int)NoteType.Flick))
                 // event trigger constructors
                 .InsertProperty("begin", () => new OnChartBegin().ToObject())
                 .InsertProperty("end", () => new OnChartEnd().ToObject())

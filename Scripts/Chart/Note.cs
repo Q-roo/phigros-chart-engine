@@ -38,7 +38,6 @@ public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
         _xOffset = xOffset;
         this.speed = speed;
         this.isAbove = isAbove;
-        GD.Print(type);
     }
 
     public override void _Ready() {
