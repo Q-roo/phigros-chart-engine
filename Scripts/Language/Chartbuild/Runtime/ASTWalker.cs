@@ -161,6 +161,12 @@ public class ASTWalker {
                     case "default_judgeline_bpm":
                         CurrentScope.rules.DefaultJudgelineBpm = EvaluateExpression(assignment.value).ToF32().value;
                         break;
+                    case "default_note_speed":
+                        CurrentScope.rules.DefaultNoteSpeed = EvaluateExpression(assignment.value).ToF32().value;
+                        break;
+                    case "default_note_is_above":
+                        CurrentScope.rules.DefaultIsNoteAbove = EvaluateExpression(assignment.value).ToBool().value;
+                        break;
                     default:
                         throw new KeyNotFoundException($"there is no value with the name \"{identifier.value}\"");
                 }

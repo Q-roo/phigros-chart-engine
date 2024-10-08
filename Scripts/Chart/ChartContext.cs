@@ -26,7 +26,7 @@ public static class ChartContext {
     public static void AttachTo(this Note note, Judgeline judgeline) {
         judgeline.AddChild(note);
         judgeline.notes.Add(note);
-        note.parent = judgeline;
+        note.Parent = judgeline;
         note.Name = GetNoteName();
     }
 
@@ -35,13 +35,6 @@ public static class ChartContext {
         judgeline.parent.judgelines.Remove(judgeline);
         judgeline.parent = null;
     }
-
-    // I don't see why notes should be detachable
-    // public static void Detach(this Note note) {
-    //     note.parent.RemoveChild(note);
-    //     note.parent.notes.Remove(note);
-    //     note.parent = null;
-    // }
 
     public static StringName GetJudgelineName() => $"jl#{JudgelineCount++}"; // ensure that each name is unique
     private static StringName GetNoteName() => $"n${NoteCount++}";

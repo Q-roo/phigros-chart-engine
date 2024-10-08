@@ -108,10 +108,10 @@ public partial class Judgeline : Line2D, ICBExposeable {
     }
 
     public float GetClosestBpm(double time) {
-        float bpm = bpmChanges[0];
-
-        if (bpmChanges.TryGetValue(time, out bpm))
+        if (bpmChanges.TryGetValue(time, out float bpm))
             return bpm;
+        
+        bpm = bpmChanges[0];
 
         double[] keys = [.. bpmChanges.Keys];
 
@@ -128,6 +128,8 @@ public partial class Judgeline : Line2D, ICBExposeable {
         // there should always be a bpm at 0
         return bpm;
     }
+
+    public float GetCurrentBpm() => GetClosestBpm(ChartContext.Chart.CurrentTime);
 
     public override int GetHashCode() {
         return name.GetHashCode();

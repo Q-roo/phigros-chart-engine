@@ -160,7 +160,25 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                     }).ToObject();
                 }))
                 .InsertValue(true, "note", new NativeFunction(args => {
-                    return new Note().ToObject();
+                    // signature: (type, time, x_offset, speed=default, is_above=default, ...rest)
+                    if (args.Length < 3)
+                    throw new ArgumentException("insufficient arguments");
+
+                    float speed = walker.CurrentScope.rules.DefaultNoteSpeed;
+                    bool isAbove = walker.CurrentScope.rules.DefaultIsNoteAbove;
+
+                    if (args.Length == 4) {
+                        if (args[3] is Bool @bool)
+                        isAbove = @bool.value;
+                        else
+                        speed = args[3].ToF32().value;
+                    }
+                    else if (args.Length > 4){
+                        speed = args[3].ToF32().value;
+                        isAbove = args[4].ToBool().value;
+                    }
+                    
+                    return new Note((NoteType)args[0].ToI32().value, args[1].ToF32().value, args[2].ToF32().value, speed, isAbove).ToObject();
                 }))
                 // default functions
                 .InsertValue(true, "dbg_print", new NativeFunction(new Action<Object[]>(args => {

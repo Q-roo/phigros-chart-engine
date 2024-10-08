@@ -92,6 +92,7 @@ if (jl == unset) {
 dbg_print(jl);
 jl.position = vec2(500, 250);
 jl.size = 200
+jl[0.5] = 60;
 dbg_print(jl.position);
 dbg_print(chart.groups['b'] == unset);
 dbg_print(judgeline(\"main\"));
@@ -100,7 +101,7 @@ dbg_print(judgeline('main'));
 dbg_print(event(begin, end, || dbg_print('t')));
 chart.add_event(event(begin, end, || jl.rotation += 5 * delta_time_in_seconds;));
 jl.add_event(event(1, 5, |line| line.position += vec2(10) * delta_time_in_seconds));
-jl.add_note(note());
+jl.add_note(note(2, 0, -0.25));
 jl.add_event(event(begin, once, || dbg_print('t')));
 jl.add_event(event(begin, exec(5), ||dbg_print('a')));
 jl.add_event(event(begin, exec(4), ||dbg_print('b')));"
