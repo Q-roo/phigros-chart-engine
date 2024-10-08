@@ -5,9 +5,9 @@ namespace PCE.Chartbuild.Runtime;
 
 public class ScopeRules {
     // fallback values
-    private static readonly float fallbackJudgelineSize = 4000;
-    private static readonly float fallbackJudgelineBpm = 120;
-    private static readonly float fallbackAspectRatio = 1.777778f;
+    private const float fallbackJudgelineSize = 4000;
+    private const float fallbackJudgelineBpm = 120;
+    private const float fallbackAspectRatio = 16f/9f;
 
     // rules
     private Optional<float> _defaultJudgelineSize;
