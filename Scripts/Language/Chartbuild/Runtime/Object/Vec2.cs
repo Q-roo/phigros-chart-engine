@@ -9,8 +9,8 @@ public class Vec2(Vector2 value) : Object {
 
     public override Object this[object key] {
         get => key switch {
-            "x" => new F32(value.X),
-            "y" => new F32(value.Y),
+            "x" => new F32(value.X) { parentKey = "x", parentObject = this },
+            "y" => new F32(value.Y) { parentKey = "y", parentObject = this },
             "length" => new F32(value.Length()),
             "normalized" => new Vec2(value.Normalized()),
             "normalize" => new NativeFunction(_ => value = value.Normalized()),

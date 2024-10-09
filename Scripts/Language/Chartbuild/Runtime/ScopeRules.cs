@@ -2,7 +2,8 @@ using DotNext;
 using Godot;
 
 namespace PCE.Chartbuild.Runtime;
-
+// TODO: this is overengineered
+// there's no reason to keep track of what's set and what's not
 public class ScopeRules {
     // fallback values
     private const float fallbackJudgelineSize = 4000;
