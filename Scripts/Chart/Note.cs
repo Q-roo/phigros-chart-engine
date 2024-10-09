@@ -19,6 +19,7 @@ public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
     public NoteType type;
     // it's in seconds
     public double time;
+    public double holdTime;
     public float speed;
     public bool isAbove;
     // percentage value where 1 = 100%
@@ -33,13 +34,14 @@ public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
         }
     }
 
-    public Note(NoteType type, double time, float xOffset, float speed, bool isAbove) {
+    public Note(NoteType type, double time, float xOffset, float speed, bool isAbove, double holdTime) {
         Parent = null;
         this.type = type;
         this.time = time;
         _xOffset = xOffset;
         this.speed = speed;
         this.isAbove = isAbove;
+        this.holdTime = holdTime;
     }
 
     public override void _Ready() {

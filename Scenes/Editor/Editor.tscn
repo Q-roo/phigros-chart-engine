@@ -101,7 +101,7 @@ dbg_print(judgeline('main'));
 dbg_print(event(begin, end, || dbg_print('t')));
 chart.add_event(event(begin, end, || jl.rotation += 5 * delta_time_in_seconds;));
 jl.add_event(event(1, 5, |line| line.position += vec2(10) * delta_time_in_seconds));
-jl.add_note(note(drag, 0, -0.25));
+jl.add_note(drag(0, -0.25));
 jl.add_event(event(begin, once, || dbg_print('t')));
 jl.add_event(event(begin, exec(5), ||dbg_print('a')));
 jl.add_event(event(begin, exec(4), ||dbg_print('b')));
@@ -109,7 +109,8 @@ jl.add_event(event(begin, exec(4), ||dbg_print('b')));
 const jl2 = judgeline('main', 180);
 chart.groups.add_judgeline(jl2);
 jl2.position = vec2(0, 250);
-jl2.add_note(note(tap, 2, 0));"
+jl2.add_note(tap(2, 0));
+jl2.add_note(hold(0, 2, 0));"
 scroll_smooth = true
 scroll_past_end_of_file = true
 minimap_draw = true

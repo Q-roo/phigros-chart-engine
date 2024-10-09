@@ -68,10 +68,6 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 .InsertValue(true, "PCE", new I32((int)CompatibilityLevel.PCE))
                 .InsertValue(true, "RPE", new I32((int)CompatibilityLevel.RPE))
                 .InsertValue(true, "PHI", new I32((int)CompatibilityLevel.PHI))
-                .InsertValue(true, "tap", new I32((int)NoteType.Tap))
-                .InsertValue(true, "drag", new I32((int)NoteType.Drag))
-                .InsertValue(true, "hold", new I32((int)NoteType.Hold))
-                .InsertValue(true, "flick", new I32((int)NoteType.Flick))
                 // event trigger constructors
                 .InsertProperty("begin", () => new OnChartBegin().ToObject())
                 .InsertProperty("end", () => new OnChartEnd().ToObject())
@@ -163,26 +159,17 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                         args[2].Call(@this);
                     }).ToObject();
                 }))
-                .InsertValue(true, "note", new NativeFunction(args => {
-                    // signature: (type, time, x_offset, speed=default, is_above=default, ...rest)
-                    if (args.Length < 3)
-                    throw new ArgumentException("insufficient arguments");
-
-                    float speed = walker.CurrentScope.rules.DefaultNoteSpeed;
-                    bool isAbove = walker.CurrentScope.rules.DefaultIsNoteAbove;
-
-                    if (args.Length == 4) {
-                        if (args[3] is Bool @bool)
-                        isAbove = @bool.value;
-                        else
-                        speed = args[3].ToF32().value;
-                    }
-                    else if (args.Length > 4){
-                        speed = args[3].ToF32().value;
-                        isAbove = args[4].ToBool().value;
-                    }
-                    
-                    return new Note((NoteType)args[0].ToI32().value, args[1].ToF32().value, args[2].ToF32().value, speed, isAbove).ToObject();
+                .InsertValue(true, "tap", new NativeFunction(args => {
+                    return NoteConstructor(NoteType.Tap, walker.CurrentScope.rules.DefaultNoteSpeed, walker.CurrentScope.rules.DefaultIsNoteAbove, args).ToObject();
+                }))
+                .InsertValue(true, "drag", new NativeFunction(args => {
+                    return NoteConstructor(NoteType.Drag, walker.CurrentScope.rules.DefaultNoteSpeed, walker.CurrentScope.rules.DefaultIsNoteAbove, args).ToObject();
+                }))
+                .InsertValue(true, "hold", new NativeFunction(args => {
+                    return NoteConstructor(NoteType.Hold, walker.CurrentScope.rules.DefaultNoteSpeed, walker.CurrentScope.rules.DefaultIsNoteAbove, args).ToObject();
+                }))
+                .InsertValue(true, "flick", new NativeFunction(args => {
+                    return NoteConstructor(NoteType.Flick, walker.CurrentScope.rules.DefaultNoteSpeed, walker.CurrentScope.rules.DefaultIsNoteAbove, args).ToObject();
                 }))
                 // default functions
                 .InsertValue(true, "dbg_print", new NativeFunction(new Action<Object[]>(args => {
@@ -218,6 +205,32 @@ public partial class ChartBuildCodeEdit : CodeEdit {
         // CodeHighlighter.AddColorRegion("\"", "\"", stringColor);
         // CodeHighlighter.AddColorRegion("/*", "*/", commentColor);
         // CodeHighlighter.AddColorRegion("//", string.Empty, commentColor);
+    }
+
+    private Note NoteConstructor(NoteType type, float defaultSpeed, bool defaultIsAbove, params Object[] args) {
+        // signature: (time, x_offset, speed=default, is_above=default, ...rest)
+
+
+        float speed = defaultSpeed;
+        bool isAbove = defaultIsAbove;
+        bool isHold = type == NoteType.Hold;
+        // if it is, then the signature changes
+        // (time, hold_time, x_offset, speed=default, is_above=default, ...rest)
+        int argOffset = isHold ? 1 : 0;
+        if (args.Length < 2 + argOffset)
+            throw new ArgumentException("insufficient arguments");
+
+        if (args.Length == 3 + argOffset) {
+            if (args[2 + argOffset] is Bool @bool)
+                isAbove = @bool.value;
+            else
+                speed = args[2 + argOffset].ToF32().value;
+        } else if (args.Length > 3 + argOffset) {
+            speed = args[3 + argOffset].ToF32().value;
+            isAbove = args[4 + argOffset].ToBool().value;
+        }
+
+        return new Note(type, args[0].ToF32().value, args[1 + argOffset].ToF32().value, speed, isAbove, isHold ? args[1].ToF32().value : 0);
     }
 
     public void Open(Project project) {
