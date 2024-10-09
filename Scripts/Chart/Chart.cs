@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using PCE.Chart.Util;
 using PCE.Chartbuild.Bindings;
 using PCE.Chartbuild.Runtime;
 
@@ -18,6 +19,7 @@ public partial class Chart : Node2D, ICBExposeable {
     private readonly List<Event> inactiveEvents = [];
     private readonly List<Event> activeEvents = [];
     public readonly HashSet<StringName> signals  = [];
+    public readonly List<Judgeline> judgelines = [];
 
     public NativeObject ToObject() {
         return new(
@@ -59,6 +61,7 @@ public partial class Chart : Node2D, ICBExposeable {
         inactiveEvents.Clear();
         activeEvents.Clear();
         signals.Clear();
+        judgelines.Clear();
     }
 
     public void BeginRender() {
@@ -68,7 +71,48 @@ public partial class Chart : Node2D, ICBExposeable {
         AddActiveEvents();
         JustStarted = false;
         IsInitalized = true;
-        // TODO: calculate note y positions and heights
+        SetNoteYPositions();
+    }
+
+    private void SetNoteYPositions() {
+        foreach (Judgeline judgeline in judgelines)
+            foreach (Note note in judgeline.notes) {
+                Vector2 position = note.Position;
+
+                double[] keys = [..judgeline.bpmChanges.Keys];
+
+                for (int i = 0; i < keys.Length; i++) {
+                    double key = keys[i];
+                    // double range = (i != keys.Count - 1 ? keys[i + 1] : note.time) - key;
+                    double range;
+                    float bpm = judgeline.bpmChanges[key];
+
+                    // last bpm in the bpm list,
+                    // so the note should use it for the rest of the time
+                    if (i == keys.Length - 1)
+                        range = note.time - key;
+                    else {
+                        double next = keys[i + 1];
+                        // the note will be judged before the next bpm comes
+                        // so treat this as if this was the last bpm
+                        if (next > note.time) {
+                            position.Y -= (float)((note.time - key).ToBeat(bpm) * ChartGlobals.baseNoteSpeed);
+                            break;
+                        }
+
+                        range = next - key;
+                    }
+
+                    position.Y -= (float)(range.ToBeat(bpm) * ChartGlobals.baseNoteSpeed);
+                }
+
+                // Y offset
+                // (y center is at the center of the sprite but it needs to be on the bottom)
+                position.Y -= note.Texture.GetSize().Y / 2;
+
+                note.Position = position;
+                GD.Print(position);
+            }
     }
 
     public override void _Process(double delta) {

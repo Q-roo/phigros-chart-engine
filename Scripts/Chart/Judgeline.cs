@@ -25,7 +25,8 @@ public partial class Judgeline : Line2D, ICBExposeable {
     // time in seconds, bpm
     // this should become read-only once the chart starts
     // to be able to calculate note y positions and hold heights
-    public readonly Dictionary<double, float> bpmChanges;
+    // keys are in ascending order
+    public readonly SortedDictionary<double, float> bpmChanges;
 
     public Note this[int index] {
         get => notes[index];
@@ -47,6 +48,12 @@ public partial class Judgeline : Line2D, ICBExposeable {
 
     public Judgeline()
     : this(ChartContext.GetJudgelineName(), 120, 4000) { }
+
+    public override void _Draw() {
+        // the center of the judgeline
+        // this looks worse with antialias
+        DrawCircle(Vector2.Zero, 5, new(0.12f, 0.56f, 0.78f));
+    }
 
     public NativeObject ToObject() {
         return new(

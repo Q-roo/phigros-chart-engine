@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using PCE.Chart.Util;
 using PCE.Chartbuild.Bindings;
 using PCE.Chartbuild.Runtime;
 
@@ -16,6 +17,7 @@ public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
         }
     }
     public NoteType type;
+    // it's in seconds
     public double time;
     public float speed;
     public bool isAbove;
@@ -51,8 +53,14 @@ public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
     public override void _Process(double delta) {
         Vector2 position = Position;
         // TODO: add the note speed into the equation as well
-        position.Y += (float)(delta * ChartGlobals.baseNoteSpeed * Parent.GetCurrentBpm());
+        position.Y += (float)(delta.ToBeat(Parent.GetCurrentBpm()) * ChartGlobals.baseNoteSpeed);
         Position = position;
+    }
+
+    public override void _Draw() {
+        Vector2 xy = Texture.GetSize() / 2f;
+        DrawLine(new(-xy.X, xy.Y), new(xy.X, xy.Y), new(1, 1, 1), 2);
+        DrawCircle(Vector2.Down * xy, 5, new(1, 1, 1));
     }
 
     private void UpdateXOffset() {

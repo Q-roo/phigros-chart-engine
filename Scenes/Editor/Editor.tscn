@@ -104,7 +104,12 @@ jl.add_event(event(1, 5, |line| line.position += vec2(10) * delta_time_in_second
 jl.add_note(note(drag, 0, -0.25));
 jl.add_event(event(begin, once, || dbg_print('t')));
 jl.add_event(event(begin, exec(5), ||dbg_print('a')));
-jl.add_event(event(begin, exec(4), ||dbg_print('b')));"
+jl.add_event(event(begin, exec(4), ||dbg_print('b')));
+
+const jl2 = judgeline('main', 180);
+chart.groups.add_judgeline(jl2);
+jl2.position = vec2(0, 250);
+jl2.add_note(note(tap, 2, 0));"
 scroll_smooth = true
 scroll_past_end_of_file = true
 minimap_draw = true

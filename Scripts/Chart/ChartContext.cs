@@ -21,6 +21,7 @@ public static class ChartContext {
         group.AddChild(judgeline);
         group.judgelines.Add(judgeline);
         judgeline.parent = group;
+        Chart.judgelines.Add(judgeline);
     }
 
     public static void AttachTo(this Note note, Judgeline judgeline) {
@@ -34,6 +35,7 @@ public static class ChartContext {
         judgeline.parent.RemoveChild(judgeline);
         judgeline.parent.judgelines.Remove(judgeline);
         judgeline.parent = null;
+        Chart.judgelines.Remove(judgeline);
     }
 
     public static StringName GetJudgelineName() => $"jl#{JudgelineCount++}"; // ensure that each name is unique
