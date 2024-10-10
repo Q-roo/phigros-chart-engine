@@ -60,7 +60,7 @@ public partial class Judgeline : Line2D, ICBExposeable {
             this,
             key => key switch {
                 "size" => new F32(Size),
-                "position" => new Vec2(Position),
+                "position" => new Vec2Property(() => Position, value => Position = value),
                 "rotation" => new F32(RotationDegrees),
                 "add_event" => new NativeFunction(args => {
                     if (args.Length == 0)
