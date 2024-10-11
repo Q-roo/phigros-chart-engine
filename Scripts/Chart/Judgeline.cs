@@ -56,68 +56,43 @@ public partial class Judgeline : Line2D, ICBExposeable {
     }
 
     public NativeObject ToObject() {
-        return new(
-            this,
-            key => key switch {
-                "size" => new F32(Size),
-                "position" => new Vec2Property(() => Position, value => Position = value),
-                "rotation" => new F32(RotationDegrees),
-                "add_event" => new NativeFunction(args => {
-                    if (args.Length == 0)
-                        throw new ArgumentException("insufficient arguments");
+        return new NativeObjectBuilder(this)
+        .AddGetSetProperty("size", () => Size, value => Size = value)
+        .AddGetSetProperty("position", () => Position, value => Position = value)
+        .AddGetSetProperty("rotation", () => RotationDegrees, value => RotationDegrees = value)
+        .AddCallable("add_event", args => {
+            if (args.Length == 0)
+                throw new ArgumentException("insufficient arguments");
 
-                    if (args[0].Value is not Event @event)
-                        throw new ArgumentException("the first argument needs to be an event");
+            if (args[0].NativeValue is not Event @event)
+                throw new ArgumentException("the first argument needs to be an event");
 
-                    ChartContext.AddEvent(this, @event);
-                }),
-                "add_note" => new NativeFunction(args => {
-                    if (args.Length == 0)
-                        throw new ArgumentException("insufficient arguments");
+            ChartContext.AddEvent(this, @event);
+        })
+        .AddCallable("add_note", args => {
+            if (args.Length == 0)
+                throw new ArgumentException("insufficient arguments");
 
-                    if (args[0].Value is not Note note)
-                        throw new ArgumentException("the first argument needs to be a note");
+            if (args[0].NativeValue is not Note note)
+                throw new ArgumentException("the first argument needs to be a note");
 
-                    note.AttachTo(this);
-                }),
-                int time => new F32(GetClosestBpm(time)),
-                float time => new F32(GetClosestBpm(time)),
-                _ => throw new KeyNotFoundException()
-            },
-            (key, value) => {
-                switch (key) {
-                    case "size":
-                        Size = value.ToF32().value;
-                        break;
-                    case "position":
-                        Position = value.ToVec2().value;
-                        break;
-                    case "rotation":
-                        RotationDegrees = value.ToF32().value;
-                        break;
-                    case int time:
-                        if (ChartContext.Chart.IsInitalized)
-                            throw new InvalidOperationException("cannot change bpm values after initalization");
-
-                        bpmChanges[time] = value.ToF32().value;
-                        break;
-                    case float time:
-                        if (ChartContext.Chart.IsInitalized)
-                            throw new InvalidOperationException("cannot change bpm values after initalization");
-
-                        bpmChanges[time] = value.ToF32().value;
-                        break;
-                    default:
-                        throw new KeyNotFoundException();
-                }
-            }
-        );
+            note.AttachTo(this);
+        })
+        .SetFallbackGetter(@this => key => {
+            double time = key switch {
+                int i => i,
+                float f => f,
+                _ => throw new ArgumentException($"cannot turn {key} into a double")
+            };
+            return new SetGetProperty(@this, time, (_, _) => GetClosestBpm(time), (_, _, value) => bpmChanges[time] = value);
+        })
+        .Build();
     }
 
     public float GetClosestBpm(double time) {
         if (bpmChanges.TryGetValue(time, out float bpm))
             return bpm;
-        
+
         bpm = bpmChanges[0];
 
         double[] keys = [.. bpmChanges.Keys];

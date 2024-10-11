@@ -1,24 +1,23 @@
-using System.Collections.Generic;
 using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chartbuild.Bindings;
 
 using Object = O;
 
-public class NativeObject(object value, Dictionary<object, Property> properties) : Object(value) {
+public delegate Property PropertyGetter(object key);
+
+public class NativeObject(object value, PropertyGetter propertyGetter) : Object(value) {
     private readonly object value = value;
-    private readonly Dictionary<object, Property> properties = properties;
+    private readonly PropertyGetter propertyGetter = propertyGetter;
 
     public NativeObject(object value)
-    : this(value, []) { }
+    : this(value, null) {
+        propertyGetter = key => throw KeyNotFound(key);
+    }
 
     public override Object Copy(bool shallow = true, params object[] keys) {
-        Dictionary<object, Property> properties = shallow ? this.properties : new(this.properties);
-        
-        foreach (object key in keys) {
-            properties[key] = (Property)this.properties[key].Copy(!shallow);
-        }
-        return new NativeObject(value, properties);
+        // TODO: support shallow copy
+        return new NativeObject(value, propertyGetter);
     }
 
     public override Object BinaryOperation(OperatorType @operator, Object rhs) {
@@ -30,7 +29,7 @@ public class NativeObject(object value, Dictionary<object, Property> properties)
     }
 
     public override Object UnaryOperation(OperatorType @operator, bool prefix) => @operator switch {
-        OperatorType.Not => nativeValue is null,
+        OperatorType.Not => NativeValue is null,
         _ => base.UnaryOperation(@operator, prefix)
     };
 

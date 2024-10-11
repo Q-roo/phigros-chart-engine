@@ -6,8 +6,6 @@ using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chart;
 
-using Object = Chartbuild.Runtime.Object;
-
 public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
     public readonly HashSet<TransformGroup> subGroups = [];
     public readonly HashSet<Judgeline> judgelines = [];
@@ -43,33 +41,26 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
     }
 
     public NativeObject ToObject() {
-        return new(
-            this,
-            key => {
-                if (key is not string property)
+        return new NativeObjectBuilder(this)
+        .AddCallable("add_subgroup", AddSubgroup_Binding)
+        .AddCallable("add_judgeline", AddJudgeline_Binding)
+        .SetFallbackGetter((@this) => key => {
+            if (key is not string property)
                     throw new KeyNotFoundException("this object only has string keys");
-
-                return property switch {
-                    "add_subgroup" => new NativeFunction(AddSubgroup_Binding),
-                    "add_judgeline" => new NativeFunction(AddJudgeline_Binding),
-                    _ => GetMember(property) is ICBExposeable exposeable ? exposeable.ToObject() : new Unset()
-                };
-            },
-            (Key, value) => {
-
-            }
-        );
+            return new ReadOnlyValueProperty(@this, key, GetMember(property) is ICBExposeable exposeable ? exposeable.ToObject() : new U());
+        })
+        .Build();
     }
 
-    NativeObject AddSubgroup_Binding(params Object[] args) {
-        return AddSubGroup((string)args[0].Value).ToObject();
+    NativeObject AddSubgroup_Binding(params O[] args) {
+        return AddSubGroup(args[0].ToString()).ToObject();
     }
 
-    NativeObject AddJudgeline_Binding(params Object[] args) {
+    NativeObject AddJudgeline_Binding(params O[] args) {
         if (
             args.Length == 0
             || args[0] is not NativeObject native
-            || native.Value is not Judgeline judgeline
+            || native.NativeValue is not Judgeline judgeline
         )
         throw new ArgumentException("this method requires one judgeline instance");
 

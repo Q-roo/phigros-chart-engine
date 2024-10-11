@@ -22,26 +22,19 @@ public partial class Chart : Node2D, ICBExposeable {
     public readonly List<Judgeline> judgelines = [];
 
     public NativeObject ToObject() {
-        return new(
-            this,
-            key => key switch {
-                "platform" => new I32((int)Platform),
-                "groups" => rootGroup.ToObject(),
-                "add_event" => new NativeFunction(args => {
-                    if (args.Length == 0)
-                        throw new ArgumentException("insufficient arguments");
+        return new NativeObjectBuilder(this)
+        .AddConstantValue("platform", (int)Platform)
+        .AddConstantValue("groups", rootGroup.ToObject()) // should not change
+        .AddCallable("add_event", args => {
+            if (args.Length == 0)
+                throw new ArgumentException("insufficient arguments");
 
-                    if (args[0].Value is not Event @event)
-                        throw new ArgumentException("first argument needs to be an event");
+            if (args[0].NativeValue is not Event @event)
+                throw new ArgumentException("first argument needs to be an event");
 
-                    ChartContext.AddEvent(this, @event);
-                }),
-                _ => throw new KeyNotFoundException()
-            },
-            (Key, value) => {
-
-            }
-        );
+            ChartContext.AddEvent(this, @event);
+        })
+        .Build();
     }
 
     public override void _Ready() {

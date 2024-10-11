@@ -12,7 +12,7 @@ public class Closure : O {
         this.scope = scope;
         this.closure = closure;
         this.walker = walker;
-        nativeValue = new Func<O[], O>(Call);
+        NativeValue = new Func<O[], O>(Call);
     }
 
     public override O Copy(bool shallow = true, params object[] keys) {

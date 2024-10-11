@@ -72,18 +72,8 @@ public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
     }
 
     public NativeObject ToObject() {
-        return new NativeObject(this, key => key switch {
-            "position" => new F32(XOffset),
-            _ => throw new KeyNotFoundException()
-        },
-        (key, value) => {
-            switch (key) {
-                case "position":
-                    XOffset = value.ToF32().value;
-                    break;
-                default:
-                    throw new KeyNotFoundException();
-            }
-        });
+        return new NativeObjectBuilder(this)
+        .AddGetSetProperty("position", () => XOffset, value => XOffset = value)
+        .Build();
     }
 }

@@ -15,8 +15,8 @@ public abstract class Property<T> : Object {
     }
 }
 
-public delegate T Getter<T>();
-public delegate void Setter<T>(T value);
+public delegate T _Getter<T>();
+public delegate void _Setter<T>(T value);
 public delegate void KeySetter(object key, Object @this, Object value);
 public class HijackedSetter(Object @object, KeySetter setter) : Object {
     private readonly Object @object = @object;
@@ -51,10 +51,10 @@ public class HijackedSetter(Object @object, KeySetter setter) : Object {
     }
 }
 
-public class ObjectProperty(Getter<Object> getter, Setter<Object> setter) : Property<Object> {
+public class ObjectProperty(_Getter<Object> getter, _Setter<Object> setter) : Property<Object> {
 
-    private readonly Getter<Object> getter = getter;
-    private readonly Setter<Object> setter = setter;
+    private readonly _Getter<Object> getter = getter;
+    private readonly _Setter<Object> setter = setter;
 
     public override Object this[object key] {
         get => value[key];
@@ -105,6 +105,6 @@ public class ObjectProperty(Getter<Object> getter, Setter<Object> setter) : Prop
     }
 }
 
-public class Vec2Property(Getter<Vector2> getter, Setter<Vector2> setter) : ObjectProperty(() => new Vec2(getter()), value => setter(value.ToVec2().value)) {
+public class Vec2Property(_Getter<Vector2> getter, _Setter<Vector2> setter) : ObjectProperty(() => new Vec2(getter()), value => setter(value.ToVec2().value)) {
 
 }

@@ -49,7 +49,7 @@ public class SetGetProperty(O @this, object key, Getter<object> getter, Setter<o
 public class ReadOnlyProperty(O @this, object key, Getter<object> getter) : SetGetProperty(@this, key, getter, (@this, key, _) => throw new System.MemberAccessException($"{@this.GetType()}[{key}] is read-only"));
 
 public abstract class O(object nativeValue) : IEnumerable<O> {
-    public object nativeValue = nativeValue;
+    public object NativeValue { get; protected set; } = nativeValue;
     // public O this[object key] { get => GetProperty(key).Get(); set => GetProperty(key).Set(value); }
 
     public O GetValue() => this is Property property ? property.Get() : this;
@@ -90,10 +90,10 @@ public abstract class O(object nativeValue) : IEnumerable<O> {
 
     public KeyNotFoundException KeyNotFound(object key) => new($"unknown property on {GetType()}: {key}");
 
-    public override string ToString() => nativeValue.ToString();
-    public sealed override int GetHashCode() => nativeValue.GetHashCode();
-    public bool Equals(O lhs) => nativeValue.Equals(lhs.nativeValue);
-    public sealed override bool Equals(object obj) => obj is O o ? Equals(o) : nativeValue.Equals(obj);
+    public override string ToString() => NativeValue.ToString();
+    public sealed override int GetHashCode() => NativeValue.GetHashCode();
+    public bool Equals(O lhs) => NativeValue.Equals(lhs.NativeValue);
+    public sealed override bool Equals(object obj) => obj is O o ? Equals(o) : NativeValue.Equals(obj);
 }
 
 public abstract class O<T>(T value) : O(value) {
@@ -102,7 +102,7 @@ public abstract class O<T>(T value) : O(value) {
         get => _value;
         set {
             _value = value;
-            nativeValue = value;
+            NativeValue = value;
         }
     }
 

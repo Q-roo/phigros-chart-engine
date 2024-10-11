@@ -11,7 +11,7 @@ public class Scope : KVObject {
     public readonly ScopeRules rules;
 
     public Scope() {
-        nativeValue = this;
+        NativeValue = this;
         parent = null;
         rules = new();
     }

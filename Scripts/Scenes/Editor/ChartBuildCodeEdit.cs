@@ -97,10 +97,10 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                     if (args.Length < 2)
                         throw new ArgumentException("insufficient arguments");
 
-                    if (args[0].nativeValue is not EventTrigger delay)
+                    if (args[0].NativeValue is not EventTrigger delay)
                         throw new ArgumentException("first argument needs to be an event trigger");
 
-                    if (args[0].nativeValue is not EventTrigger trigger)
+                    if (args[0].NativeValue is not EventTrigger trigger)
                         throw new ArgumentException("first argument needs to be an event trigger");
 
                     return new OnDelayed(delay, trigger).ToObject();
@@ -150,10 +150,10 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                     if (args.Length < 3)
                         throw new ArgumentException("insufficient arguments");
 
-                    if (args[0].nativeValue is not EventTrigger start)
+                    if (args[0].NativeValue is not EventTrigger start)
                         start = new OnTimeAfter(args[0]);
 
-                    if (args[1].nativeValue is not EventTrigger end)
+                    if (args[1].NativeValue is not EventTrigger end)
                         end = new OnTimeBefore(args[1]);
 
                     return new Event(start, end, @this => {
