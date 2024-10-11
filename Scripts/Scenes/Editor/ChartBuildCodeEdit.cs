@@ -58,9 +58,9 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 chart.Reset();
                 walker
                 // default values
-                .InsertValue(true, "true", new Bool(true))
-                .InsertValue(true, "false", new Bool(false))
-                .InsertValue(true, "unset", new Unset())
+                .InsertValue(true, "true", true)
+                .InsertValue(true, "false", false)
+                .InsertValue(true, "unset", new U())
                 .InsertValue(true, "chart", chart.ToObject())
                 .InsertProperty("PLATFORM", () => new I32((int)Chart.Chart.Platform))
                 .InsertProperty("current_time_in_seconds", () => new F32((float)chart.CurrentTime)) // TODO: give this a shorter name

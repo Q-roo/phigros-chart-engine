@@ -5,7 +5,7 @@ using Godot;
 
 namespace PCE.Chartbuild.Runtime;
 
-public abstract class Property(O @this, object key)/*  : O */ {
+public abstract class Property(O @this, object key) : O(null) {
     protected readonly O @this = @this;
     protected readonly object key = key;
     protected abstract O Getter();
@@ -15,6 +15,9 @@ public abstract class Property(O @this, object key)/*  : O */ {
     public void Set(O value) {
         Setter(value);
     }
+
+    public virtual Property Copy() => this;
+    public override O Copy(bool shallow = true, params object[] keys) => Copy();
 }
 
 public class ValueProperty(O @this, object key, O value) : Property(@this, key) {
@@ -23,6 +26,8 @@ public class ValueProperty(O @this, object key, O value) : Property(@this, key) 
     protected override O Getter() => value;
 
     protected override void Setter(O value) => this.value = value;
+
+    public override Property Copy() => new ValueProperty(@this, key, value.Copy());
 }
 
 public class ReadOnlyValueProperty(O @this, object key, O value) : ValueProperty(@this, key, value) {
@@ -45,7 +50,9 @@ public class ReadOnlyProperty(O @this, object key, Getter<object> getter) : SetG
 
 public abstract class O(object nativeValue) : IEnumerable<O> {
     public object nativeValue = nativeValue;
-    public O this[object key] { get => GetProperty(key).Get(); set => GetProperty(key).Set(value); }
+    // public O this[object key] { get => GetProperty(key).Get(); set => GetProperty(key).Set(value); }
+
+    public O GetValue() => this is Property property ? property.Get() : this;
 
     public virtual Property GetProperty(object key) => throw KeyNotFound(key);
 
@@ -78,8 +85,8 @@ public abstract class O(object nativeValue) : IEnumerable<O> {
 
     public virtual O Call(params O[] args) => throw new System.NotSupportedException($"{GetType()} is not callable");
     public virtual IEnumerator<O> GetEnumerator() => throw new System.NotSupportedException($"{GetType()} is not enumerable");
-
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    public abstract O Copy(bool shallow = true, params object[] keys);
 
     public KeyNotFoundException KeyNotFound(object key) => new($"unknown property on {GetType()}: {key}");
 
@@ -102,12 +109,16 @@ public abstract class O<T>(T value) : O(value) {
     public O() : this(default) { }
 }
 
-public class KWObject() : O(null) {
-    private readonly Dictionary<object, Property> properties = [];
+public class KVObject() : O(null) {
+    protected readonly Dictionary<object, Property> properties = [];
     public override Property GetProperty(object key) => properties[key];
 
     public void AddProperty(object key, Property property) {
         properties[key] = property;
+    }
+
+    public override O Copy(bool shallow = true, params object[] keys) {
+        throw new System.NotImplementedException();
     }
 }
 
@@ -133,6 +144,9 @@ public class OArray : O<List<O>> {
         _extend = new(this, "extend", new Callable(Value.AddRange));
     }
 
+    public OArray(IEnumerable<O> content)
+    : this(new(content)) { }
+
     public OArray()
     : this([]) { }
 
@@ -151,6 +165,18 @@ public class OArray : O<List<O>> {
     public override string ToString() => $"[{string.Join(", ", Value)}]";
 
     public override IEnumerator<O> GetEnumerator() => Value.GetEnumerator();
+
+    public override O Copy(bool shallow = true, params object[] keys) {
+        List<O> ret = new(Value.Map(it => it.Copy(shallow)));
+
+        // the keys might not be ordered
+        foreach (object obj in keys) {
+            int idx = (int)obj;
+            ret[idx] = Value[idx].Copy(!shallow);
+        }
+
+        return ret;
+    }
 }
 
 public class B(bool value) : O<bool>(value) {
@@ -171,6 +197,8 @@ public class B(bool value) : O<bool>(value) {
     public override float ToF32() => Value ? 0f : 1f;
     public override int ToI32() => Value ? 0 : 1;
     public override Vector2 ToVec2() => Value ? Vector2.Zero : Vector2.One;
+
+    public override O Copy(bool shallow = true, params object[] keys) => Value;
 }
 
 public class I(int value) : O<int>(value) {
@@ -214,6 +242,8 @@ public class I(int value) : O<int>(value) {
     public override float ToF32() => Value;
     public override int ToI32() => Value;
     public override Vector2 ToVec2() => new(Value, Value);
+
+    public override O Copy(bool shallow = true, params object[] keys) => Value;
 }
 
 public class F(float value) : O<float>(value) {
@@ -246,6 +276,8 @@ public class F(float value) : O<float>(value) {
     public override float ToF32() => Value;
     public override int ToI32() => (int)Value;
     public override Vector2 ToVec2() => new(Value, Value);
+
+    public override O Copy(bool shallow = true, params object[] keys) => Value;
 }
 
 public class S : O<string> {
@@ -281,6 +313,8 @@ public class S : O<string> {
     }
 
     public override bool ToBool() => !string.IsNullOrEmpty(Value);
+
+    public override O Copy(bool shallow = true, params object[] keys) => shallow ? Value : new string(Value);
 }
 
 public class V : O<Vector2> {
@@ -355,6 +389,8 @@ public class V : O<Vector2> {
 
     public override bool ToBool() => Value != Vector2.Zero;
     public override Vector2 ToVec2() => Value;
+
+    public override O Copy(bool shallow = true, params object[] keys) => Value;
 }
 
 public class U() : O(null) {
@@ -368,6 +404,8 @@ public class U() : O(null) {
     public override int ToI32() => 0;
     public override Vector2 ToVec2() => Vector2.Zero;
     public override string ToString() => "unset";
+
+    public override O Copy(bool shallow = true, params object[] keys) => this;
 }
 
 public delegate O CallFunction(params O[] args);
@@ -382,4 +420,6 @@ public class Callable(CallFunction value) : O<CallFunction>(value) {
     public override O Call(params O[] args) {
         return Value(args);
     }
+
+    public override O Copy(bool shallow = true, params object[] keys) => this;
 }

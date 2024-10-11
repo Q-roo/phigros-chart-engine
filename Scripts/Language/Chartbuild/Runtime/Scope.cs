@@ -1,23 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace PCE.Chartbuild.Runtime;
 
-using Value = Object;
+using Value = O;
 
-public class Scope : Value {
-    private readonly Dictionary<object, Value> variables;
-    private readonly HashSet<object> readOnlyVariableKeys;
-    private readonly Dictionary<object, Func<Value>> properties;
+public class Scope : KVObject {
     public readonly Scope parent;
     public readonly ScopeRules rules;
 
     public Scope() {
+        nativeValue = this;
         parent = null;
         rules = new();
-        variables = [];
-        properties = [];
-        readOnlyVariableKeys = [];
     }
 
     public Scope(Scope parent)
@@ -27,45 +23,23 @@ public class Scope : Value {
         rules.UpdateAspectRatio();
     }
 
-    public override object Value => this;
+    public override Property GetProperty(object key) {
+        GetVariableStore(key, out Scope parent);
+            if (parent.properties.TryGetValue(key, out Property property))
+                return property;
 
-    public override Value this[object key] {
-        get {
-            GetVariableStore(key, out Scope parent);
-            if (parent.properties.TryGetValue(key, out Func<Value> getter))
-                return getter();
-
-            return parent.variables[key];
-        }
-        set {
-            GetVariableStore(key, out Scope parent);
-            if (parent.readOnlyVariableKeys.Contains(key) || parent.properties.ContainsKey(key))
-                throw ReadOnlyProperty(key);
-
-            parent.variables[key] = value;
-            value.parentKey = key;
-            value.parentObject = parent;
-        }
+            return parent.properties[key];
     }
 
     public void DeclareVariable(object key, Value value, bool @readonly) {
-        variables[key] = value;
-        value.parentKey = key;
-        value.parentObject = this;
-
-        if (@readonly)
-            readOnlyVariableKeys.Add(key);
-    }
-
-    public void DeclareProperty(object key, Func<Value> getter) {
-        properties[key] = getter;
+        AddProperty(key, @readonly ? new ReadOnlyValueProperty(this, key, value) : new ValueProperty(this, key, value));
     }
 
     // TODO: a better name
     // get the dictionary which contains the variable
     private bool GetVariableStore(object key, out Scope scope) {
         scope = this;
-        if (scope.variables.ContainsKey(key) || scope.properties.ContainsKey(key))
+        if (scope.properties.ContainsKey(key))
             return true;
         else if (parent is not null && parent.GetVariableStore(key, out Scope parentScope)) {
             scope = parentScope;
@@ -76,23 +50,7 @@ public class Scope : Value {
     }
 
     public override Value Copy(bool shallow = true, params object[] keys) {
-        throw new NotImplementedException();
-    }
-
-    public override Value Call(params Value[] args) {
-        throw NotCallable();
-    }
-
-    public override Value ExecuteBinary(OperatorType @operator, Value rhs) {
-        throw NotSupportedOperator(@operator);
-    }
-
-    public override Value ExecuteUnary(OperatorType @operator, bool prefix) {
-        throw NotSupportedOperator(@operator);
-    }
-
-    public override IEnumerator<Value> GetEnumerator() {
-        throw NotIterable();
+        throw new UnreachableException("a scope should never get copied with \"Copy\"");
     }
 
     public override string ToString() => "scope";

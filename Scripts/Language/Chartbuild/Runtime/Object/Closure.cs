@@ -1,44 +1,35 @@
 using System;
-using System.Collections.Generic;
 
 namespace PCE.Chartbuild.Runtime;
 
-public class Closure(Scope scope, ClosureExpressionNode closure, ASTWalker walker) : Object {
-    private readonly Scope scope = scope;
-    private readonly ClosureExpressionNode closure = closure;
-    private readonly ASTWalker walker = walker;
+public class Closure : O {
+    private readonly Scope scope;
+    private readonly ClosureExpressionNode closure;
+    private readonly ASTWalker walker;
 
-    public override Object this[object key] { get => throw KeyNotFound(key); set => throw KeyNotFound(key); }
+    public Closure(Scope scope, ClosureExpressionNode closure, ASTWalker walker)
+    : base(null) {
+        this.scope = scope;
+        this.closure = closure;
+        this.walker = walker;
+        nativeValue = new Func<O[], O>(Call);
+    }
 
-    public override Object Copy(bool shallow = true, params object[] keys) {
+    public override O Copy(bool shallow = true, params object[] keys) {
         return this; // NOTE: this one shouldn't be copied
     }
 
-    public override object Value => new Func<Object[], Object>(Call);
-
-    public override Object Call(params Object[] args) {
+    public override O Call(params O[] args) {
         return walker.CallUserDefinedClosure(new(scope), closure, args);
     }
 
-    public override Object ExecuteBinary(OperatorType @operator, Object rhs) {
+    public override O BinaryOperation(OperatorType @operator, O rhs) {
         return @operator switch {
-            OperatorType.Equal => new Bool(Equals(rhs.Value)),
-            OperatorType.NotEqual => new Bool(!Equals(rhs.Value)),
-            _ => throw NotSupportedOperator(@operator)
+            OperatorType.Equal => Equals(rhs),
+            OperatorType.NotEqual => !Equals(rhs),
+            _ => base.BinaryOperation(@operator, rhs)
         };
     }
 
-    public override Object ExecuteUnary(OperatorType @operator, bool prefix) {
-        throw NotSupportedOperator(@operator);
-    }
-
-    public override IEnumerator<Object> GetEnumerator() {
-        throw NotIterable();
-    }
-
-    public override string ToString() => Value.ToString();
-
-    public override Closure ToClosure() {
-        return this;
-    }
+    public override string ToString() => "Callable";
 }
