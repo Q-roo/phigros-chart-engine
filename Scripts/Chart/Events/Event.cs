@@ -6,7 +6,7 @@ namespace PCE.Chart;
 public class Event : ICBExposeable {
     private ICBExposeable boundTo;
     private NativeObject cachedObject;
-    public delegate void EventCallback(Object @this);
+    public delegate void EventCallback(O @this);
     public bool active;
     public int executionCount;
     public readonly EventTrigger strart;

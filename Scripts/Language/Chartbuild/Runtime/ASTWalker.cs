@@ -41,6 +41,15 @@ public class ASTWalker {
         return this;
     }
 
+    public ASTWalker InsertProperty(object key, Getter<object> getter) {
+        return InsertProperty(key, new ReadOnlyProperty(CurrentScope, key, getter));
+    }
+
+    public delegate Value Getter();
+    public ASTWalker InsertProperty(object key, Getter getter) {
+        return InsertProperty(key, (_, _) => getter());
+    }
+
     public void Evaluate() {
         EvaluateRoot();
     }

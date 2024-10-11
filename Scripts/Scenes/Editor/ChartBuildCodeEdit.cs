@@ -6,6 +6,7 @@ using System;
 
 namespace PCE.Editor;
 
+using Callable = Chartbuild.Runtime.Callable;
 using Object = Chartbuild.Runtime.Object;
 
 public partial class ChartBuildCodeEdit : CodeEdit {
@@ -62,122 +63,122 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 .InsertValue(true, "false", false)
                 .InsertValue(true, "unset", new U())
                 .InsertValue(true, "chart", chart.ToObject())
-                .InsertProperty("PLATFORM", () => new I32((int)Chart.Chart.Platform))
-                .InsertProperty("current_time_in_seconds", () => new F32((float)chart.CurrentTime)) // TODO: give this a shorter name
-                .InsertProperty("delta_time_in_seconds", () => new F32((float)chart.DeltaTime)) // TODO: give this a shorter name
-                .InsertValue(true, "PCE", new I32((int)CompatibilityLevel.PCE))
-                .InsertValue(true, "RPE", new I32((int)CompatibilityLevel.RPE))
-                .InsertValue(true, "PHI", new I32((int)CompatibilityLevel.PHI))
+                .InsertProperty("PLATFORM", () => (int)Chart.Chart.Platform)
+                .InsertProperty("current_time_in_seconds", () => (float)chart.CurrentTime) // TODO: give this a shorter name
+                .InsertProperty("delta_time_in_seconds", () => (float)chart.DeltaTime) // TODO: give this a shorter name
+                .InsertValue(true, "PCE", (int)CompatibilityLevel.PCE)
+                .InsertValue(true, "RPE", (int)CompatibilityLevel.RPE)
+                .InsertValue(true, "PHI", (int)CompatibilityLevel.PHI)
                 // event trigger constructors
                 .InsertProperty("begin", () => new OnChartBegin().ToObject())
                 .InsertProperty("end", () => new OnChartEnd().ToObject())
                 .InsertProperty("pause", () => new OnPause().ToObject())
                 .InsertProperty("resume", () => new OnResume().ToObject())
-                .InsertValue(true, "before", new NativeFunction(args => {
+                .InsertValue(true, "before", new Callable(args => {
                     // signature: (float, ...rest)
-                    return new OnTimeBefore(args[0].ToF32().value).ToObject();
+                    return new OnTimeBefore(args[0]).ToObject();
                 }))
-                .InsertValue(true, "after", new NativeFunction(args => {
+                .InsertValue(true, "after", new Callable(args => {
                     // signature: (float, ...rest)
-                    return new OnTimeAfter(args[0].ToF32().value).ToObject();
+                    return new OnTimeAfter(args[0]).ToObject();
                 }))
-                .InsertValue(true, "exec", new NativeFunction(args => {
+                .InsertValue(true, "exec", new Callable(args => {
                     // singature: (int, ...rest)
-                    return new OnExecCount(args[0].ToI32().value).ToObject();
+                    return new OnExecCount(args[0]).ToObject();
                 }))
                 .InsertProperty("once", () => new OnExecCount(1).ToObject())
                 // TODO: touch events
-                .InsertValue(true, "signal", new NativeFunction(args => {
+                .InsertValue(true, "signal", new Callable(args => {
                     // signature (str, ...rest)
-                    return new OnSignal(args[0].ToStr().value).ToObject();
+                    return new OnSignal(args[0].ToString()).ToObject();
                 }))
-                .InsertValue(true, "delay", new NativeFunction(args => {
+                .InsertValue(true, "delay", new Callable(args => {
                     // signature (trigger, trigger, ...rest)
                     if (args.Length < 2)
                         throw new ArgumentException("insufficient arguments");
 
-                    if (args[0].Value is not EventTrigger delay)
+                    if (args[0].nativeValue is not EventTrigger delay)
                         throw new ArgumentException("first argument needs to be an event trigger");
 
-                    if (args[0].Value is not EventTrigger trigger)
+                    if (args[0].nativeValue is not EventTrigger trigger)
                         throw new ArgumentException("first argument needs to be an event trigger");
 
                     return new OnDelayed(delay, trigger).ToObject();
                 }))
-                .InsertValue(true, "condition", new NativeFunction(args => {
+                .InsertValue(true, "condition", new Callable(args => {
                     // signature: (() => bool, ...rest)
                     if (args.Length == 0)
                         throw new ArgumentException("first argument needs to be a callable that returns a bool value");
 
-                    return new OnCondition(() => args[0].Call().ToBool().value).ToObject();
+                    return new OnCondition(() => args[0].Call()).ToObject();
                 }))
                 // default constructors
-                .InsertValue(true, "vec2", new NativeFunction(args => {
+                .InsertValue(true, "vec2", new Callable(args => {
                     if (args.Length == 0)
-                        return new Vec2(Vector2.Zero);
+                        return new V(Vector2.Zero);
                     else if (args.Length == 1)
                         return args[0].ToVec2();
                     else
-                        return new Vec2(new(args[0].ToF32().value, args[1].ToF32().value));
+                        return new V(new(args[0], args[1]));
                 }))
-                .InsertValue(true, "judgeline", new NativeFunction(args => {
+                .InsertValue(true, "judgeline", new Callable(args => {
                     // signature: ()
                     switch (args.Length) {
                         case 0:
                             return new Judgeline(ChartContext.GetJudgelineName(), walker.CurrentScope.rules.DefaultJudgelineBpm, walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
                         // signature: (name) or (bpm)
                         case 1: {
-                            if (args[0] is Str str)
-                                return new Judgeline(str.value, walker.CurrentScope.rules.DefaultJudgelineBpm, walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
+                            if (args[0] is S str)
+                                return new Judgeline(str.ToString(), walker.CurrentScope.rules.DefaultJudgelineBpm, walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
                             else
-                                return new Judgeline(ChartContext.GetJudgelineName(), args[0].ToF32().value, walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
+                                return new Judgeline(ChartContext.GetJudgelineName(), args[0], walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
                         }
                         // signature (name, bpm) or (bpm, size)
                         case 2: {
-                            if (args[0] is Str str)
-                                return new Judgeline(str.value, args[1].ToF32().value, walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
+                            if (args[0] is S str)
+                                return new Judgeline(str.ToString(), args[1], walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
                             else
-                                return new Judgeline(ChartContext.GetJudgelineName(), args[0].ToF32().value, args[1].ToF32().value).ToObject();
+                                return new Judgeline(ChartContext.GetJudgelineName(), args[0], args[1]).ToObject();
                         }
                         // signature(name, bpm, size, ...rest)
                         default:
-                            return new Judgeline(args[0].ToStr().value, args[1].ToF32().value, args[2].ToF32().value).ToObject();
+                            return new Judgeline(args[0].ToString(), args[1], args[2]).ToObject();
                     }
                 }))
-                .InsertValue(true, "event", new NativeFunction(args => {
+                .InsertValue(true, "event", new Callable(args => {
                     // signature: (trigger | number, trigger | number, callback, ...rest)
                     if (args.Length < 3)
                         throw new ArgumentException("insufficient arguments");
 
-                    if (args[0].Value is not EventTrigger start)
-                        start = new OnTimeAfter(args[0].ToF32().value);
+                    if (args[0].nativeValue is not EventTrigger start)
+                        start = new OnTimeAfter(args[0]);
 
-                    if (args[1].Value is not EventTrigger end)
-                        end = new OnTimeBefore(args[1].ToF32().value);
+                    if (args[1].nativeValue is not EventTrigger end)
+                        end = new OnTimeBefore(args[1]);
 
                     return new Event(start, end, @this => {
                         args[2].Call(@this);
                     }).ToObject();
                 }))
-                .InsertValue(true, "tap", new NativeFunction(args => {
+                .InsertValue(true, "tap", new Callable(args => {
                     return NoteConstructor(NoteType.Tap, walker.CurrentScope.rules.DefaultNoteSpeed, walker.CurrentScope.rules.DefaultIsNoteAbove, args).ToObject();
                 }))
-                .InsertValue(true, "drag", new NativeFunction(args => {
+                .InsertValue(true, "drag", new Callable(args => {
                     return NoteConstructor(NoteType.Drag, walker.CurrentScope.rules.DefaultNoteSpeed, walker.CurrentScope.rules.DefaultIsNoteAbove, args).ToObject();
                 }))
-                .InsertValue(true, "hold", new NativeFunction(args => {
+                .InsertValue(true, "hold", new Callable(args => {
                     return NoteConstructor(NoteType.Hold, walker.CurrentScope.rules.DefaultNoteSpeed, walker.CurrentScope.rules.DefaultIsNoteAbove, args).ToObject();
                 }))
-                .InsertValue(true, "flick", new NativeFunction(args => {
+                .InsertValue(true, "flick", new Callable(args => {
                     return NoteConstructor(NoteType.Flick, walker.CurrentScope.rules.DefaultNoteSpeed, walker.CurrentScope.rules.DefaultIsNoteAbove, args).ToObject();
                 }))
                 // default functions
-                .InsertValue(true, "dbg_print", new NativeFunction(new Action<Object[]>(args => {
-                    GD.Print(string.Join<Object>(", ", args));
-                })))
-                .InsertValue(true, "emit", new NativeFunction(args => {
+                .InsertValue(true, "dbg_print", new Callable(args => {
+                    GD.Print(string.Join<O>(", ", args));
+                }))
+                .InsertValue(true, "emit", new Callable(args => {
                     // signature: (str, ...rest)
-                    chart.signals.Add(args[0].ToStr().value);
+                    chart.signals.Add(args[0].ToString());
                 }))
                 .Evaluate();
                 chart.BeginRender();
@@ -207,7 +208,7 @@ public partial class ChartBuildCodeEdit : CodeEdit {
         // CodeHighlighter.AddColorRegion("//", string.Empty, commentColor);
     }
 
-    private Note NoteConstructor(NoteType type, float defaultSpeed, bool defaultIsAbove, params Object[] args) {
+    private Note NoteConstructor(NoteType type, float defaultSpeed, bool defaultIsAbove, params O[] args) {
         // signature: (time, x_offset, speed=default, is_above=default, ...rest)
 
 
@@ -221,16 +222,16 @@ public partial class ChartBuildCodeEdit : CodeEdit {
             throw new ArgumentException("insufficient arguments");
 
         if (args.Length == 3 + argOffset) {
-            if (args[2 + argOffset] is Bool @bool)
-                isAbove = @bool.value;
+            if (args[2 + argOffset] is B b)
+                isAbove = b;
             else
-                speed = args[2 + argOffset].ToF32().value;
+                speed = args[2 + argOffset];
         } else if (args.Length > 3 + argOffset) {
-            speed = args[3 + argOffset].ToF32().value;
-            isAbove = args[4 + argOffset].ToBool().value;
+            speed = args[3 + argOffset];
+            isAbove = args[4 + argOffset];
         }
 
-        return new Note(type, args[0].ToF32().value, args[1 + argOffset].ToF32().value, speed, isAbove, isHold ? args[1].ToF32().value : 0);
+        return new Note(type, args[0], args[1 + argOffset], speed, isAbove, isHold ? args[1] : 0);
     }
 
     public void Open(Project project) {
