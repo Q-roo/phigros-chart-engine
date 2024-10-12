@@ -2,7 +2,7 @@ using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chartbuild.Bindings;
 
-using Object = O;
+using Object = Object;
 
 public delegate Property PropertyGetter(object key);
 

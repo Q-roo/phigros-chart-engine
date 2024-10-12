@@ -64,7 +64,7 @@ public partial class ChartBuildCodeEdit : CodeEdit
                 // default values
                 .InsertValue(true, "true", true)
                 .InsertValue(true, "false", false)
-                .InsertValue(true, "unset", new U())
+                .InsertValue(true, "unset", new Unset())
                 .InsertValue(true, "chart", chart.ToObject())
                 .InsertProperty("PLATFORM", () => (int)Chart.Chart.Platform)
                 .InsertProperty("current_time_in_seconds", () => (float)chart.CurrentTime) // TODO: give this a shorter name
@@ -125,11 +125,11 @@ public partial class ChartBuildCodeEdit : CodeEdit
                 .InsertValue(true, "vec2", new Callable(args =>
                 {
                     if (args.Length == 0)
-                        return new V(Vector2.Zero);
+                        return new Vec2(Vector2.Zero);
                     else if (args.Length == 1)
                         return args[0].ToVec2();
                     else
-                        return new V(new(args[0], args[1]));
+                        return new Vec2(new(args[0], args[1]));
                 }))
                 .InsertValue(true, "judgeline", new Callable(args =>
                 {
@@ -141,7 +141,7 @@ public partial class ChartBuildCodeEdit : CodeEdit
                         // signature: (name) or (bpm)
                         case 1:
                             {
-                                if (args[0] is S str)
+                                if (args[0] is Str str)
                                     return new Judgeline(str.ToString(), walker.CurrentScope.rules.DefaultJudgelineBpm, walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
                                 else
                                     return new Judgeline(ChartContext.GetJudgelineName(), args[0], walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
@@ -149,7 +149,7 @@ public partial class ChartBuildCodeEdit : CodeEdit
                         // signature (name, bpm) or (bpm, size)
                         case 2:
                             {
-                                if (args[0] is S str)
+                                if (args[0] is Str str)
                                     return new Judgeline(str.ToString(), args[1], walker.CurrentScope.rules.DefaultJudgelineSize).ToObject();
                                 else
                                     return new Judgeline(ChartContext.GetJudgelineName(), args[0], args[1]).ToObject();
@@ -195,7 +195,7 @@ public partial class ChartBuildCodeEdit : CodeEdit
                 // default functions
                 .InsertValue(true, "dbg_print", new Callable(args =>
                 {
-                    GD.Print(string.Join<O>(", ", args));
+                    GD.Print(string.Join<Chartbuild.Runtime.Object>(", ", args));
                 }))
                 .InsertValue(true, "emit", new Callable(args =>
                 {
@@ -233,7 +233,7 @@ public partial class ChartBuildCodeEdit : CodeEdit
         // CodeHighlighter.AddColorRegion("//", string.Empty, commentColor);
     }
 
-    private Note NoteConstructor(NoteType type, float defaultSpeed, bool defaultIsAbove, params O[] args)
+    private Note NoteConstructor(NoteType type, float defaultSpeed, bool defaultIsAbove, params Chartbuild.Runtime.Object[] args)
     {
         // signature: (time, x_offset, speed=default, is_above=default, ...rest)
 
@@ -249,7 +249,7 @@ public partial class ChartBuildCodeEdit : CodeEdit
 
         if (args.Length == 3 + argOffset)
         {
-            if (args[2 + argOffset] is B b)
+            if (args[2 + argOffset] is Bool b)
                 isAbove = b;
             else
                 speed = args[2 + argOffset];

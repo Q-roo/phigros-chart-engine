@@ -7,8 +7,8 @@ using LanguageExt;
 namespace PCE.Chartbuild.Runtime;
 
 // TODO: dynamic is really hurting the preformace. Create a new wrapper object
-using Value = O;
-using Result = Either<O, ErrorType>;
+using Value = Object;
+using Result = Either<Object, ErrorType>;
 
 public class ASTWalker {
     private readonly ASTRoot ast;
@@ -57,7 +57,7 @@ public class ASTWalker {
         EvaluateBlock(ast);
     }
 
-    private OArray EvaluateArrayLiteral(ArrayLiteralExpressionNode arrayLiteral) => new(arrayLiteral.content.Map(it => EvaluateExpression(it).GetValue()));
+    private Array EvaluateArrayLiteral(ArrayLiteralExpressionNode arrayLiteral) => new(arrayLiteral.content.Map(it => EvaluateExpression(it).GetValue()));
 
     private Value EvaluateAssignment(AssignmentExpressionNode assignment) {
         Property asignee = EvaluateExpression(assignment.asignee) is Property property ? property : throw new Exception("this should be a property");
@@ -318,7 +318,7 @@ public class ASTWalker {
     public Value CallUserDefinedClosure(Scope scope, ClosureExpressionNode closure, params Value[] args) {
         // declarations
         Scope _scope = CurrentScope;
-        Value result = new U();
+        Value result = new Unset();
 
         // temporary function scope
         CurrentScope = scope;
@@ -331,7 +331,7 @@ public class ASTWalker {
             for (int i = 0; i < closure.arguments.Length - 1; i++)
                 scope.DeclareVariable(closure.arguments[i].name, args[i], false);
 
-            scope.DeclareVariable(closure.arguments[^1].name, new OArray(args.Slice(new(closure.arguments.Length - 1, args.Length - 1))), false);
+            scope.DeclareVariable(closure.arguments[^1].name, new Array(args.Slice(new(closure.arguments.Length - 1, args.Length - 1))), false);
         }
 
 

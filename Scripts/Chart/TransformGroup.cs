@@ -47,16 +47,16 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
         .SetFallbackGetter((@this) => key => {
             if (key is not string property)
                     throw new KeyNotFoundException("this object only has string keys");
-            return new ReadOnlyValueProperty(@this, key, GetMember(property) is ICBExposeable exposeable ? exposeable.ToObject() : new U());
+            return new ReadOnlyValueProperty(@this, key, GetMember(property) is ICBExposeable exposeable ? exposeable.ToObject() : new Unset());
         })
         .Build();
     }
 
-    NativeObject AddSubgroup_Binding(params O[] args) {
+    NativeObject AddSubgroup_Binding(params Chartbuild.Runtime.Object[] args) {
         return AddSubGroup(args[0].ToString()).ToObject();
     }
 
-    NativeObject AddJudgeline_Binding(params O[] args) {
+    NativeObject AddJudgeline_Binding(params Chartbuild.Runtime.Object[] args) {
         if (
             args.Length == 0
             || args[0] is not NativeObject native

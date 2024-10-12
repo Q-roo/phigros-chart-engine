@@ -2,7 +2,7 @@ using System;
 
 namespace PCE.Chartbuild.Runtime;
 
-public class Closure : O {
+public class Closure : Object {
     private readonly Scope scope;
     private readonly ClosureExpressionNode closure;
     private readonly ASTWalker walker;
@@ -12,18 +12,18 @@ public class Closure : O {
         this.scope = scope;
         this.closure = closure;
         this.walker = walker;
-        NativeValue = new Func<O[], O>(Call);
+        NativeValue = new Func<Object[], Object>(Call);
     }
 
-    public override O Copy(bool shallow = true, params object[] keys) {
+    public override Object Copy(bool shallow = true, params object[] keys) {
         return this; // NOTE: this one shouldn't be copied
     }
 
-    public override O Call(params O[] args) {
+    public override Object Call(params Object[] args) {
         return walker.CallUserDefinedClosure(new(scope), closure, args);
     }
 
-    public override O BinaryOperation(OperatorType @operator, O rhs) {
+    public override Object BinaryOperation(OperatorType @operator, Object rhs) {
         return @operator switch {
             OperatorType.Equal => Equals(rhs),
             OperatorType.NotEqual => !Equals(rhs),

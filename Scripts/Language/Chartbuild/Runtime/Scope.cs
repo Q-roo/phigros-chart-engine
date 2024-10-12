@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace PCE.Chartbuild.Runtime;
 
-using Value = O;
+using Value = Object;
 
 public class Scope : KVObject {
     public readonly Scope parent;

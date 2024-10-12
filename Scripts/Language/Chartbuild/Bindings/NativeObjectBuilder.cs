@@ -7,9 +7,9 @@ using Callable = PCE.Chartbuild.Runtime.Callable;
 namespace PCE.Chartbuild.Bindings;
 
 public delegate Property FallbackGetter(object key);
-public delegate O ValueGetter();
-public delegate void ValueSetter(O value);
-public delegate O SetValueTransformer(O value);
+public delegate Runtime.Object ValueGetter();
+public delegate void ValueSetter(Runtime.Object value);
+public delegate Runtime.Object SetValueTransformer(Runtime.Object value);
 public delegate T ValueGetter<T>();
 public delegate void OnChange<T>(T value);
 
@@ -45,13 +45,13 @@ public class NativeObjectBuilder {
         return this;
     }
 
-    public NativeObjectBuilder AddConstantValue(object key, O value) => AddProperty(key, new ReadOnlyValueProperty(nativeObject, key, value));
+    public NativeObjectBuilder AddConstantValue(object key, Runtime.Object value) => AddProperty(key, new ReadOnlyValueProperty(nativeObject, key, value));
     public NativeObjectBuilder AddReadOnlyValue(object key, ValueGetter getter) => AddProperty(key, new ReadOnlyProperty(nativeObject, key, (_, _) => getter()));
 
     private NativeObjectBuilder AddGetSetProperty(object key, ValueGetter getter, ValueSetter setter) => AddProperty(key, new SetGetProperty(nativeObject, key, (_, _) => getter(), (_, _, value) => setter(value)));
 
-    private NativeObjectBuilder AddChangeableProperty(object key, ValueGetter getter, SetValueTransformer valueTransformer, O.OnChange onChange) {
-        O cached= null;
+    private NativeObjectBuilder AddChangeableProperty(object key, ValueGetter getter, SetValueTransformer valueTransformer, Runtime.Object.OnChange onChange) {
+        Runtime.Object cached= null;
         return AddGetSetProperty(key, () => {
             cached = getter();
             cached.OnValueChanged += onChange;
@@ -69,12 +69,12 @@ public class NativeObjectBuilder {
 
     // this propbably goes against all of the good practices but who cares, it is convenient to use
     public NativeObjectBuilder AddChangeableProperty<[MustSupportToObjectCast] T>(object key, ValueGetter<T> getter, OnChange<T> onChange) => typeof(T) switch {
-        Type t when t == typeof(int) => AddChangeableProperty(key, () => (int)(object)getter(), value => (O)(int)value, (_, value) => onChange((T)value)),
-        Type t when t == typeof(float) => AddChangeableProperty(key, () => (float)(object)getter(), value => (O)(float)value, (_, value) => onChange((T)value)),
-        Type t when t == typeof(bool) => AddChangeableProperty(key, () => (bool)(object)getter(), value => (O)(bool)value, (_, value) => onChange((T)value)),
-        Type t when t == typeof(string) => AddChangeableProperty(key, () => (string)(object)getter(), value => (O)(string)value, (_, value) => onChange((T)value)),
-        Type t when t == typeof(Vector2) => AddChangeableProperty(key, () => (Vector2)(object)getter(), value => (O)(Vector2)value, (_, value) => onChange((T)value)),
-        _ => throw new InvalidCastException($"{typeof(T)} cannot be turned into {typeof(O)}")
+        Type t when t == typeof(int) => AddChangeableProperty(key, () => (int)(object)getter(), value => (Runtime.Object)(int)value, (_, value) => onChange((T)value)),
+        Type t when t == typeof(float) => AddChangeableProperty(key, () => (float)(object)getter(), value => (Runtime.Object)(float)value, (_, value) => onChange((T)value)),
+        Type t when t == typeof(bool) => AddChangeableProperty(key, () => (bool)(object)getter(), value => (Runtime.Object)(bool)value, (_, value) => onChange((T)value)),
+        Type t when t == typeof(string) => AddChangeableProperty(key, () => (string)(object)getter(), value => (Runtime.Object)(string)value, (_, value) => onChange((T)value)),
+        Type t when t == typeof(Vector2) => AddChangeableProperty(key, () => (Vector2)(object)getter(), value => (Runtime.Object)(Vector2)value, (_, value) => onChange((T)value)),
+        _ => throw new InvalidCastException($"{typeof(T)} cannot be turned into {typeof(Runtime.Object)}")
     };
 
     private NativeObjectBuilder SetFallbackGetter(FallbackGetter fallbackGetter) {
