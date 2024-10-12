@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using Godot;
 using LanguageExt;
+using PCE.Util;
 using FileAccess = Godot.FileAccess;
 
 namespace PCE.Editor;
@@ -122,9 +123,7 @@ public class Project {
         string path = AudioPath;
         switch (Path.GetExtension(path)) {
             case ".wav":
-                FileAccess file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
-                // FIXME: something is so wrong that it sounds like static from a horror game
-                return new AudioStreamWav() { Data = file.GetBuffer((long)file.GetLength()) };
+                return new WavLoader(path).GetStream();
             case ".ogg":
                 return AudioStreamOggVorbis.LoadFromFile(path);
             case ".mp3":
