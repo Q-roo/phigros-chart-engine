@@ -1,13 +1,11 @@
 using Godot;
 using PCE.Chart;
-using PCE.Chartbuild.Bindings;
 using PCE.Chartbuild.Runtime;
 using System;
 
 namespace PCE.Editor;
 
 using Callable = Chartbuild.Runtime.Callable;
-using Object = Chartbuild.Runtime.Object;
 
 public partial class ChartBuildCodeEdit : CodeEdit
 {
