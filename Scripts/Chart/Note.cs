@@ -73,7 +73,7 @@ public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
 
     public NativeObject ToObject() {
         return new NativeObjectBuilder(this)
-        .AddGetSetProperty("position", () => XOffset, value => XOffset = value)
+        .AddChangeableProperty("position", () => XOffset, value => XOffset = value)
         .Build();
     }
 }

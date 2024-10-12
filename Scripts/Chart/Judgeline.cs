@@ -57,9 +57,9 @@ public partial class Judgeline : Line2D, ICBExposeable {
 
     public NativeObject ToObject() {
         return new NativeObjectBuilder(this)
-        .AddGetSetProperty("size", () => Size, value => Size = value)
-        .AddGetSetProperty("position", () => Position, value => Position = value)
-        .AddGetSetProperty("rotation", () => RotationDegrees, value => RotationDegrees = value)
+        .AddChangeableProperty("size", () => Size, value => Size = value)
+        .AddChangeableProperty("position", () => Position, value => Position = value)
+        .AddChangeableProperty("rotation", () => RotationDegrees, value => RotationDegrees = value)
         .AddCallable("add_event", args => {
             if (args.Length == 0)
                 throw new ArgumentException("insufficient arguments");

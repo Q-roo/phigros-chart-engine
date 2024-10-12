@@ -49,8 +49,20 @@ public class SetGetProperty(O @this, object key, Getter<object> getter, Setter<o
 public class ReadOnlyProperty(O @this, object key, Getter<object> getter) : SetGetProperty(@this, key, getter, (@this, key, _) => throw new System.MemberAccessException($"{@this.GetType()}[{key}] is read-only"));
 
 public abstract class O(object nativeValue) : IEnumerable<O> {
-    public object NativeValue { get; protected set; } = nativeValue;
-    // public O this[object key] { get => GetProperty(key).Get(); set => GetProperty(key).Set(value); }
+    public delegate void OnChange(object oldValue, object newValue);
+    public event OnChange OnValueChanged;
+
+    private object _nativeValue = nativeValue;
+    public object NativeValue {
+        get => _nativeValue;
+        protected set {
+            object oldValue = _nativeValue;
+            _nativeValue = value;
+            OnValueChanged?.Invoke(oldValue, _nativeValue);
+        }
+    }
+    
+    public void SetNativeValue(O obj) => NativeValue = obj.NativeValue;
 
     public O GetValue() => this is Property property ? property.Get().GetValue() : this;
 

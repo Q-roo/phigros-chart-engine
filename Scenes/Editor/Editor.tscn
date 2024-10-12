@@ -109,6 +109,7 @@ jl.add_event(event(begin, exec(4), ||dbg_print('b')));
 const jl2 = judgeline('main', 180);
 chart.groups.add_judgeline(jl2);
 jl2.position = vec2(0, 250);
+jl2.position.x = 500;
 jl2.add_note(tap(2, 0));
 jl2.add_note(hold(0, 2, 0));"
 scroll_smooth = true
