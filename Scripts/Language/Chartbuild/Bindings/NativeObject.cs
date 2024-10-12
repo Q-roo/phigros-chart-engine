@@ -15,25 +15,16 @@ public class NativeObject(object value, PropertyGetter propertyGetter) : Object(
         propertyGetter = key => throw KeyNotFound(key);
     }
 
+    public override Property GetProperty(object key) => propertyGetter(key);
+
     public override Object Copy(bool shallow = true, params object[] keys) {
         // TODO: support shallow copy
         return new NativeObject(value, propertyGetter);
     }
 
-    public override Object BinaryOperation(OperatorType @operator, Object rhs) {
-        return @operator switch {
-            OperatorType.Equal => Equals(rhs),
-            OperatorType.NotEqual => !Equals(rhs),
-            _ => base.BinaryOperation(@operator, rhs)
-        };
-    }
-
-    public override Object UnaryOperation(OperatorType @operator, bool prefix) => @operator switch {
-        OperatorType.Not => NativeValue is null,
-        _ => base.UnaryOperation(@operator, prefix)
-    };
-
     public override string ToString() {
         return value.ToString();
     }
+
+    public override bool ToBool() => value is not null;
 }

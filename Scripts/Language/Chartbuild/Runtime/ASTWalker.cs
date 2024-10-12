@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using DotNext.Collections.Generic;
 using LanguageExt;
 
@@ -58,7 +57,7 @@ public class ASTWalker {
         EvaluateBlock(ast);
     }
 
-    private OArray EvaluateArrayLiteral(ArrayLiteralExpressionNode arrayLiteral) => new(arrayLiteral.content.Map(EvaluateExpression));
+    private OArray EvaluateArrayLiteral(ArrayLiteralExpressionNode arrayLiteral) => new(arrayLiteral.content.Map(it => EvaluateExpression(it).GetValue()));
 
     private Value EvaluateAssignment(AssignmentExpressionNode assignment) {
         Property asignee = EvaluateExpression(assignment.asignee) is Property property ? property : throw new Exception("this should be a property");
@@ -106,11 +105,11 @@ public class ASTWalker {
             ArrayLiteralExpressionNode arrayLiteral => EvaluateArrayLiteral(arrayLiteral),
             AssignmentExpressionNode assignment => EvaluateAssignment(assignment),
             BinaryExpressionNode binary => EvaluateBinary(binary),
-            CallExpressionNode call => EvaluateExpression(call.method).GetValue().Call(call.arguments.Map(it => EvaluateExpression(it).GetValue().Copy()).ToArray()),
+            CallExpressionNode call => EvaluateExpression(call.method).GetValue().Call([.. call.arguments.Map(it => EvaluateExpression(it).GetValue().Copy())]),
             // the scope has to be reconstructed for each call
             // which is done by the ast closure object
             ClosureExpressionNode closure => new Closure(CurrentScope, closure, this),
-            ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member).GetValue().GetProperty(EvaluateExpression(computedMemberAccess.property).GetValue()),
+            ComputedMemberAccessExpressionNode computedMemberAccess => EvaluateExpression(computedMemberAccess.member).GetValue().GetProperty(EvaluateExpression(computedMemberAccess.property).GetValue().NativeValue),
             DoubleExpressionNode @double => (float)@double.value,
             IdentifierExpressionNode identifier => CurrentScope.GetProperty(identifier.value),
             IntExpressionNode @int => @int.value,

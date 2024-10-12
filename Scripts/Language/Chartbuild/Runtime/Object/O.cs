@@ -52,12 +52,19 @@ public abstract class O(object nativeValue) : IEnumerable<O> {
     public object NativeValue { get; protected set; } = nativeValue;
     // public O this[object key] { get => GetProperty(key).Get(); set => GetProperty(key).Set(value); }
 
-    public O GetValue() => this is Property property ? property.Get() : this;
+    public O GetValue() => this is Property property ? property.Get().GetValue() : this;
 
     public virtual Property GetProperty(object key) => throw KeyNotFound(key);
 
-    public virtual O UnaryOperation(OperatorType @operator, bool prefix) => throw new System.NotSupportedException($"{GetType()} does nut support unary operator \"{@operator.ToSourceString()}\"");
-    public virtual O BinaryOperation(OperatorType @operator, O rhs) => throw new System.NotSupportedException($"{GetType()} does nut support binary operator \"{@operator.ToSourceString()}\"");
+    public virtual O UnaryOperation(OperatorType @operator, bool prefix) => @operator switch {
+        OperatorType.Not => !ToBool(),
+        _ => throw new System.NotSupportedException($"{GetType()} does not support unary operator \"{@operator.ToSourceString()}\"")
+    };
+    public virtual O BinaryOperation(OperatorType @operator, O rhs) => @operator switch {
+        OperatorType.Equal => Equals(rhs),
+        OperatorType.NotEqual => !Equals(rhs),
+        _ => throw new System.NotSupportedException($"{GetType()} does not support binary operator \"{@operator.ToSourceString()}\"")
+    };
 
     public virtual List<O> ToList() => throw new System.InvalidCastException();
     public virtual bool ToBool() => throw new System.InvalidCastException();
@@ -92,8 +99,10 @@ public abstract class O(object nativeValue) : IEnumerable<O> {
 
     public override string ToString() => NativeValue.ToString();
     public sealed override int GetHashCode() => NativeValue.GetHashCode();
-    public bool Equals(O lhs) => NativeValue.Equals(lhs.NativeValue);
-    public sealed override bool Equals(object obj) => obj is O o ? Equals(o) : NativeValue.Equals(obj);
+
+    // even though it can be simplified, it's better to be explicit here
+    public bool Equals(O rhs) => object.Equals(NativeValue, rhs.NativeValue);
+    public sealed override bool Equals(object obj) => obj is O o ? Equals(o) : object.Equals(NativeValue, obj);
 }
 
 public abstract class O<T>(T value) : O(value) {
@@ -181,16 +190,9 @@ public class OArray : O<List<O>> {
 
 public class B(bool value) : O<bool>(value) {
     public override O BinaryOperation(OperatorType @operator, O rhs) => @operator switch {
-        OperatorType.Equal => Equals(rhs),
-        OperatorType.NotEqual => !Equals(rhs),
         OperatorType.And => Value && rhs,
         OperatorType.Or => Value || rhs,
         _ => new I(this).BinaryOperation(@operator, rhs),
-    };
-
-    public override O UnaryOperation(OperatorType @operator, bool prefix) => @operator switch {
-        OperatorType.Not => new B(!Value),
-        _ => base.UnaryOperation(@operator, prefix),
     };
 
     public override bool ToBool() => Value;
@@ -207,8 +209,6 @@ public class I(int value) : O<int>(value) {
             return new F(Value).BinaryOperation(@operator, rhs);
 
         return @operator switch {
-            OperatorType.Equal => Equals(rhs),
-            OperatorType.NotEqual => !Equals(rhs),
             OperatorType.LessThan => Value < rhs,
             OperatorType.LessThanOrEqual => Value <= rhs,
             OperatorType.GreaterThan => Value > rhs,
@@ -229,7 +229,6 @@ public class I(int value) : O<int>(value) {
     }
 
     public override O UnaryOperation(OperatorType @operator, bool prefix) => @operator switch {
-        OperatorType.Not => !ToBool(),
         OperatorType.BitwiseNot => ~Value,
         OperatorType.Minus => -Value,
         OperatorType.Plus => +Value,
@@ -248,8 +247,6 @@ public class I(int value) : O<int>(value) {
 
 public class F(float value) : O<float>(value) {
     public override O BinaryOperation(OperatorType @operator, O rhs) => @operator switch {
-        OperatorType.Equal => Equals(rhs),
-        OperatorType.NotEqual => !Equals(rhs),
         OperatorType.LessThan => Value < rhs,
         OperatorType.LessThanOrEqual => Value <= rhs,
         OperatorType.GreaterThan => Value > rhs,
@@ -264,7 +261,6 @@ public class F(float value) : O<float>(value) {
     };
 
     public override O UnaryOperation(OperatorType @operator, bool prefix) => @operator switch {
-        OperatorType.Not => !ToBool(),
         OperatorType.Plus => +Value,
         OperatorType.Minus => -Value,
         OperatorType.Decrement => prefix ? --Value : Value--,
@@ -296,15 +292,8 @@ public class S : O<string> {
     };
 
     public override O BinaryOperation(OperatorType @operator, O rhs) => @operator switch {
-        OperatorType.Equal => Equals(rhs),
-        OperatorType.NotEqual => !Equals(rhs),
         OperatorType.Plus => Value + rhs.ToString(),
         _ => base.BinaryOperation(@operator, rhs)
-    };
-
-    public override O UnaryOperation(OperatorType @operator, bool prefix) => @operator switch {
-        OperatorType.Not => !ToBool(),
-        _ => base.UnaryOperation(@operator, prefix),
     };
 
     public override IEnumerator<O> GetEnumerator() {
@@ -360,8 +349,6 @@ public class V : O<Vector2> {
     };
 
     public override O BinaryOperation(OperatorType @operator, O rhs) => @operator switch {
-        OperatorType.Equal => Equals(rhs),
-        OperatorType.NotEqual => !Equals(rhs),
         OperatorType.LessThan => Value < rhs,
         OperatorType.LessThanOrEqual => Value <= rhs,
         OperatorType.GreaterThan => Value > rhs,
@@ -381,7 +368,6 @@ public class V : O<Vector2> {
     };
 
     public override O UnaryOperation(OperatorType @operator, bool prefix) => @operator switch {
-        OperatorType.Not => !ToBool(),
         OperatorType.Plus => Value,
         OperatorType.Minus => -Value,
         _ => base.UnaryOperation(@operator, prefix)
@@ -394,11 +380,6 @@ public class V : O<Vector2> {
 }
 
 public class U() : O(null) {
-    public override O UnaryOperation(OperatorType @operator, bool prefix) => @operator switch {
-        OperatorType.Not => !ToBool(),
-        _ => base.UnaryOperation(@operator, prefix)
-    };
-
     public override bool ToBool() => false;
     public override float ToF32() => 0f;
     public override int ToI32() => 0;
