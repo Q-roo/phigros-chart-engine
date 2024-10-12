@@ -3,8 +3,7 @@ using System;
 
 namespace PCE.Editor;
 
-public partial class MainMenuController : Control
-{
+public partial class MainMenuController : Control {
     [GetNode("BG/HSplitContainer/Projects/VBoxContainer/New")] private Button newProjectButton;
     [GetNode("BG/HSplitContainer/Projects/VBoxContainer/Import")] private Button importButton;
     [GetNode("BG/HSplitContainer/Projects/VBoxContainer/Settings")] private Button settingsButton;
@@ -16,8 +15,7 @@ public partial class MainMenuController : Control
 
     private string[] projects;
 
-    public sealed override void _Ready()
-    {
+    public sealed override void _Ready() {
         newProjectButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/New");
         importButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/Import");
         settingsButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/Settings");
@@ -40,58 +38,47 @@ public partial class MainMenuController : Control
         RefreshProjects();
     }
 
-    private void OnProjectSelected(long index)
-    {
+    private void OnProjectSelected(long index) {
         var project = Project.Open(projects[index]);
 
-        if (project)
-            projectPreview.SetPreview(project.Value);
-        else
-            OS.Alert(project.Error.ToString(), "Failed to open project");
+        project.IfLeft(projectPreview.SetPreview);
+        project.IfRight(err => OS.Alert(err.ToString(), "Failed to open project"));
     }
 
-    private void RefreshProjects()
-    {
+    private void RefreshProjects() {
         projects = GetProjects();
 
         projectList.Clear();
-        foreach (string file in projects)
-        {
+        foreach (string file in projects) {
             projectList.AddItem(file);
         }
     }
 
-    private static string[] GetProjects()
-    {
+    private static string[] GetProjects() {
         return DirAccess.Open(Project.ProjectPathBase).GetDirectories();
     }
 
-    private void ImportProject(string dir)
-    {
+    private void ImportProject(string dir) {
         throw new NotImplementedException("TODO: import from " + dir);
     }
 
 
-    private void OnNewProjectPressed()
-    {
+    private void OnNewProjectPressed() {
         newProjectWizzard.Show();
     }
 
 
-    private void OnImportButtonPressed()
-    {
+    private void OnImportButtonPressed() {
         importFileDialog.Show();
     }
 
 
-    private void OnSettingsButtonPressed()
-    {
+    private void OnSettingsButtonPressed() {
         GetTree().ChangeSceneToFile("res://Scenes/Settings.tscn");
     }
 
 
-    private void OnExitPressed()
-    {
+    private void OnExitPressed() {
         GetTree().Quit();
     }
 

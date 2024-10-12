@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Godot;
 using PCE.Chart.Util;
 using PCE.Chartbuild.Bindings;
-using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chart;
 
@@ -15,31 +14,23 @@ public partial class Chart : Node2D, ICBExposeable {
     public double DeltaTime { get; private set; }
     public bool JustStarted { get; private set; }
     public bool IsInitalized { get; private set; }
+    // TODO: current score
 
     private readonly List<Event> inactiveEvents = [];
     private readonly List<Event> activeEvents = [];
     public readonly HashSet<StringName> signals  = [];
     public readonly List<Judgeline> judgelines = [];
 
-    public NativeObject ToObject() {
-        return new NativeObjectBuilder(this)
-        .AddConstantValue("platform", (int)Platform)
-        .AddConstantValue("groups", rootGroup.ToObject()) // should not change
-        .AddCallable("add_event", args => {
-            if (args.Length == 0)
-                throw new ArgumentException("insufficient arguments");
-
-            if (args[0].NativeValue is not Event @event)
-                throw new ArgumentException("first argument needs to be an event");
-
-            ChartContext.AddEvent(this, @event);
-        })
-        .Build();
-    }
+    private readonly AudioStreamPlayer audioPlayer = new();
 
     public override void _Ready() {
+        AddChild(audioPlayer);
         AddChild(rootGroup);
         Reset();
+    }
+
+    public void SetMusic(AudioStream stream) {
+        audioPlayer.Stream = stream;
     }
 
     public void Reset() {
@@ -55,6 +46,7 @@ public partial class Chart : Node2D, ICBExposeable {
         activeEvents.Clear();
         signals.Clear();
         judgelines.Clear();
+        audioPlayer.Stream = null;
     }
 
     public void BeginRender() {
@@ -65,6 +57,7 @@ public partial class Chart : Node2D, ICBExposeable {
         JustStarted = false;
         IsInitalized = true;
         SetNoteYPositions();
+        audioPlayer.Play();
     }
 
     private void SetNoteYPositions() {
@@ -156,5 +149,21 @@ public partial class Chart : Node2D, ICBExposeable {
 
     public void RegisterEvent(Event @event) {
         inactiveEvents.Add(@event);
+    }
+
+    public NativeObject ToObject() {
+        return new NativeObjectBuilder(this)
+        .AddConstantValue("platform", (int)Platform)
+        .AddConstantValue("groups", rootGroup.ToObject()) // should not change
+        .AddCallable("add_event", args => {
+            if (args.Length == 0)
+                throw new ArgumentException("insufficient arguments");
+
+            if (args[0].NativeValue is not Event @event)
+                throw new ArgumentException("first argument needs to be an event");
+
+            ChartContext.AddEvent(this, @event);
+        })
+        .Build();
     }
 }

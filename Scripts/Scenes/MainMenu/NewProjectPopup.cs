@@ -1,33 +1,29 @@
-using DotNext;
 using Godot;
-using PCE.Util;
-using System;
+using LanguageExt;
 
 namespace PCE.Editor;
 
-public partial class NewProjectPopup : PopupPanel
-{
-    [GetNode("./Control/CreateNewProject")] Button createButton;
-    [GetNode("./Control/VBoxContainer/Name")] TextInput nameInput;
+public partial class NewProjectPopup : PopupPanel {
+    Button createButton;
+    TextInput nameInput;
+    PathSelect musicPath;
 
-    public sealed override void _Ready()
-    {
+    public sealed override void _Ready() {
         createButton = GetNode<Button>("./Control/CreateNewProject");
         nameInput = GetNode<TextInput>("./Control/VBoxContainer/Name");
+        musicPath = GetNode<PathSelect>("./Control/VBoxContainer/MusicPath");
 
         createButton.Pressed += OnCreateButtonPressed;
     }
 
-    private void OnCreateButtonPressed()
-    {
-        Result<Project, Error> project = Project.Create(nameInput.Value)
+    private void OnCreateButtonPressed() {
+        Either<Project, Error> project = Project.Create(nameInput.Value)
             .GenerateFiles()
-            .AndThen(builder => builder.Build());
+            .MapLeft(builder => builder.CopyAudio(musicPath.SelectedPath))
+            .BindLeft(builder => builder.MapLeft(builder => builder.Build()));
 
-        if (project)
-            project.Value.Open();
-        else
-            OS.Alert(project.Error.ToString(), "Failed to create project");
+        project.IfLeft(project => project.Open());
+        project.IfRight(err => OS.Alert(err.ToString(), "Failed to create project"));
     }
 
 }
