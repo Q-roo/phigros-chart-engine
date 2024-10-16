@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Godot;
 using PCE.Chart.Util;
 using PCE.Chartbuild.Bindings;
@@ -65,40 +66,54 @@ public partial class Chart : Node2D, ICBExposeable {
             foreach (Note note in judgeline.notes) {
                 Vector2 position = note.Position;
 
-                double[] keys = [..judgeline.bpmChanges.Keys];
+                double y = CalculateYPosition(note.time, judgeline);
 
-                for (int i = 0; i < keys.Length; i++) {
-                    double key = keys[i];
-                    // double range = (i != keys.Count - 1 ? keys[i + 1] : note.time) - key;
-                    double range;
-                    float bpm = judgeline.bpmChanges[key];
+                position.Y -= (float)y;
 
-                    // last bpm in the bpm list,
-                    // so the note should use it for the rest of the time
-                    if (i == keys.Length - 1)
-                        range = note.time - key;
-                    else {
-                        double next = keys[i + 1];
-                        // the note will be judged before the next bpm comes
-                        // so treat this as if this was the last bpm
-                        if (next > note.time) {
-                            position.Y -= (float)((note.time - key).ToBeat(bpm) * ChartGlobals.baseNoteSpeed);
-                            break;
-                        }
-
-                        range = next - key;
-                    }
-
-                    position.Y -= (float)(range.ToBeat(bpm) * ChartGlobals.baseNoteSpeed);
+                if (note.type == NoteType.Hold) {
+                    double heigth = CalculateYPosition(note.time + note.holdTime, judgeline) - y;
+                    Vector2 scale = note.Scale;
+                    scale.Y = (float)(heigth / note.Texture.GetSize().Y);
+                    note.Scale = scale;
                 }
 
                 // Y offset
                 // (y center is at the center of the sprite but it needs to be on the bottom)
-                position.Y -= note.Texture.GetSize().Y / 2;
+                position.Y -= note.Texture.GetSize().Y * note.Scale.Y / 2;
 
                 note.Position = position;
-                GD.Print(position);
             }
+    }
+
+    private double CalculateYPosition(double time, Judgeline judgeline) {
+        double y = 0;
+
+        // times of bpm changes in seconds
+        double[] keys = [..judgeline.bpmChanges.Keys];
+
+        Debug.Assert(keys.Length != 0 || keys[0] != 0, "a judgeline should have at least one bpm change at time 0");
+
+        // it's more clear this way
+        if (keys.Length == 1)
+            return time.ToBeat(judgeline.GetClosestBpm(time)) * ChartGlobals.baseNoteSpeed;
+
+        for (int i = 0; i < keys.Length; i++) {
+            double key = keys[i];
+            // the last key
+            // treat this case similarly to when there's only one key
+            if (i == keys.Length - 1)
+                return y + (time - key).ToBeat(judgeline.GetClosestBpm(time)) * ChartGlobals.baseNoteSpeed;
+
+            double nextKey = keys[i + 1];
+            // the next kext bpm change will occour only after `time`
+            // so this can be trated as if this was the last key
+            if (nextKey > time)
+                return y + (time - key).ToBeat(judgeline.GetClosestBpm(time)) * ChartGlobals.baseNoteSpeed;
+
+            y += (nextKey - key).ToBeat(judgeline.GetClosestBpm(time)) * ChartGlobals.baseNoteSpeed;
+        }
+
+        return y;
     }
 
     public override void _Process(double delta) {

@@ -61,8 +61,13 @@ public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
 
     public override void _Draw() {
         Vector2 xy = Texture.GetSize() / 2f;
-        DrawLine(new(-xy.X, xy.Y), new(xy.X, xy.Y), new(1, 1, 1), 2);
-        DrawCircle(Vector2.Down * xy, 5, new(1, 1, 1));
+        // this should be independent of the note scale
+        DrawLine(new(-xy.X, xy.Y), new(xy.X, xy.Y), new(1, 1, 1), 2 / Scale.Y);
+
+        // draw a 5x5 rectangle independent of the current scale
+        // and offset it correctly so it's at the center of the line
+        // NOTE: currently, only the y value has a chance to be scaled
+        DrawRect(new Rect2(Vector2.Down * new Vector2(xy.X, xy.Y - 5f / Scale.Y / 2f), new Vector2(5, 5) / Scale), new(1, 1, 1));
     }
 
     private void UpdateXOffset() {
