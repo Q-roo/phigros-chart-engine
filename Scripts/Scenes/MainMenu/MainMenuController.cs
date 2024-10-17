@@ -4,25 +4,25 @@ using System;
 namespace PCE.Editor;
 
 public partial class MainMenuController : Control {
-    [GetNode("BG/HSplitContainer/Projects/VBoxContainer/New")] private Button newProjectButton;
-    [GetNode("BG/HSplitContainer/Projects/VBoxContainer/Import")] private Button importButton;
-    [GetNode("BG/HSplitContainer/Projects/VBoxContainer/Settings")] private Button settingsButton;
-    [GetNode("BG/HSplitContainer/Projects/VBoxContainer/Exit")] private Button exitButton;
-    [GetNode("ImportFileDialog")] private ImportFileDialog importFileDialog;
-    [GetNode("NewProjectPopup")] private NewProjectPopup newProjectWizzard; // well, like a wizzard to be precise
-    [GetNode("BG/HSplitContainer/Projects/Projects")] private ItemList projectList;
-    [GetNode("BG/HSplitContainer/SelectedProject")] private ProjectPreview projectPreview;
+    private Button newProjectButton;
+    private Button importButton;
+    private Button settingsButton;
+    private Button exitButton;
+    private ImportFileDialog importFileDialog;
+    private NewProjectPopup newProjectWizzard; // well, like a wizzard to be precise
+    private ItemList projectList;
+    private ProjectPreview projectPreview;
 
     private string[] projects;
 
     public sealed override void _Ready() {
-        newProjectButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/New");
-        importButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/Import");
-        settingsButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/Settings");
-        exitButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/Exit");
+        newProjectButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/VBoxContainer/New");
+        importButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/VBoxContainer/Import");
+        settingsButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/VBoxContainer/Settings");
+        exitButton = GetNode<Button>("BG/HSplitContainer/Projects/VBoxContainer/VBoxContainer/Exit");
         importFileDialog = GetNode<ImportFileDialog>("ImportFileDialog");
         newProjectWizzard = GetNode<NewProjectPopup>("NewProjectPopup");
-        projectList = GetNode<ItemList>("BG/HSplitContainer/Projects/Projects");
+        projectList = GetNode<ItemList>("BG/HSplitContainer/Projects/VBoxContainer/Projects");
         projectPreview = GetNode<ProjectPreview>("BG/HSplitContainer/SelectedProject");
 
         newProjectButton.Pressed += OnNewProjectPressed;
