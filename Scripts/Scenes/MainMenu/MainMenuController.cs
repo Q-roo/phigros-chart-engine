@@ -74,7 +74,7 @@ public partial class MainMenuController : Control {
 
 
     private void OnSettingsButtonPressed() {
-        GetTree().ChangeSceneToFile("res://Scenes/Settings.tscn");
+        GetTree().ChangeSceneToFile("res://Scenes/Settings/Settings.tscn");
     }
 
 

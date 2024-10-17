@@ -14,6 +14,9 @@ public partial class NewProjectPopup : PopupPanel {
         musicPath = GetNode<PathSelect>("./Control/VBoxContainer/MusicPath");
 
         createButton.Pressed += OnCreateButtonPressed;
+
+        // FIXME: popup closes as well when the file dialog closes
+        // FIXME: file dialog controls (buttons, scroller) are broken when force native is true
     }
 
     private void OnCreateButtonPressed() {

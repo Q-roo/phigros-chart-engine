@@ -1,5 +1,4 @@
 using Godot;
-using System;
 
 namespace PCE.Editor;
 
@@ -20,10 +19,10 @@ public partial class PathSelect : Panel
     [Export] public string[] allowedFileExtensions;
     public string SelectedPath {get; private set; }
 
-    [GetNode("HBoxContainer/Title")] private Label titleLabel;
-    [GetNode("HBoxContainer/Panel/HBoxContainer/Path")] private Label pathLabel;
-    [GetNode()] private TextureButton openFileDialogButton;
-    [GetNode()] private FileDialog fileDialog;
+    private Label titleLabel;
+    private Label pathLabel;
+    private TextureButton openFileDialogButton;
+    private FileDialog fileDialog;
 
     public sealed override void _Ready()
     {

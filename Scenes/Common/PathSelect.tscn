@@ -10,6 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+focus_next = NodePath("HBoxContainer/Panel/HBoxContainer/Path")
 script = ExtResource("1_k7vy0")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
@@ -39,6 +40,8 @@ grow_vertical = 2
 [node name="Path" type="Label" parent="HBoxContainer/Panel/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_next = NodePath("../OpenDialog")
+focus_previous = NodePath("../../../..")
 text = "path"
 clip_text = true
 text_overrun_behavior = 3
@@ -54,7 +57,12 @@ stretch_mode = 4
 title = "Open a File"
 initial_position = 2
 size = Vector2i(324, 180)
+transient_to_focused = true
+always_on_top = true
+popup_window = true
+force_native = true
 ok_button_text = "Open"
+dialog_hide_on_ok = true
 file_mode = 0
 access = 2
 use_native_dialog = true
