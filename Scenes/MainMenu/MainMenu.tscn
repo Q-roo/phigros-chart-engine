@@ -79,22 +79,26 @@ script = ExtResource("2_84aus")
 
 [node name="TextureRect" type="TextureRect" parent="BG/HSplitContainer/SelectedProject"]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -150.0
-offset_top = 50.0
-offset_right = 150.0
-offset_bottom = 350.0
+anchors_preset = -1
+anchor_left = 0.125
+anchor_top = 0.046
+anchor_right = 0.875
+anchor_bottom = 0.324
+offset_top = 0.319996
+offset_right = -3.05176e-05
+offset_bottom = 0.0799866
 grow_horizontal = 2
 texture = ExtResource("2_0xsr6")
+stretch_mode = 5
 
 [node name="SongPreview" type="Panel" parent="BG/HSplitContainer/SelectedProject"]
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = -1
+anchor_top = 0.324
 anchor_right = 1.0
-offset_top = 360.0
-offset_bottom = 426.0
+anchor_bottom = 0.394
+offset_top = 10.08
+offset_bottom = 0.47998
 grow_horizontal = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="BG/HSplitContainer/SelectedProject/SongPreview"]
@@ -152,11 +156,14 @@ offset_right = 134.0
 grow_vertical = 2
 
 [node name="MetaData" type="ItemList" parent="BG/HSplitContainer/SelectedProject"]
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = -1
+anchor_top = 0.408
 anchor_right = 1.0
-offset_top = 437.0
-offset_bottom = 519.0
+anchor_bottom = 0.59
+offset_top = -3.64001
+offset_bottom = -118.2
 grow_horizontal = 2
 item_count = 14
 max_columns = 2
