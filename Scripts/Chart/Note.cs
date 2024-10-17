@@ -1,12 +1,10 @@
-using System.Collections.Generic;
 using Godot;
 using PCE.Chart.Util;
 using PCE.Chartbuild.Bindings;
-using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chart;
 
-public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
+public partial class Note : NineSliceSprite , ICBExposeable {
     // all this just so I won't have to check wether the parent is null in _Proccess
     private Judgeline _parent;
     public Judgeline Parent {
@@ -46,8 +44,8 @@ public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
 
     public override void _Ready() {
         // TODO: note sprites
-        // texture = GD.Load<Texture2D>("res://icon.svg");
         Texture = GD.Load<Texture2D>("res://icon.svg");
+        // Texture = GD.Load<Texture2D>("res://icon.svg");
         GetTree().Root.SizeChanged += UpdateXOffset;
         UpdateXOffset();
     }
@@ -60,6 +58,8 @@ public partial class Note : /* NineSliceSprite */ Sprite2D, ICBExposeable {
     }
 
     public override void _Draw() {
+        base._Draw();
+        // Vector2 xy = Texture.GetSize() / 2f;
         Vector2 xy = Texture.GetSize() / 2f;
         // this should be independent of the note scale
         DrawLine(new(-xy.X, xy.Y), new(xy.X, xy.Y), new(1, 1, 1), 2 / Scale.Y);

@@ -4,11 +4,11 @@ namespace PCE;
 
 [Tool]
 public partial class NineSliceSprite : Node2D {
-    [Export] protected Texture2D texture;
-    [Export] private float left = 17;
-    [Export] private float right = 17;
-    [Export] private float top = 20;
-    [Export] private float bottom = 20;
+    [Export] public Texture2D Texture { get; protected set; }
+    [Export] private float left = 16;
+    [Export] private float right = 16;
+    [Export] private float top = 16;
+    [Export] private float bottom = 16;
 
     // icon.svg: 128 x 028
     // t 20
@@ -16,7 +16,8 @@ public partial class NineSliceSprite : Node2D {
     // l 17
     // r 17
     public override void _Draw() {
-        Vector2 size = texture.GetSize();
+        Vector2 size = Texture.GetSize();
+        Vector2 offset = size / 2f;
 
         Rect2 topLeft = new(0, 0, left, top);
         Rect2 bottomLeft = new(0, size.Y - bottom, left, bottom);
@@ -31,28 +32,21 @@ public partial class NineSliceSprite : Node2D {
         Rect2 bottomCenter = new(left, size.Y - bottom, size.X - left - right, bottom);
         Rect2 middleCenter = new(left, top, size.X - left - right, size.Y - top - bottom);
 
-        DrawRect(new(Vector2.Zero, size), new Color(1, 1, 1));
+        // DrawRect(new(Vector2.Zero - offset, size), new Color(1, 1, 1, 0.4f));
 
-        Rect2 rect = new(topLeft.Position, topLeft.Size / Scale);
+        // NOTE: only works for y scaling
 
-        DrawTextureRectRegion(texture, rect, topLeft); // top-left
-        rect = new(rect.Position.X + left / 2, rect.Position.Y, topCenter.Size.X + rect.Size.X * 2, topCenter.Size.Y / Scale.Y);
-        DrawTextureRectRegion(texture, rect, topCenter); // top-center
-        rect = new(topRight.Size.X / 2 + rect.Size.X, topRight.Position.Y, topLeft.Size / Scale);
-        DrawTextureRectRegion(texture, rect, topRight); // top-right
-        rect = new(rect.Position.X, rect.Size.Y, middleRight.Size.X / Scale.X, middleRight.Size.Y + rect.Size.Y + bottomRight.Size.Y / Scale.Y);
-        DrawTextureRectRegion(texture, rect, middleRight); // right-center
-        rect = new(rect.Position.X - middleCenter.Size.X - (left + right) / 2, rect.Position.Y, size.X - (left + right) / 2, size.Y - (top + bottom) / 2);
-        DrawTextureRectRegion(texture, rect, middleCenter); // middle-center
-        rect = new(rect.Position.X - left / 2, rect.Position.Y, middleLeft.Size.X / Scale.X, rect.Size.Y);
-        DrawTextureRectRegion(texture, rect, middleLeft); // left-center
-        rect = new(rect.Position.X, size.Y - bottom / 2, bottomLeft.Size / Scale);
-        DrawTextureRectRegion(texture, rect, bottomLeft); // bottom-left
-        rect = new(rect.Position.X + left / 2, rect.Position.Y, bottomCenter.Size.X + right, bottomCenter.Size.Y / Scale.Y);
-        DrawTextureRectRegion(texture, rect, bottomCenter); // bottom-center
-        rect = new(rect.Position.X + rect.Size.X, rect.Position.Y, bottomRight.Size / Scale);
-        DrawTextureRectRegion(texture, rect, bottomRight); // bottom-right
-        // FIXME: godot's whacky scaling
-        // DrawRect(new(Vector2.Zero, new Vector2(left, top) / Scale), new(0, 0, 0)); // does not remain at the original scale
+        // corners
+        DrawTextureRectRegion(Texture, new(topLeft.Position - offset, topLeft.Size / Scale), topLeft);
+        DrawTextureRectRegion(Texture, new(topRight.Position - offset, topLeft.Size / Scale), topRight);
+        DrawTextureRectRegion(Texture, new(new Vector2(0, size.Y - bottom / Scale.Y) - offset, topLeft.Size / Scale), bottomLeft);
+        DrawTextureRectRegion(Texture, new(new Vector2(size.X - left, size.Y - bottom / Scale.Y) - offset, topLeft.Size / Scale), bottomRight);
+        // center
+        DrawTextureRectRegion(Texture, new(new Vector2(left, top) / Scale - offset, size - new Vector2(top + bottom, left + right) / Scale), middleCenter);
+        // the rest
+        DrawTextureRectRegion(Texture, new(topCenter.Position - offset, topCenter.Size / Scale), topCenter);
+        DrawTextureRectRegion(Texture, new(new Vector2(left, size.Y - bottom / Scale.Y) - offset, bottomCenter.Size / Scale), bottomCenter);
+        DrawTextureRectRegion(Texture, new(new Vector2(0, top / Scale.Y) - offset, new Vector2(left, size.Y - (top + bottom) / Scale.Y)), middleLeft);
+        DrawTextureRectRegion(Texture, new(new Vector2(size.X - right / Scale.X, top / Scale.Y) - offset, new Vector2(right, size.Y - (top + bottom) / Scale.Y)), middleRight);
     }
 }

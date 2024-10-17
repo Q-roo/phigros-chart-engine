@@ -73,12 +73,14 @@ public partial class Chart : Node2D, ICBExposeable {
                 if (note.type == NoteType.Hold) {
                     double heigth = CalculateYPosition(note.time + note.holdTime, judgeline) - y;
                     Vector2 scale = note.Scale;
+                    // scale.Y = (float)(heigth / note.Texture.GetSize().Y);
                     scale.Y = (float)(heigth / note.Texture.GetSize().Y);
                     note.Scale = scale;
                 }
 
                 // Y offset
                 // (y center is at the center of the sprite but it needs to be on the bottom)
+                // position.Y -= note.Texture.GetSize().Y * note.Scale.Y / 2;
                 position.Y -= note.Texture.GetSize().Y * note.Scale.Y / 2;
 
                 note.Position = position;
