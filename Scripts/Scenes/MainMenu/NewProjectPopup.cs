@@ -26,6 +26,10 @@ public partial class NewProjectPopup : PopupPanel {
         };
 
         // FIXME: file dialog controls (buttons, scroller) are broken when force native is true
+        // https://github.com/godotengine/godot/commit/9cbb39f6b25e573cc21389cff295918d1ff4e973 fixes it
+        // https://github.com/godotengine/godot/pull/98194
+        // TODO: compile the engine from source with this commit and use it
+        // current error: https://github.com/godotengine/godot/blob/77dcf97d82cbfe4e4615475fa52ca03da645dbd8/platform/windows/display_server_windows.cpp#L2219
     }
 
     private void OnCreateButtonPressed() {

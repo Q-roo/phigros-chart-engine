@@ -67,6 +67,11 @@ public partial class PathSelect : Panel
     private void OnOpenFileDialogButtonPressed()
     {
         fileDialog.Filters = allowedFileExtensions;
+        // fileDialog.GetWindowId();
+        // DisplayServer.FileDialogShow("Open A file", "", "", false, DisplayServer.FileDialogMode.OpenFile, allowedFileExtensions, Callable.From((bool status, string[] paths, int filterIndex) => {
+        //     GD.Print(paths);
+        // }));
+        // fileDialog.UseNativeDialog = false;
         fileDialog.Show();
     }
 

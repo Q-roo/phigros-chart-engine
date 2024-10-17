@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dh20qxfp37rj"]
 
-[ext_resource type="Texture2D" uid="uid://xke63uh4jrch" path="res://icon.svg" id="1_64bei"]
+[ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_64bei"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Common/PathSelect.cs" id="1_k7vy0"]
 
 [node name="Panel" type="Panel"]

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Scripts/Scenes/MainMenu/MainMenuController.cs" id="1_kyff2"]
 [ext_resource type="Theme" uid="uid://b3a5myjko68kj" path="res://Themes/pce_editor_theme.tres" id="1_oft0b"]
-[ext_resource type="Texture2D" uid="uid://xke63uh4jrch" path="res://icon.svg" id="2_0xsr6"]
+[ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="2_0xsr6"]
 [ext_resource type="Script" path="res://Scripts/Scenes/MainMenu/ProjectPreview.cs" id="2_84aus"]
 [ext_resource type="Script" path="res://Scripts/Scenes/MainMenu/ImportFileDialog.cs" id="3_hrr3b"]
 [ext_resource type="Script" path="res://Scripts/Scenes/MainMenu/NewProjectPopup.cs" id="4_aryav"]
@@ -235,8 +235,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 4.0
 offset_top = 4.0
-offset_right = -4.0
-offset_bottom = -4.0
+offset_right = 596.0
+offset_bottom = 396.0
 grow_horizontal = 2
 grow_vertical = 2
 
