@@ -52,17 +52,3 @@ layout_mode = 2
 texture_normal = ExtResource("1_64bei")
 ignore_texture_size = true
 stretch_mode = 4
-
-[node name="FileDialog" type="FileDialog" parent="."]
-title = "Open a File"
-initial_position = 2
-size = Vector2i(324, 180)
-transient_to_focused = true
-always_on_top = true
-popup_window = true
-force_native = true
-ok_button_text = "Open"
-dialog_hide_on_ok = true
-file_mode = 0
-access = 2
-use_native_dialog = true

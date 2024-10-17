@@ -8,14 +8,23 @@ public partial class NewProjectPopup : PopupPanel {
     TextInput nameInput;
     PathSelect musicPath;
 
+    private bool preventHide;
+
     public sealed override void _Ready() {
         createButton = GetNode<Button>("./Control/CreateNewProject");
         nameInput = GetNode<TextInput>("./Control/VBoxContainer/Name");
         musicPath = GetNode<PathSelect>("./Control/VBoxContainer/MusicPath");
 
         createButton.Pressed += OnCreateButtonPressed;
+        musicPath.FileDialogClose += () => preventHide = true;
+        PopupHide += () => {
+            if (preventHide) {
+                CallDeferred("show");
 
-        // FIXME: popup closes as well when the file dialog closes
+                preventHide = false;
+            }
+        };
+
         // FIXME: file dialog controls (buttons, scroller) are broken when force native is true
     }
 

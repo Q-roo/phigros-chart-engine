@@ -1,24 +1,20 @@
 using System;
 using DotNext;
+using Godot;
 
 namespace PCE.Util;
-public static class CommonExtensions
-{
-    public static Result<U, R> AndThen<T, U, R>(this Result<T, R> result, System.Func<T, U> func) where R : struct, Enum
-    {
+public static class CommonExtensions {
+    public static Result<U, R> AndThen<T, U, R>(this Result<T, R> result, System.Func<T, U> func) where R : struct, Enum {
         return result ? func(result.Value) : new Result<U, R>(result.Error);
     }
 
-    public static void AndThen<T, R>(this Result<T, R> result, Action<T> action) where R : struct, Enum
-    {
+    public static void AndThen<T, R>(this Result<T, R> result, Action<T> action) where R : struct, Enum {
         if (result)
             action(result.Value);
     }
 
-    public static bool IsNumericType(this object o)
-    {
-        return Type.GetTypeCode(o.GetType()) switch
-        {
+    public static bool IsNumericType(this object o) {
+        return Type.GetTypeCode(o.GetType()) switch {
             TypeCode.Byte or
             TypeCode.SByte or
             TypeCode.UInt16 or
@@ -32,5 +28,21 @@ public static class CommonExtensions
             TypeCode.Single => true,
             _ => false,
         };
+    }
+
+    public static Viewport GetRootViewport(this Node control) {
+        Viewport viewport = control.GetViewport();
+        Node parent = viewport?.GetParent();
+
+        while (parent is not null) {
+            Viewport _viewport = parent.GetViewport();
+            if (_viewport is null)
+                return viewport;
+
+            viewport = _viewport;
+            parent = viewport.GetParent();
+        }
+
+        return viewport;
     }
 }

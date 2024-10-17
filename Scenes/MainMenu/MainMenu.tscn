@@ -222,9 +222,10 @@ option_0/values = PackedStringArray(".pceproject")
 script = ExtResource("3_hrr3b")
 
 [node name="NewProjectPopup" type="PopupPanel" parent="."]
+transparent_bg = true
 initial_position = 2
 size = Vector2i(600, 400)
-always_on_top = true
+transparent = true
 script = ExtResource("4_aryav")
 
 [node name="Control" type="Control" parent="NewProjectPopup"]
@@ -234,8 +235,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 4.0
 offset_top = 4.0
-offset_right = 596.0
-offset_bottom = 396.0
+offset_right = -4.0
+offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
 

@@ -1,4 +1,5 @@
 using Godot;
+using PCE.Util;
 using System;
 
 namespace PCE.Editor;
@@ -34,6 +35,11 @@ public partial class MainMenuController : Control {
         importFileDialog.DirSelected += ImportProject;
 
         projectPreview.ProjectListChanged += RefreshProjects;
+
+        Variant viewport = this.GetRootViewport();
+
+        newProjectWizzard.CallDeferred("reparent", viewport);
+        importFileDialog.CallDeferred("reparent", viewport);
 
         RefreshProjects();
     }
