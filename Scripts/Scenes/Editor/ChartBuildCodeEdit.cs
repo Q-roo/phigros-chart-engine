@@ -49,7 +49,7 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 Chartbuild.BaseToken[] tokens = Chartbuild.Lexer.Parse(Text);
                 GD.Print(tokens);
 
-                Chart.Chart chart = GetNode<Chart.Chart>("../../../../../ChartRenderer");
+                Chart.Chart chart = GetNode<Chart.Chart>("../../../../../../ChartRenderer");
                 ChartContext.Reset();
                 ChartContext.Init(chart);
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();

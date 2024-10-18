@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://gusv6rnm1xsq"]
+[gd_scene load_steps=7 format=3 uid="uid://gusv6rnm1xsq"]
 
 [ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_4h052"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/EditorController.cs" id="2_d7ad0"]
 [ext_resource type="CodeHighlighter" uid="uid://bla2abm5ap8df" path="res://Themes/code_highlighter.tres" id="2_ohngm"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartBuildCodeEdit.cs" id="3_c2gp3"]
 [ext_resource type="PackedScene" uid="uid://b0xttc7rt3d3v" path="res://Scenes/ChartRender/ChartRenderer.tscn" id="5_dqvj3"]
@@ -15,7 +16,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_bmyri")
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Controller" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_d7ad0")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Controller"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,22 +33,19 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TabContainer" type="TabContainer" parent="Panel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="TabContainer" type="TabContainer" parent="Controller/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
 tab_alignment = 2
 current_tab = 0
 tabs_position = 1
+tabs_visible = false
 
-[node name="Chartbuild" type="Panel" parent="Panel/TabContainer"]
+[node name="Chartbuild" type="Panel" parent="Controller/VBoxContainer/TabContainer"]
 layout_mode = 2
 metadata/_tab_index = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel/TabContainer/Chartbuild"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Controller/VBoxContainer/TabContainer/Chartbuild"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -46,11 +53,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Toolbar" type="Panel" parent="Panel/TabContainer/Chartbuild/VBoxContainer"]
+[node name="Toolbar" type="Panel" parent="Controller/VBoxContainer/TabContainer/Chartbuild/VBoxContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Controller/VBoxContainer/TabContainer/Chartbuild/VBoxContainer/Toolbar"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -58,27 +65,27 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="File" type="Button" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
+[node name="File" type="Button" parent="Controller/VBoxContainer/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
 layout_mode = 2
 text = "File"
 
-[node name="Settings" type="Button" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
+[node name="Settings" type="Button" parent="Controller/VBoxContainer/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
 layout_mode = 2
 text = "Settings"
 
-[node name="Run" type="Button" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
+[node name="Run" type="Button" parent="Controller/VBoxContainer/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
 layout_mode = 2
 text = "run"
 
-[node name="Debug" type="Button" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
+[node name="Debug" type="Button" parent="Controller/VBoxContainer/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
 layout_mode = 2
 text = "Debug"
 
-[node name="Reload" type="Button" parent="Panel/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
+[node name="Reload" type="Button" parent="Controller/VBoxContainer/TabContainer/Chartbuild/VBoxContainer/Toolbar/HBoxContainer"]
 layout_mode = 2
 text = "Reload"
 
-[node name="CodeEdit" type="CodeEdit" parent="Panel/TabContainer/Chartbuild/VBoxContainer"]
+[node name="CodeEdit" type="CodeEdit" parent="Controller/VBoxContainer/TabContainer/Chartbuild/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 text = "let jl = chart.groups['a/aa/jl#0'];
@@ -133,45 +140,33 @@ auto_brace_completion_enabled = true
 auto_brace_completion_highlight_matching = true
 script = ExtResource("3_c2gp3")
 
-[node name="GUI" type="Panel" parent="Panel/TabContainer"]
+[node name="GUI" type="Panel" parent="Controller/VBoxContainer/TabContainer"]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="Logs" type="Panel" parent="Panel/TabContainer"]
+[node name="Logs" type="Panel" parent="Controller/VBoxContainer/TabContainer"]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 2
 
-[node name="Undo-redo" type="Panel" parent="Panel/TabContainer"]
-visible = false
+[node name="Statusbar" type="Panel" parent="Controller/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
-metadata/_tab_index = 3
 
-[node name="Statusbar" type="Panel" parent="Panel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Controller/VBoxContainer/Statusbar"]
 layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -31.0
-offset_right = 835.0
-grow_vertical = 0
-
-[node name="HBoxContainer" type="HBoxContainer" parent="Panel/Statusbar"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -31.0
 grow_horizontal = 2
-grow_vertical = 0
+grow_vertical = 2
 
-[node name="Label" type="Label" parent="Panel/Statusbar/HBoxContainer"]
+[node name="Label" type="Label" parent="Controller/VBoxContainer/Statusbar/HBoxContainer"]
 layout_mode = 2
 text = "Saved"
 
-[node name="Button" type="Button" parent="Panel/Statusbar/HBoxContainer"]
+[node name="Button" type="Button" parent="Controller/VBoxContainer/Statusbar/HBoxContainer"]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 text = "0"
@@ -179,7 +174,7 @@ icon = ExtResource("1_4h052")
 alignment = 0
 expand_icon = true
 
-[node name="Button2" type="Button" parent="Panel/Statusbar/HBoxContainer"]
+[node name="Button2" type="Button" parent="Controller/VBoxContainer/Statusbar/HBoxContainer"]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 text = "0"
@@ -187,7 +182,7 @@ icon = ExtResource("1_4h052")
 alignment = 0
 expand_icon = true
 
-[node name="Button3" type="Button" parent="Panel/Statusbar/HBoxContainer"]
+[node name="Button3" type="Button" parent="Controller/VBoxContainer/Statusbar/HBoxContainer"]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 text = "0"
@@ -195,12 +190,16 @@ icon = ExtResource("1_4h052")
 alignment = 0
 expand_icon = true
 
-[node name="CheckButton" type="CheckButton" parent="Panel/Statusbar/HBoxContainer"]
+[node name="CheckButton" type="CheckButton" parent="Controller/VBoxContainer/Statusbar/HBoxContainer"]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="Panel/Statusbar/HBoxContainer"]
+[node name="Label2" type="Label" parent="Controller/VBoxContainer/Statusbar/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 10
 text = "Ln 0; Col 0"
+
+[node name="Tabs" type="TabBar" parent="Controller/VBoxContainer/Statusbar/HBoxContainer"]
+layout_mode = 2
+tab_alignment = 2
 
 [node name="ChartRenderer" parent="." instance=ExtResource("5_dqvj3")]
