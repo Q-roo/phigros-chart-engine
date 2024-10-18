@@ -4,17 +4,9 @@ namespace PCE.Editor;
 
 public partial class PathSelect : Panel {
     public delegate void OnFileDialogClose();
-    public event OnFileDialogClose FileDialogClose;
 
-    private readonly Callable OnFileDialogFinish;
-
-    public PathSelect() {
-        OnFileDialogFinish = Callable.From((bool status, string[] paths, int filterIndex) => {
-            // status is wether it wasn't cancelled
-            OnFileSelected(status ? paths[filterIndex] : string.Empty);
-            FileDialogClose?.Invoke();
-        });
-    }
+    private FileDialog fileDialog;
+    public Window forceShow;
 
     private string _title;
     [Export]
@@ -37,18 +29,25 @@ public partial class PathSelect : Panel {
         titleLabel = GetNode<Label>("HBoxContainer/Title");
         pathLabel = GetNode<Label>("HBoxContainer/Panel/HBoxContainer/Path");
         openFileDialogButton = GetNode<TextureButton>("HBoxContainer/Panel/HBoxContainer/OpenDialog");
+        fileDialog = GetNode<FileDialog>("FileDialog");
 
         titleLabel.Text = Title;
         openFileDialogButton.Pressed += OnOpenFileDialogButtonPressed;
+
+        fileDialog.FileSelected += OnFileSelected;
+        fileDialog.Canceled += () => OnFileSelected(string.Empty);
     }
 
     private void OnFileSelected(string path) {
         SelectedPath = path;
         pathLabel.Text = path;
+        forceShow?.CallDeferred("show");
     }
 
     private void OnOpenFileDialogButtonPressed() {
-        DisplayServer.FileDialogShow("Open A file", "", "", false, DisplayServer.FileDialogMode.OpenFile, allowedFileExtensions, OnFileDialogFinish);
+        fileDialog.Filters = allowedFileExtensions;
+        forceShow?.Hide(); // prevent error "!windows.has(p_window)" is true
+        fileDialog.Show();
     }
 
 }

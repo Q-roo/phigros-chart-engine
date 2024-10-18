@@ -36,11 +36,6 @@ public partial class MainMenuController : Control {
 
         projectPreview.ProjectListChanged += RefreshProjects;
 
-        Variant viewport = this.GetRootViewport();
-
-        newProjectWizzard.CallDeferred("reparent", viewport);
-        importFileDialog.CallDeferred("reparent", viewport);
-
         RefreshProjects();
     }
 
