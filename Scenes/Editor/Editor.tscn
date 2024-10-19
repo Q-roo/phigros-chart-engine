@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://gusv6rnm1xsq"]
+[gd_scene load_steps=11 format=3 uid="uid://gusv6rnm1xsq"]
 
 [ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_4h052"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
@@ -6,6 +6,10 @@
 [ext_resource type="CodeHighlighter" uid="uid://bla2abm5ap8df" path="res://Themes/code_highlighter.tres" id="2_ohngm"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartBuildCodeEdit.cs" id="3_c2gp3"]
 [ext_resource type="PackedScene" uid="uid://b0xttc7rt3d3v" path="res://Scenes/ChartRender/ChartRenderer.tscn" id="5_dqvj3"]
+[ext_resource type="PackedScene" uid="uid://8gbqqb1g20bp" path="res://Scenes/Editor/audio_playback_controller.tscn" id="5_fpgqx"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGridLineController.cs" id="6_5vtbr"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGrid.cs" id="6_ihexx"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/GridPositionController.cs" id="7_bv0mt"]
 
 [node name="Editor" type="Control"]
 layout_mode = 3
@@ -37,11 +41,12 @@ grow_vertical = 2
 layout_mode = 2
 size_flags_vertical = 3
 tab_alignment = 2
-current_tab = 0
+current_tab = 1
 tabs_position = 1
 tabs_visible = false
 
 [node name="Chartbuild" type="Panel" parent="Controller/VBoxContainer/TabContainer"]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -141,9 +146,102 @@ auto_brace_completion_highlight_matching = true
 script = ExtResource("3_c2gp3")
 
 [node name="GUI" type="Panel" parent="Controller/VBoxContainer/TabContainer"]
-visible = false
 layout_mode = 2
 metadata/_tab_index = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Controller/VBoxContainer/TabContainer/GUI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Bar" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlaybackController" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar/HBoxContainer" instance=ExtResource("5_fpgqx")]
+layout_mode = 2
+size_flags_horizontal = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar/HBoxContainer"]
+layout_mode = 2
+
+[node name="NotePlacementGridLineController" type="HBoxContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("6_5vtbr")
+
+[node name="Rows" type="SpinBox" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar/HBoxContainer/VBoxContainer/NotePlacementGridLineController"]
+layout_mode = 2
+size_flags_horizontal = 3
+rounded = true
+allow_greater = true
+
+[node name="Columns" type="SpinBox" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar/HBoxContainer/VBoxContainer/NotePlacementGridLineController"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+value = 1.0
+rounded = true
+allow_greater = true
+
+[node name="GridPositionController" type="HBoxContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("7_bv0mt")
+
+[node name="X" type="SpinBox" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar/HBoxContainer/VBoxContainer/GridPositionController"]
+layout_mode = 2
+step = 0.001
+allow_greater = true
+allow_lesser = true
+prefix = "x"
+custom_arrow_step = 1.0
+
+[node name="Y" type="SpinBox" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar/HBoxContainer/VBoxContainer/GridPositionController"]
+layout_mode = 2
+step = 0.001
+allow_greater = true
+allow_lesser = true
+prefix = "y"
+custom_arrow_step = 1.0
+
+[node name="TabContainer" type="TabContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+
+[node name="Note" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="HSplitContainer" type="HSplitContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer/Note"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+
+[node name="NotePlacementGrid" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer/Note/HSplitContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+script = ExtResource("6_ihexx")
+
+[node name="SelectedNote" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer/Note/HSplitContainer"]
+layout_mode = 2
 
 [node name="Logs" type="Panel" parent="Controller/VBoxContainer/TabContainer"]
 visible = false
