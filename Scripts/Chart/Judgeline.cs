@@ -20,7 +20,7 @@ public partial class Judgeline : Line2D, ICBExposeable {
         }
     }
     public readonly StringName name;
-    public float bpm;
+    public float InitalBPM => bpmChanges[0];
     public readonly List<Note> notes;
     // time in seconds, bpm
     // this should become read-only once the chart starts
@@ -36,7 +36,6 @@ public partial class Judgeline : Line2D, ICBExposeable {
     public Judgeline(StringName name, float bpm, float size) {
         Size = size;
         Width = 5;
-        this.bpm = bpm;
         this.name = name;
         Name = name;
         Antialiased = true;
@@ -117,6 +116,6 @@ public partial class Judgeline : Line2D, ICBExposeable {
         return name.GetHashCode();
     }
     public override string ToString() {
-        return $"judgeline({name} ({bpm})";
+        return $"judgeline({name} ({InitalBPM})";
     }
 }

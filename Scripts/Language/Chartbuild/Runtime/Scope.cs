@@ -20,7 +20,6 @@ public class Scope : KVObject {
     : this() {
         this.parent = parent;
         rules = new(parent.rules);
-        rules.UpdateAspectRatio();
     }
 
     public override Property GetProperty(object key) {

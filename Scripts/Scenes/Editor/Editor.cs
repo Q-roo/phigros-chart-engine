@@ -9,4 +9,8 @@ public partial class Editor : Control
     {
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
     }
+
+    public override void _Ready() {
+        EditorContext.Initalize(GetNode<Chart.Chart>("ChartRenderer"));
+    }
 }

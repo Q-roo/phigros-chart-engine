@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://gusv6rnm1xsq"]
+[gd_scene load_steps=12 format=3 uid="uid://gusv6rnm1xsq"]
 
 [ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_4h052"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGridLineController.cs" id="6_5vtbr"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGrid.cs" id="6_ihexx"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/GridPositionController.cs" id="7_bv0mt"]
+[ext_resource type="PackedScene" uid="uid://hwto5i2xob1f" path="res://Scenes/Editor/judge_line_list_controller.tscn" id="9_d1ddy"]
 
 [node name="Editor" type="Control"]
 layout_mode = 3
@@ -219,9 +220,10 @@ custom_arrow_step = 1.0
 [node name="TabContainer" type="TabContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-current_tab = 0
+current_tab = 1
 
 [node name="Note" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer"]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -241,6 +243,24 @@ layout_mode = 2
 script = ExtResource("6_ihexx")
 
 [node name="SelectedNote" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer/Note/HSplitContainer"]
+layout_mode = 2
+
+[node name="Judgeline" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="HSplitContainer" type="HSplitContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer/Judgeline"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="JudgeLineListController" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer/Judgeline/HSplitContainer" instance=ExtResource("9_d1ddy")]
+layout_mode = 2
+
+[node name="SelectedJudgeLine" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer/Judgeline/HSplitContainer"]
 layout_mode = 2
 
 [node name="Logs" type="Panel" parent="Controller/VBoxContainer/TabContainer"]

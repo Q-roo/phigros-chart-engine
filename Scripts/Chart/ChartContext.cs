@@ -11,9 +11,10 @@ public static class ChartContext {
     public static void Reset() {
         Chart = null;
         JudgelineCount = 0;
+        NoteCount = 0;
     }
 
-    public static void Init(Chart chart) {
+    public static void Initalize(Chart chart) {
         Chart = chart;
     }
 

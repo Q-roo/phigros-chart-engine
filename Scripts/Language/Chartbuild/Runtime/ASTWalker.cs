@@ -13,15 +13,7 @@ using Result = Either<Object, ErrorType>;
 public class ASTWalker {
     private readonly ASTRoot ast;
     private readonly Scope rootScope;
-    private Scope _currentScope;
-    public Scope CurrentScope {
-        get => _currentScope;
-        set {
-            _currentScope = value;
-            // in case a child scope sets it, roll it back
-            _currentScope.rules.UpdateAspectRatio();
-        }
-    }
+    public Scope CurrentScope { get; private set; }
     private bool isInFunction;
 
     public ASTWalker(ASTRoot ast) {
@@ -44,9 +36,17 @@ public class ASTWalker {
         return InsertProperty(key, new ReadOnlyProperty(CurrentScope, key, getter));
     }
 
+    public ASTWalker InsertProperty(object key, Getter<object> getter, Setter<object> setter) {
+        return InsertProperty(key, new SetGetProperty(CurrentScope, key, getter, setter));
+    }
+
     public delegate Value Getter();
     public ASTWalker InsertProperty(object key, Getter getter) {
         return InsertProperty(key, (_, _) => getter());
+    }
+    public delegate void Setter(Value value);
+    public ASTWalker InsertProperty(object key, Getter getter, Setter setter) {
+        return InsertProperty(key, (_, _) => getter(), (_, _, value) => setter(value));
     }
 
     public void Evaluate() {
@@ -160,9 +160,6 @@ public class ASTWalker {
                 )
                     throw new InvalidOperationException("set commands must be assignment expressions with identifiers as asignees and use \"=\" for asignment");
                 switch (identifier.value) {
-                    case "aspect_ratio":
-                        CurrentScope.rules.AspectRatio = EvaluateExpression(assignment.value);
-                        break;
                     case "default_judgeline_width":
                         CurrentScope.rules.DefaultJudgelineSize = EvaluateExpression(assignment.value);
                         break;

@@ -49,13 +49,10 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 Chartbuild.BaseToken[] tokens = Chartbuild.Lexer.Parse(Text);
                 GD.Print(tokens);
 
-                Chart.Chart chart = GetNode<Chart.Chart>("../../../../../../ChartRenderer");
-                ChartContext.Reset();
-                ChartContext.Init(chart);
+                EditorContext.SetupChart();
+                Chart.Chart chart = EditorContext.Chart;
                 Chartbuild.ASTRoot ast = new Chartbuild.Parser(tokens).Parse();
                 ASTWalker walker = new(ast);
-                chart.Reset();
-                chart.SetMusic(Project.SelectedProject.Audio);
                 walker
                 // default values
                 .InsertValue(true, "true", true)
@@ -68,6 +65,8 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 .InsertValue(true, "PCE", (int)CompatibilityLevel.PCE)
                 .InsertValue(true, "RPE", (int)CompatibilityLevel.RPE)
                 .InsertValue(true, "PHI", (int)CompatibilityLevel.PHI)
+                // non-constant values
+                .InsertProperty("aspect_ratio", () => ProjectSettings.GetSetting("display/window/stretch/scale").As<float>(), value => ProjectSettings.SetSetting("display/window/stretch/scale", Variant.From<float>(value)))
                 // event trigger constructors
                 .InsertProperty("begin", () => new OnChartBegin().ToObject())
                 .InsertProperty("end", () => new OnChartEnd().ToObject())
