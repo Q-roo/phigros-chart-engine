@@ -8,6 +8,8 @@ public static class EditorContext {
     public static event OnJudgelineListChanged JudgelineListChanged;
     public delegate void OnSelectedJudgelineChanged();
     public static event OnSelectedJudgelineChanged SelectedJudgelineChanged;
+    public delegate void OnBPMChangesChanged();
+    public static event OnBPMChangesChanged BPMChangesChanged;
 
     public static Chart.Chart Chart { get; private set; }
     private static readonly List<Judgeline> judgelineList = [];
@@ -47,5 +49,20 @@ public static class EditorContext {
             SelectedJudgeline = null;
 
         JudgelineListChanged?.Invoke();
+    }
+
+    public static void AddBPMChange(Judgeline judgeline, double time, float bpm) {
+        UpdateBPMChangeBPM(judgeline, time, bpm);
+    }
+
+    public static void SwapBPMChangeTime(Judgeline judgeline, double currentTime, double newTime) {
+        judgeline.bpmChanges[newTime] = judgeline.bpmChanges[currentTime];
+        judgeline.bpmChanges.Remove(currentTime);
+        BPMChangesChanged?.Invoke();
+    }
+
+    public static void UpdateBPMChangeBPM(Judgeline judgeline, double time, float newBPM) {
+        judgeline.bpmChanges[time] = newBPM;
+        BPMChangesChanged?.Invoke();
     }
 }

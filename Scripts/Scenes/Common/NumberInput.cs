@@ -4,9 +4,9 @@ namespace PCE.Editor;
 
 [Tool]
 public partial class NumberInput : Panel {
-    private HBoxContainer container = new();
-    private Label label = new() { Text = "label" };
-    private SpinBox spinBox = new();
+    private readonly HBoxContainer container = new();
+    private readonly Label label = new() { Text = "label" };
+    public readonly SpinBox spinBox = new();
 
     [Export]
     public string Title {

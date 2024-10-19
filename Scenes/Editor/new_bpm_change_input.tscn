@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3 uid="uid://bvqaiktlxgoeh"]
+
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/NewBpmChangeInput.cs" id="1_d3y5y"]
+[ext_resource type="PackedScene" uid="uid://cn5vxbaqisvg6" path="res://Scenes/Common/NumberInput.tscn" id="2_v73kt"]
+
+[node name="NewBPMChangeInput" type="HBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_d3y5y")
+
+[node name="Time" parent="." instance=ExtResource("2_v73kt")]
+layout_mode = 2
+Title = "time"
+Step = 0.0
+AllowGreater = true
+
+[node name="Bpm" parent="." instance=ExtResource("2_v73kt")]
+layout_mode = 2
+Title = "bpm"
+MinValue = 0.001
+Step = 0.0
+Value = 0.001
+AllowGreater = true
+
+[node name="Add" type="Button" parent="."]
+layout_mode = 2
+text = "add"

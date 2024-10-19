@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://8n2dutwsrjp7"]
+[gd_scene load_steps=3 format=3 uid="uid://8n2dutwsrjp7"]
 
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/SelectedJudgeLineInspector.cs" id="1_l4ybe"]
+[ext_resource type="PackedScene" uid="uid://bvqaiktlxgoeh" path="res://Scenes/Editor/new_bpm_change_input.tscn" id="2_yun77"]
 
 [node name="SelectedJudgeLineInspector" type="Panel"]
 anchors_preset = 15
@@ -20,14 +21,21 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="BPMChangeList" type="ScrollContainer" parent="HSplitContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/BPMChangeList"]
+[node name="BPMChangeList" type="ScrollContainer" parent="HSplitContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/VBoxContainer/BPMChangeList"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="NewBPMChangeInput" parent="HSplitContainer/VBoxContainer" instance=ExtResource("2_yun77")]
+layout_mode = 2
 
 [node name="Panel" type="Panel" parent="HSplitContainer"]
 layout_mode = 2
