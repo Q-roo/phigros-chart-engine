@@ -59,6 +59,7 @@ public partial class Judgeline : Line2D, ICBExposeable {
         .AddChangeableProperty("size", () => Size, value => Size = value)
         .AddChangeableProperty("position", () => Position, value => Position = value)
         .AddChangeableProperty("rotation", () => RotationDegrees, value => RotationDegrees = value)
+        .AddReadOnlyValue("bpm", () => GetCurrentBpm())
         .AddCallable("add_event", args => {
             if (args.Length == 0)
                 throw new ArgumentException("insufficient arguments");

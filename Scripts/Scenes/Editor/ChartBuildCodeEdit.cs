@@ -1,5 +1,6 @@
 using Godot;
 using PCE.Chart;
+using PCE.Chart.Util;
 using PCE.Chartbuild.Runtime;
 using System;
 
@@ -177,6 +178,12 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                 .InsertValue(true, "emit", new Callable(args => {
                     // signature: (str, ...rest)
                     chart.signals.Add(args[0].ToString());
+                }))
+                .InsertValue(true, "beat", new Callable(args => {
+                    return (float)((double)args[0].ToF32()).ToBeat(args[1]);
+                }))
+                .InsertValue(true, "second", new Callable(args => {
+                    return (float)((double)args[0].ToF32()).ToSecond(args[1]);
                 }));
 
                 walker.Evaluate();
