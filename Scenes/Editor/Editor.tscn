@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://gusv6rnm1xsq"]
+[gd_scene load_steps=13 format=3 uid="uid://gusv6rnm1xsq"]
 
 [ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_4h052"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGrid.cs" id="6_ihexx"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/GridPositionController.cs" id="7_bv0mt"]
 [ext_resource type="PackedScene" uid="uid://hwto5i2xob1f" path="res://Scenes/Editor/judge_line_list_controller.tscn" id="9_d1ddy"]
+[ext_resource type="PackedScene" uid="uid://8n2dutwsrjp7" path="res://Scenes/Editor/selected_judge_line_inspector.tscn" id="10_bhmm4"]
 
 [node name="Editor" type="Control"]
 layout_mode = 3
@@ -260,7 +261,7 @@ grow_vertical = 2
 [node name="JudgeLineListController" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer/Judgeline/HSplitContainer" instance=ExtResource("9_d1ddy")]
 layout_mode = 2
 
-[node name="SelectedJudgeLine" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer/Judgeline/HSplitContainer"]
+[node name="SelectedJudgeLineInspector" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/TabContainer/Judgeline/HSplitContainer" instance=ExtResource("10_bhmm4")]
 layout_mode = 2
 
 [node name="Logs" type="Panel" parent="Controller/VBoxContainer/TabContainer"]

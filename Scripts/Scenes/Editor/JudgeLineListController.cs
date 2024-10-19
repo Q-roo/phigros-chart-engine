@@ -8,13 +8,13 @@ public partial class JudgeLineListController : VBoxContainer
     private ItemList list;
     private Button delete;
     Button add;
-    LineEdit name;
-    SpinBox bpm;
+    TextInput name;
+    NumberInput bpm;
 
     public override void _Ready() {
         list = GetNode<ItemList>("List");
-        name = GetNode<LineEdit>("HBoxContainer/VBoxContainer/Name");
-        bpm = GetNode<SpinBox>("HBoxContainer/VBoxContainer/BPM");
+        name = GetNode<TextInput>("HBoxContainer/VBoxContainer/Name");
+        bpm = GetNode<NumberInput>("HBoxContainer/VBoxContainer/BPM");
         add = GetNode<Button>("HBoxContainer/Add");
         delete = GetNode<Button>("Delete");
 
@@ -35,6 +35,6 @@ public partial class JudgeLineListController : VBoxContainer
 
     private void AddJudgeline() {
         // TODO: scope rules
-        EditorContext.AddJudgeline(new(name.Text, (float)bpm.Value, 4000));
+        EditorContext.AddJudgeline(new(name.Value, (float)bpm.Value, 4000));
     }
 }

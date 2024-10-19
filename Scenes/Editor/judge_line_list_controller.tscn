@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://hwto5i2xob1f"]
+[gd_scene load_steps=4 format=3 uid="uid://hwto5i2xob1f"]
 
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/JudgeLineListController.cs" id="1_haxx2"]
+[ext_resource type="PackedScene" uid="uid://dfjhosfpegjwk" path="res://Scenes/Common/TextInput.tscn" id="2_oul8y"]
+[ext_resource type="PackedScene" uid="uid://cn5vxbaqisvg6" path="res://Scenes/Common/NumberInput.tscn" id="3_2im2g"]
 
 [node name="JudgeLineListController" type="VBoxContainer"]
 custom_minimum_size = Vector2(300, 0)
@@ -22,20 +24,18 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Name" type="LineEdit" parent="HBoxContainer/VBoxContainer"]
+[node name="Name" parent="HBoxContainer/VBoxContainer" instance=ExtResource("2_oul8y")]
 layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "name"
+PlaceholderText = "name"
+Title = "name"
 
-[node name="BPM" type="SpinBox" parent="HBoxContainer/VBoxContainer"]
+[node name="BPM" parent="HBoxContainer/VBoxContainer" instance=ExtResource("3_2im2g")]
 layout_mode = 2
-size_flags_horizontal = 3
-min_value = 0.001
-step = 0.0
-value = 0.001
-allow_greater = true
-alignment = 3
-suffix = "BPM"
+Title = "BPM"
+MinValue = 0.001
+Step = 0.0
+Value = 0.001
+AllowGreater = true
 
 [node name="Add" type="Button" parent="HBoxContainer"]
 layout_mode = 2
