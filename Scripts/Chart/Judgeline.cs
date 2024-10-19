@@ -7,6 +7,8 @@ using PCE.Chartbuild.Runtime;
 namespace PCE.Chart;
 
 public partial class Judgeline : Line2D, ICBExposeable {
+    public delegate void OnResized();
+    public event OnResized Resized;
     public TransformGroup parent;
     private float _size;
     public float Size {
@@ -17,6 +19,15 @@ public partial class Judgeline : Line2D, ICBExposeable {
                 new (-value / 2f, 0),
                 new (value / 2f, 0)
             ];
+            Resized?.Invoke();
+        }
+    }
+    private Vector2 _screenPosition;
+    public Vector2 ScreenPosition {
+        get => _screenPosition;
+        set {
+            _screenPosition = value;
+            SetPositionToScreenPosition();
         }
     }
     public readonly StringName name;
@@ -48,6 +59,11 @@ public partial class Judgeline : Line2D, ICBExposeable {
     public Judgeline()
     : this(ChartContext.GetJudgelineName(), 120, 4000) { }
 
+    public override void _EnterTree() {
+        ScreenPosition = Vector2.Zero;
+        GetTree().Root.SizeChanged += SetPositionToScreenPosition;
+    }
+
     public override void _Draw() {
         // the center of the judgeline
         // this looks worse with antialias
@@ -57,7 +73,7 @@ public partial class Judgeline : Line2D, ICBExposeable {
     public NativeObject ToObject() {
         return new NativeObjectBuilder(this)
         .AddChangeableProperty("size", () => Size, value => Size = value)
-        .AddChangeableProperty("position", () => Position, value => Position = value)
+        .AddChangeableProperty("position", () => ScreenPosition, value => ScreenPosition = value)
         .AddChangeableProperty("rotation", () => RotationDegrees, value => RotationDegrees = value)
         .AddReadOnlyValue("bpm", () => GetCurrentBpm())
         .AddCallable("add_event", args => {
@@ -112,6 +128,16 @@ public partial class Judgeline : Line2D, ICBExposeable {
     }
 
     public float GetCurrentBpm() => GetClosestBpm(ChartContext.Chart.CurrentTime);
+
+    private void SetPositionToScreenPosition() {
+        Rect2 rect = GetViewportRect();
+        // 0.5 + 1 * x / 2
+        Position = rect.GetCenter() + rect.Size * ScreenPosition / 2f;
+        // Debug.Assert(Position == new Vector2(
+        //     (float)Mathf.Lerp(rect.Position.X, rect.End.X, Mathf.InverseLerp(-1d, 1d, ScreenPosition.X)),
+        //     (float)Mathf.Lerp(rect.Position.Y, rect.End.Y, Mathf.InverseLerp(-1d, 1d, ScreenPosition.Y))
+        // ));
+    }
 
     public override int GetHashCode() {
         return name.GetHashCode();

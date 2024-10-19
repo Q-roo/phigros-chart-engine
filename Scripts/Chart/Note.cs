@@ -4,7 +4,7 @@ using PCE.Chartbuild.Bindings;
 
 namespace PCE.Chart;
 
-public partial class Note : NineSliceSprite , ICBExposeable {
+public partial class Note : NineSliceSprite, ICBExposeable {
     // all this just so I won't have to check wether the parent is null in _Proccess
     private Judgeline _parent;
     public Judgeline Parent {
@@ -23,6 +23,8 @@ public partial class Note : NineSliceSprite , ICBExposeable {
     // percentage value where 1 = 100%
     // use the viewport width
     // because judgeline width can be changed regularly
+    // between -1 and 1
+    // though, nothing stops anyone from using larger or smaller values
     private float _xOffset;
     public float XOffset {
         get => _xOffset;
@@ -72,7 +74,7 @@ public partial class Note : NineSliceSprite , ICBExposeable {
 
     private void UpdateXOffset() {
         Vector2 position = Position;
-        position.X = GetViewportRect().Size.X * XOffset;
+        position.X = GetViewportRect().Size.X / 2f * XOffset;
         Position = position;
     }
 
