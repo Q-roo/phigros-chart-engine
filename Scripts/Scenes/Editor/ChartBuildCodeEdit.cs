@@ -208,7 +208,15 @@ public partial class ChartBuildCodeEdit : CodeEdit {
         // CodeHighlighter.AddColorRegion("//", string.Empty, commentColor);
     }
 
-    private Note NoteConstructor(NoteType type, float defaultSpeed, bool defaultIsAbove, params Chartbuild.Runtime.Object[] args) {
+    public override void _GuiInput(InputEvent @event) {
+        if (
+            @event is InputEventKey key
+            && key.Keycode == Key.S
+            && key.CtrlPressed
+        ) Save(Project.SelectedProject);
+    }
+
+    private static Note NoteConstructor(NoteType type, float defaultSpeed, bool defaultIsAbove, params Chartbuild.Runtime.Object[] args) {
         // signature: (time, x_offset, speed=default, is_above=default, ...rest)
 
 
