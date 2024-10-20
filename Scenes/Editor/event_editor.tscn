@@ -1,0 +1,63 @@
+[gd_scene load_steps=3 format=3 uid="uid://bbrdea58jkgc8"]
+
+[ext_resource type="PackedScene" uid="uid://dfjhosfpegjwk" path="res://Scenes/Common/TextInput.tscn" id="1_d2h2d"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/EventGraphEditor.cs" id="2_v1idt"]
+
+[node name="EventEditor" type="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Button" type="Button" parent="VBoxContainer/Panel/HBoxContainer"]
+layout_mode = 2
+text = "back"
+
+[node name="Button2" type="Button" parent="VBoxContainer/Panel/HBoxContainer"]
+layout_mode = 2
+text = "save"
+
+[node name="TextInput" parent="VBoxContainer/Panel/HBoxContainer" instance=ExtResource("1_d2h2d")]
+custom_minimum_size = Vector2(400, 30)
+layout_mode = 2
+size_flags_horizontal = 1
+PlaceholderText = "name"
+Title = "name"
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+split_offset = 300
+
+[node name="Panel" type="Panel" parent="VBoxContainer/HSplitContainer"]
+layout_mode = 2
+
+[node name="EventGraphEditor" type="GraphEdit" parent="VBoxContainer/HSplitContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+scroll_offset = Vector2(-300, 0)
+grid_pattern = 1
+right_disconnects = true
+show_zoom_label = true
+script = ExtResource("2_v1idt")

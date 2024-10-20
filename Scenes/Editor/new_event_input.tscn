@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://bgb2g32ppaltp"]
+
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/NewEventInput.cs" id="1_llnd1"]
+[ext_resource type="PackedScene" uid="uid://dfjhosfpegjwk" path="res://Scenes/Common/TextInput.tscn" id="2_5i6uq"]
+
+[node name="NewEventInput" type="HBoxContainer"]
+script = ExtResource("1_llnd1")
+
+[node name="Name" parent="." instance=ExtResource("2_5i6uq")]
+layout_mode = 2
+size_flags_horizontal = 3
+PlaceholderText = "name"
+Title = "name"
+
+[node name="Add" type="Button" parent="."]
+layout_mode = 2
+text = "add"

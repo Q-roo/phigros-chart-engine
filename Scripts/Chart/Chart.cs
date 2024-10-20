@@ -130,7 +130,7 @@ public partial class Chart : Node2D, ICBExposeable {
     private void AddActiveEvents() {
         for (int i = 0; i < inactiveEvents.Count; i++) {
             Event @event = inactiveEvents[i];
-            if (@event.strart.IsTriggered(this)) {
+            if (@event.Strart.IsTriggered(this)) {
                 activeEvents.Add(@event);
                 inactiveEvents.RemoveAt(i);
                 i--;
@@ -147,13 +147,13 @@ public partial class Chart : Node2D, ICBExposeable {
             // update to run?
             if (!@event.active) {
                 @event.active = true;
-                @event.strart.InvokeTrigger();
+                @event.Strart.InvokeTrigger();
                 @event.executionCount = 0;
             }
 
-            if (@event.end.IsTriggered(this)) {
+            if (@event.End.IsTriggered(this)) {
                 @event.active = false;
-                @event.end.InvokeTrigger();
+                @event.End.InvokeTrigger();
                 activeEvents.RemoveAt(i);
                 i--;
                 continue; // don't let update run once more

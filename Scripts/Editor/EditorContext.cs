@@ -8,8 +8,10 @@ public static class EditorContext {
     public static event OnJudgelineListChanged JudgelineListChanged;
     public delegate void OnSelectedJudgelineChanged();
     public static event OnSelectedJudgelineChanged SelectedJudgelineChanged;
-    public delegate void OnBPMChangesChanged();
+    public delegate void OnBPMChangesChanged(Judgeline judgeline);
     public static event OnBPMChangesChanged BPMChangesChanged;
+    public delegate void OnEventAdded(Judgeline judgeline);
+    public static event OnEventAdded EventAdded;
 
     public static Chart.Chart Chart { get; private set; }
     private static readonly List<Judgeline> judgelineList = [];
@@ -25,6 +27,7 @@ public static class EditorContext {
 
     public static void Initalize(Chart.Chart chart) {
         Chart = chart;
+        SetupChart();
     }
 
     public static void SetupChart() {
@@ -36,6 +39,8 @@ public static class EditorContext {
         foreach (Judgeline judgeline in judgelineList) {
             judgeline.AttachTo(Chart.rootGroup);
         }
+
+        ICBExposeableEditorExtension.InjectEvents();
     }
 
     public static void AddJudgeline(Judgeline judgeline) {
@@ -58,11 +63,17 @@ public static class EditorContext {
     public static void SwapBPMChangeTime(Judgeline judgeline, double currentTime, double newTime) {
         judgeline.bpmChanges[newTime] = judgeline.bpmChanges[currentTime];
         judgeline.bpmChanges.Remove(currentTime);
-        BPMChangesChanged?.Invoke();
+        BPMChangesChanged?.Invoke(judgeline);
     }
 
     public static void UpdateBPMChangeBPM(Judgeline judgeline, double time, float newBPM) {
         judgeline.bpmChanges[time] = newBPM;
-        BPMChangesChanged?.Invoke();
+        BPMChangesChanged?.Invoke(judgeline);
+    }
+
+    public static void AddEvent(Judgeline judgeline, EditableEvent @event) {
+        ChartContext.AddEvent(judgeline, @event);
+        judgeline.GetEvents().Add(@event);
+        EventAdded?.Invoke(judgeline);
     }
 }

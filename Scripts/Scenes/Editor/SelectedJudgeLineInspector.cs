@@ -12,11 +12,11 @@ public partial class SelectedJudgeLineInspector : Panel {
         EditorContext.BPMChangesChanged += RefreshBPMChanges;
     }
 
-    private void RefreshBPMChanges() {
+    private void RefreshBPMChanges() => RefreshBPMChanges(EditorContext.SelectedJudgeline);
+
+    private void RefreshBPMChanges(Judgeline judgeline) {
         foreach (Node child in bpmChanges.GetChildren())
             child.QueueFree();
-
-        Judgeline judgeline = EditorContext.SelectedJudgeline;
 
         if (judgeline is null)
             return;
