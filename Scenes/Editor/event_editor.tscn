@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://bbrdea58jkgc8"]
+[gd_scene load_steps=4 format=3 uid="uid://bbrdea58jkgc8"]
 
 [ext_resource type="PackedScene" uid="uid://dfjhosfpegjwk" path="res://Scenes/Common/TextInput.tscn" id="1_d2h2d"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/EventGraphEditor.cs" id="2_v1idt"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/EventNode.cs" id="3_w1ri3"]
 
 [node name="EventEditor" type="Panel"]
 anchors_preset = 15
@@ -61,3 +62,56 @@ grid_pattern = 1
 right_disconnects = true
 show_zoom_label = true
 script = ExtResource("2_v1idt")
+
+[node name="EventNode" type="GraphNode" parent="VBoxContainer/HSplitContainer/EventGraphEditor"]
+layout_mode = 0
+offset_left = 439.0
+offset_top = 331.0
+offset_right = 710.0
+offset_bottom = 434.0
+mouse_filter = 1
+position_offset = Vector2(139, 331)
+title = "Event"
+slot/0/left_enabled = false
+slot/0/left_type = 0
+slot/0/left_color = Color(1, 1, 1, 1)
+slot/0/left_icon = null
+slot/0/right_enabled = false
+slot/0/right_type = 0
+slot/0/right_color = Color(1, 1, 1, 1)
+slot/0/right_icon = null
+slot/0/draw_stylebox = true
+slot/1/left_enabled = false
+slot/1/left_type = 0
+slot/1/left_color = Color(1, 1, 1, 1)
+slot/1/left_icon = null
+slot/1/right_enabled = false
+slot/1/right_type = 0
+slot/1/right_color = Color(1, 1, 1, 1)
+slot/1/right_icon = null
+slot/1/draw_stylebox = true
+script = ExtResource("3_w1ri3")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HSplitContainer/EventGraphEditor/EventNode"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HSplitContainer/EventGraphEditor/EventNode/HBoxContainer"]
+layout_mode = 2
+text = "start trigger"
+
+[node name="Label2" type="Label" parent="VBoxContainer/HSplitContainer/EventGraphEditor/EventNode/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "execute"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer/HSplitContainer/EventGraphEditor/EventNode"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HSplitContainer/EventGraphEditor/EventNode/HBoxContainer2"]
+layout_mode = 2
+text = "end trigger"
+
+[node name="Label2" type="Label" parent="VBoxContainer/HSplitContainer/EventGraphEditor/EventNode/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "this judgeline"
