@@ -17,6 +17,8 @@ public partial class EventGraphEditor : GraphEdit {
         menu.AddItem("Add string literal node");
         menu.AddItem("Add i32 literal node");
         menu.AddItem("Add f32 literal node");
+        menu.AddItem("Add bool literal node");
+        menu.AddItem("Add vec2 node");
         menu.AddItem("Add callable node");
         menu.AddItem("Add binary operation node");
         menu.AddItem("TODO");
@@ -36,9 +38,15 @@ public partial class EventGraphEditor : GraphEdit {
                     AddChild(new F32LiteralGraphNode());
                     break;
                 case 4:
+                    AddChild(new BoolLiteralGraphNode());
+                    break;
+                case 5:
+                    AddChild(new Vec2GraphNode());
+                    break;
+                case 6:
                     AddChild(new CallableGraphNode());
                     break;
-                    case 5:
+                case 7:
                     AddChild(new BinaryOperationGraphNode());
                     break;
             }
