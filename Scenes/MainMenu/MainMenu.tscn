@@ -278,13 +278,11 @@ layout_mode = 2
 
 [node name="Name" parent="NewProjectPopup/Control/VBoxContainer/Difficulty" instance=ExtResource("5_35lbn")]
 layout_mode = 2
-size_flags_horizontal = 3
 PlaceholderText = "Unknown"
 Title = "Difficulty"
 
 [node name="Level" parent="NewProjectPopup/Control/VBoxContainer/Difficulty" instance=ExtResource("5_35lbn")]
 layout_mode = 2
-size_flags_horizontal = 3
 PlaceholderText = "Unknown"
 Title = "Level"
 

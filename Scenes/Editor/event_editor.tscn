@@ -57,7 +57,6 @@ layout_mode = 2
 [node name="EventGraphEditor" type="GraphEdit" parent="VBoxContainer/HSplitContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-scroll_offset = Vector2(-300, 0)
 grid_pattern = 1
 right_disconnects = true
 show_zoom_label = true
@@ -65,9 +64,9 @@ script = ExtResource("2_v1idt")
 
 [node name="EventNode" type="GraphNode" parent="VBoxContainer/HSplitContainer/EventGraphEditor"]
 layout_mode = 0
-offset_left = 439.0
+offset_left = 139.0
 offset_top = 331.0
-offset_right = 710.0
+offset_right = 410.0
 offset_bottom = 434.0
 mouse_filter = 1
 position_offset = Vector2(139, 331)
