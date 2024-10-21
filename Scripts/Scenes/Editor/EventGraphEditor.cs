@@ -17,7 +17,8 @@ public partial class EventGraphEditor : GraphEdit {
         menu.AddItem("Add string literal node");
         menu.AddItem("Add i32 literal node");
         menu.AddItem("Add f32 literal node");
-        menu.AddItem("Add callable");
+        menu.AddItem("Add callable node");
+        menu.AddItem("Add binary operation node");
         menu.AddItem("TODO");
         menu.PopupHide += menu.QueueFree;
         menu.IndexPressed += idx => {
@@ -36,6 +37,9 @@ public partial class EventGraphEditor : GraphEdit {
                     break;
                 case 4:
                     AddChild(new CallableGraphNode());
+                    break;
+                    case 5:
+                    AddChild(new BinaryOperationGraphNode());
                     break;
             }
         };
