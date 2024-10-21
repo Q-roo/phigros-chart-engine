@@ -7,8 +7,8 @@ public partial class CallableGraphNode : GraphNode {
     public CallableGraphNode() {
         Title = "callable";
         add.Text = "add argument";
-        AddChild(new Label() { Text = "this" });
-        AddChild(new Label() { Text = "execute" });
+        AddChild(new Label() { Text = "this", HorizontalAlignment = HorizontalAlignment.Right });
+        AddChild(new Label() { Text = "execute", HorizontalAlignment = HorizontalAlignment.Right });
         // spacer
         AddChild(new Control() { CustomMinimumSize = new(0, 30)});
         AddChild(add);
