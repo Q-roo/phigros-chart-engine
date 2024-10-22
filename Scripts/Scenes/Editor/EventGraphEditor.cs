@@ -5,6 +5,13 @@ namespace PCE.Editor;
 public partial class EventGraphEditor : GraphEdit {
     public EventGraphEditor() {
         PopupRequest += ShowPopup;
+        ConnectionRequest += (fromNode, fromPort, toNode, toPort) => {
+            // TODO: checks
+            ConnectNode(fromNode, (int)fromPort, toNode, (int)toPort);
+        };
+        DisconnectionRequest += (fromNode, fromPort, toNode, toPort) => {
+            DisconnectNode(fromNode, (int)fromPort, toNode, (int)toPort);
+        };
     }
 
     private void ShowPopup(Vector2 localMousePosition) {
@@ -23,6 +30,8 @@ public partial class EventGraphEditor : GraphEdit {
         menu.AddItem("Add binary operation node");
         menu.AddItem("Add unary operation node");
         menu.AddItem("Add branch node");
+        menu.AddItem("Add get variable node");
+        menu.AddItem("Add get property node");
         menu.AddItem("TODO");
         menu.PopupHide += menu.QueueFree;
         menu.IndexPressed += idx => {
@@ -56,6 +65,12 @@ public partial class EventGraphEditor : GraphEdit {
                     break;
                 case 9:
                     AddChild(new BranchGraphNode());
+                    break;
+                case 10:
+                    AddChild(new GetVariableGraphNode());
+                    break;
+                case 11:
+                    AddChild(new GetPropertyGraphNode());
                     break;
             }
         };
