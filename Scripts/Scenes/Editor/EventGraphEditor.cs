@@ -21,6 +21,7 @@ public partial class EventGraphEditor : GraphEdit {
         menu.AddItem("Add vec2 node");
         menu.AddItem("Add callable node");
         menu.AddItem("Add binary operation node");
+        menu.AddItem("Add unary operation node");
         menu.AddItem("TODO");
         menu.PopupHide += menu.QueueFree;
         menu.IndexPressed += idx => {
@@ -48,6 +49,9 @@ public partial class EventGraphEditor : GraphEdit {
                     break;
                 case 7:
                     AddChild(new BinaryOperationGraphNode());
+                    break;
+                case 8:
+                    AddChild(new UnaryOperationGraphNode());
                     break;
             }
         };
