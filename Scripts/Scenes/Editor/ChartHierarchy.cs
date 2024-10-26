@@ -30,7 +30,7 @@ public partial class ChartHierarchy : Tree {
                     EditSelected();
                     break;
                 case 1 or 2: {
-                    int moveToIndex = Mathf.Clamp( node.GetIndex() + (idx == 1 ? -1 : 1), 0, parent.GetChildCount());
+                    int moveToIndex = Mathf.Clamp(node.GetIndex() + (idx == 1 ? -1 : 1), 0, parent.GetChildCount());
 
                     switch (node) {
                         case Judgeline judgeline:
