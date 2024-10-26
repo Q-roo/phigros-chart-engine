@@ -14,19 +14,22 @@ public partial class ChartHierarchy : Tree {
         menu.AddItem("Rename");
         menu.AddItem("Move up");
         menu.AddItem("Move down");
-        menu.AddItem("Insert above (TODO)");
-        menu.AddItem("Insert below (TODO)");
+        menu.AddItem("Insert judgeline before");
+        menu.AddItem("Insert judgeline");
+        menu.AddItem("Insert group before");
+        menu.AddItem("Insert group");
         menu.AddItem("Delete");
 
         menu.IndexPressed += idx => {
+            Node node = GetNodeForItem(GetSelected());
+            TransformGroup parent = node == EditorContext.Chart.rootGroup ? EditorContext.Chart.rootGroup : (TransformGroup)node.GetParent();
+
             switch (idx) {
                 case 0:
                     GetSelected().SetEditable(0, true);
                     EditSelected();
                     break;
                 case 1 or 2: {
-                    Node node = GetNodeForItem(GetSelected());
-                    Node parent = node.GetParent();
                     int moveToIndex = Mathf.Clamp( node.GetIndex() + (idx == 1 ? -1 : 1), 0, parent.GetChildCount());
 
                     switch (node) {
@@ -41,10 +44,33 @@ public partial class ChartHierarchy : Tree {
                     Refresh();
                     break;
                 }
-                case 5: {
-                    Node node = GetNodeForItem(GetSelected());
-                    Node parent = node.GetParent();
+                case 3 or 4: {
+                    Judgeline judgeline = new();
+                    if (node is TransformGroup group && idx != 3)
+                        judgeline.AttachTo(group);
+                    else {
+                        judgeline.AttachTo(parent);
+                        if (idx == 4)
+                            judgeline.MoveTo(node.GetIndex() + 1);
+                    }
 
+                    Refresh();
+                    break;
+                }
+                case 5 or 6: {
+                    TransformGroup group = new();
+                    if (node is TransformGroup parentGroup && idx != 3)
+                        group.AttachTo(parentGroup);
+                    else {
+                        group.AttachTo(parent);
+                        if (idx == 4)
+                            group.MoveTo(node.GetIndex() + 1);
+                    }
+
+                    Refresh();
+                    break;
+                }
+                case 7: {
                     switch (node) {
                         case Judgeline judgeline:
                             judgeline.Detach();
@@ -179,7 +205,9 @@ public partial class ChartHierarchy : Tree {
         menu.SetItemDisabled(0, rootSelected);
         menu.SetItemDisabled(1, rootSelected);
         menu.SetItemDisabled(2, rootSelected);
+        menu.SetItemDisabled(3, rootSelected);
         menu.SetItemDisabled(5, rootSelected);
+        menu.SetItemDisabled(7, rootSelected);
         menu.PopupOnParent(new(position, Vector2I.Zero));
     }
 
