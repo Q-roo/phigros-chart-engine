@@ -53,7 +53,7 @@ public partial class BpmChanges : PanelContainer {
             (double time, float bpm) = judgeline.bpmChanges.Last();
             judgeline.AddOrModifyBPMChange(time + 10, bpm);
 
-            CallDeferred(MethodName.Refresh);
+            CallDeferred(MethodName.Refresh); // cannot call refresh while executing this
         };
         list.ButtonClicked += (item, column, id, mouseButton) => {
             ItemMetadata metadata = (ItemMetadata)item.GetMetadata(0);
