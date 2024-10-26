@@ -1,12 +1,13 @@
+using System.Collections.Generic;
 using Godot;
 using PCE.Chartbuild.Bindings;
 
 namespace PCE.Chart;
 
 public static class ChartContext {
-    public static Chart Chart {get; private set;}
-    public static int JudgelineCount {get; private set;}
-    public static int NoteCount {get; private set;}
+    public static Chart Chart { get; private set; }
+    public static int JudgelineCount { get; private set; }
+    public static int NoteCount { get; private set; }
 
     public static void Reset() {
         Chart = null;
@@ -21,7 +22,7 @@ public static class ChartContext {
     public static void AttachTo(this Judgeline judgeline, TransformGroup group) {
         group.AddChild(judgeline);
         group.judgelines.Add(judgeline);
-        judgeline.parent = group;
+        judgeline.parentGroup = group;
         Chart.judgelines.Add(judgeline);
     }
 
@@ -32,11 +33,23 @@ public static class ChartContext {
         note.Name = GetNoteName();
     }
 
+    public static void AttachTo(this TransformGroup group, TransformGroup parentGroup) {
+        parentGroup.AddChild(group);
+        parentGroup.subGroups.Add(group);
+        group.parentGroup = parentGroup;
+    }
+
     public static void Detach(this Judgeline judgeline) {
-        judgeline.parent.RemoveChild(judgeline);
-        judgeline.parent.judgelines.Remove(judgeline);
-        judgeline.parent = null;
+        judgeline.parentGroup.RemoveChild(judgeline);
+        judgeline.parentGroup.judgelines.Remove(judgeline);
+        judgeline.parentGroup = null;
         Chart.judgelines.Remove(judgeline);
+    }
+
+    public static void Detach(this TransformGroup group) {
+        group.parentGroup.subGroups.Remove(group);
+        group.parentGroup.RemoveChild(group);
+        group.parentGroup = null;
     }
 
     public static StringName GetJudgelineName() => $"jl#{JudgelineCount++}"; // ensure that each name is unique

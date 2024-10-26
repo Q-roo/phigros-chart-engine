@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://gusv6rnm1xsq"]
+[gd_scene load_steps=11 format=3 uid="uid://gusv6rnm1xsq"]
 
 [ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_4h052"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://8gbqqb1g20bp" path="res://Scenes/Editor/audio_playback_controller.tscn" id="5_fpgqx"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGridLineController.cs" id="6_5vtbr"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/GridPositionController.cs" id="7_bv0mt"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartHierarchy.cs" id="8_wy3jj"]
 
 [node name="Editor" type="Control"]
 layout_mode = 3
@@ -229,6 +230,11 @@ size_flags_horizontal = 3
 
 [node name="LeftPanel" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Layout/HSplitContainer/HSplitContainer"]
 layout_mode = 2
+
+[node name="ChartHierarchy" type="Tree" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Layout/HSplitContainer/HSplitContainer/LeftPanel"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+script = ExtResource("8_wy3jj")
 
 [node name="MiddlePanel" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Layout/HSplitContainer/HSplitContainer"]
 layout_mode = 2

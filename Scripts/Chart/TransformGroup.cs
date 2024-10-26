@@ -10,16 +10,14 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
     public readonly HashSet<TransformGroup> subGroups = [];
     public readonly HashSet<Judgeline> judgelines = [];
     public readonly StringName name = name;
+    public TransformGroup parentGroup;
 
     public override void _Ready() {
         Name = name;
     }
 
     public TransformGroup AddSubGroup(TransformGroup subGroup) {
-        subGroups.Add(subGroup);
-        AddChild(subGroup);
-        subGroup.AddToGroup(name);
-
+        subGroup.AttachTo(this);
         return subGroup;
     }
 
@@ -46,7 +44,7 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
         .AddCallable("add_judgeline", AddJudgeline_Binding)
         .SetFallbackGetter((@this) => key => {
             if (key is not string property)
-                    throw new KeyNotFoundException("this object only has string keys");
+                throw new KeyNotFoundException("this object only has string keys");
             return new ReadOnlyValueProperty(@this, key, GetMember(property) is ICBExposeable exposeable ? exposeable.ToObject() : new Unset());
         })
         .Build();
@@ -62,7 +60,7 @@ public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
             || args[0] is not NativeObject native
             || native.NativeValue is not Judgeline judgeline
         )
-        throw new ArgumentException("this method requires one judgeline instance");
+            throw new ArgumentException("this method requires one judgeline instance");
 
         return AddJudgeline(judgeline).ToObject();
     }

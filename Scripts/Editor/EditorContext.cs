@@ -4,6 +4,8 @@ using PCE.Chart;
 
 namespace PCE.Editor;
 public static class EditorContext {
+    public delegate void OnInitalized();
+    public static event OnInitalized Initalized;
     public delegate void OnJudgelineListChanged();
     public static event OnJudgelineListChanged JudgelineListChanged;
     public delegate void OnSelectedJudgelineChanged();
@@ -28,6 +30,7 @@ public static class EditorContext {
     public static void Initalize(Chart.Chart chart) {
         Chart = chart;
         SetupChart();
+        Initalized?.Invoke();
     }
 
     public static void SetupChart() {

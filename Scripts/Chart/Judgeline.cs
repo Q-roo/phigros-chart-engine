@@ -9,7 +9,7 @@ namespace PCE.Chart;
 public partial class Judgeline : Line2D, ICBExposeable {
     public delegate void OnResized();
     public event OnResized Resized;
-    public TransformGroup parent;
+    public TransformGroup parentGroup;
     private float _size;
     public float Size {
         get => _size;
@@ -30,7 +30,7 @@ public partial class Judgeline : Line2D, ICBExposeable {
             SetPositionToScreenPosition();
         }
     }
-    public readonly StringName name;
+
     public float InitalBPM => bpmChanges[0];
     public readonly List<Note> notes;
     // time in seconds, bpm
@@ -47,7 +47,6 @@ public partial class Judgeline : Line2D, ICBExposeable {
     public Judgeline(StringName name, float bpm, float size) {
         Size = size;
         Width = 5;
-        this.name = name;
         Name = name;
         Antialiased = true;
         notes = [];
@@ -62,6 +61,10 @@ public partial class Judgeline : Line2D, ICBExposeable {
     public override void _EnterTree() {
         ScreenPosition = Vector2.Zero;
         GetTree().Root.SizeChanged += SetPositionToScreenPosition;
+    }
+
+    public override void _ExitTree() {
+        GetTree().Root.SizeChanged -= SetPositionToScreenPosition;
     }
 
     public override void _Draw() {
@@ -140,9 +143,9 @@ public partial class Judgeline : Line2D, ICBExposeable {
     }
 
     public override int GetHashCode() {
-        return name.GetHashCode();
+        return Name.GetHashCode();
     }
     public override string ToString() {
-        return $"judgeline({name} ({InitalBPM})";
+        return $"judgeline({Name} ({InitalBPM})";
     }
 }
