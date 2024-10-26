@@ -99,20 +99,7 @@ public partial class ChartHierarchy : Tree {
         AllowReselect = true; // click again to start editing the name
         DropModeFlags = (int)DropModeFlagsEnum.OnItem | (int)DropModeFlagsEnum.Inbetween;
         CustomMinimumSize = new(300, 0);
-        EditorContext.Initalized += () => {
-            EditorContext.Chart.rootGroup.AddJudgeline(new());
-            EditorContext.Chart.rootGroup.AddJudgeline(new());
-            TransformGroup sub0 = new("s0");
-            TransformGroup sub00 = new("s00");
-            TransformGroup sub1 = new("s1");
-            EditorContext.Chart.rootGroup.AddSubGroup(sub0);
-            EditorContext.Chart.rootGroup.AddSubGroup(sub1);
-            sub0.AddSubGroup(sub00);
-            sub00.AddJudgeline(new());
-            sub0.AddJudgeline(new());
-            sub1.AddJudgeline(new());
-            Refresh();
-        };
+        EditorContext.Initalized += Refresh;
         ItemSelected += () => {
             TreeItem selected = GetSelected();
             if (lastSelected == selected)
@@ -231,8 +218,6 @@ public partial class ChartHierarchy : Tree {
             indices.Insert(0, item.GetIndex());
             item = item.GetParent();
         }
-
-        // GD.Print(string.Join(", ", indices));
 
         Node node = EditorContext.Chart.rootGroup;
         foreach (int idx in indices) {
