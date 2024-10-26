@@ -215,6 +215,34 @@ allow_lesser = true
 prefix = "y"
 custom_arrow_step = 1.0
 
+[node name="Layout" type="VSplitContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HSplitContainer" type="HSplitContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HSplitContainer" type="HSplitContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Layout/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LeftPanel" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Layout/HSplitContainer/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MiddlePanel" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Layout/HSplitContainer/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightPanel" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Layout/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BottomPanel" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Layout"]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+
 [node name="Logs" type="Panel" parent="Controller/VBoxContainer/TabContainer"]
 visible = false
 layout_mode = 2

@@ -26,7 +26,6 @@ window/size/viewport_height=1080
 window/subwindows/embed_subwindows=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/stretch/scale=1.78
 
 [dotnet]
 
