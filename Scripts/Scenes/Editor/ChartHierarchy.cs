@@ -16,6 +16,7 @@ public partial class ChartHierarchy : Tree {
         menu.AddItem("Move down");
         menu.AddItem("Insert above (TODO)");
         menu.AddItem("Insert below (TODO)");
+        menu.AddItem("Delete");
 
         menu.IndexPressed += idx => {
             switch (idx) {
@@ -23,8 +24,7 @@ public partial class ChartHierarchy : Tree {
                     GetSelected().SetEditable(0, true);
                     EditSelected();
                     break;
-                case 1 or 2:
-                    // TODO: use MoveTo in chartcontext
+                case 1 or 2: {
                     Node node = GetNodeForItem(GetSelected());
                     Node parent = node.GetParent();
                     int moveToIndex = Mathf.Clamp( node.GetIndex() + (idx == 1 ? -1 : 1), 0, parent.GetChildCount());
@@ -40,6 +40,26 @@ public partial class ChartHierarchy : Tree {
 
                     Refresh();
                     break;
+                }
+                case 5: {
+                    Node node = GetNodeForItem(GetSelected());
+                    Node parent = node.GetParent();
+
+                    switch (node) {
+                        case Judgeline judgeline:
+                            judgeline.Detach();
+                            break;
+                        case TransformGroup group:
+                            group.Detach();
+                            break;
+                    }
+
+                    node.QueueFree();
+
+                    Refresh();
+                    break;
+                }
+
             }
         };
     }
@@ -159,6 +179,7 @@ public partial class ChartHierarchy : Tree {
         menu.SetItemDisabled(0, rootSelected);
         menu.SetItemDisabled(1, rootSelected);
         menu.SetItemDisabled(2, rootSelected);
+        menu.SetItemDisabled(5, rootSelected);
         menu.PopupOnParent(new(position, Vector2I.Zero));
     }
 
