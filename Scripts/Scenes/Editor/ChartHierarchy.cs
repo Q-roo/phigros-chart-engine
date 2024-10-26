@@ -7,6 +7,47 @@ namespace PCE.Editor;
 public partial class ChartHierarchy : Tree {
     private TreeItem root;
     private TreeItem lastSelected;
+    private readonly PopupMenu menu;
+
+    public ChartHierarchy() {
+        menu = new();
+        menu.AddItem("Rename");
+        menu.AddItem("Move up");
+        menu.AddItem("Move down");
+        menu.AddItem("Insert above (TODO)");
+        menu.AddItem("Insert below (TODO)");
+
+        menu.IndexPressed += idx => {
+            switch (idx) {
+                case 0:
+                    GetSelected().SetEditable(0, true);
+                    EditSelected();
+                    break;
+                case 1 or 2:
+                    // TODO: use MoveTo in chartcontext
+                    Node node = GetNodeForItem(GetSelected());
+                    Node parent = node.GetParent();
+                    int moveToIndex = Mathf.Clamp( node.GetIndex() + (idx == 1 ? -1 : 1), 0, parent.GetChildCount());
+
+                    switch (node) {
+                        case Judgeline judgeline:
+                            judgeline.MoveTo(moveToIndex);
+                            break;
+                        case TransformGroup group:
+                            group.MoveTo(moveToIndex);
+                            break;
+                    }
+
+                    Refresh();
+                    break;
+            }
+        };
+    }
+
+    public override void _EnterTree() {
+        GetViewport().AddChild(menu);
+    }
+
     public override void _Ready() {
         HideRoot = true;
         AllowReselect = true; // click again to start editing the name
@@ -33,8 +74,6 @@ public partial class ChartHierarchy : Tree {
 
             lastSelected = selected;
             Node node = GetNodeForItem(selected);
-            GD.Print(selected);
-            GD.Print(node.Name);
 
             if (node is Judgeline judgeline)
                 EditorContext.SelectedJudgeline = judgeline;
@@ -47,11 +86,24 @@ public partial class ChartHierarchy : Tree {
     }
 
     public override void _GuiInput(InputEvent @event) {
-        if (@event is not InputEventKey key || key.Keycode != Key.F2)
-            return;
+        switch (@event) {
+            case InputEventKey key:
+                if (key.Keycode != Key.F2 || !key.Pressed)
+                    return;
+                GetSelected().SetEditable(0, true);
+                EditSelected();
+                break;
+            case InputEventMouseButton mouseButton:
+                if (mouseButton.ButtonIndex != MouseButton.Right || !mouseButton.Pressed)
+                    return;
 
-        GetSelected().SetEditable(0, true);
-        EditSelected();
+                TreeItem item = GetItemAtPosition(mouseButton.Position) ?? root;
+                SetSelected(item, 0);
+                item.Select(0);
+                ShowPopup((Vector2I)mouseButton.GlobalPosition);
+                break;
+        }
+
     }
 
     public override bool _CanDropData(Vector2 atPosition, Variant data) {
@@ -102,16 +154,16 @@ public partial class ChartHierarchy : Tree {
         DisplayTransformGroup(root, EditorContext.Chart.rootGroup);
     }
 
-    private void DisplayTransformGroup(TreeItem parent, TransformGroup group) {
-        // foreach (Judgeline judgeline in group.judgelines)
-        //     CreateItem(parent).SetText(0, judgeline.Name);
+    private void ShowPopup(Vector2I position) {
+        bool rootSelected = GetSelected() == root;
+        menu.SetItemDisabled(0, rootSelected);
+        menu.SetItemDisabled(1, rootSelected);
+        menu.SetItemDisabled(2, rootSelected);
+        menu.PopupOnParent(new(position, Vector2I.Zero));
+    }
 
-        // foreach (TransformGroup subGroup in group.subGroups) {
-        //     TreeItem branch = CreateItem(parent);
-        //     branch.SetText(0, subGroup.name);
-        //     DisplayTransformGroup(branch, subGroup);
-        // }
-        foreach (Node child in group.GetChildren()) {
+    private void DisplayTransformGroup(TreeItem parent, TransformGroup group) {
+        foreach (Node child in group.childOrder) {
             TreeItem item = CreateItem(parent);
             item.SetText(0, child.Name);
 

@@ -9,6 +9,9 @@ namespace PCE.Chart;
 public partial class TransformGroup(StringName name) : Node2D, ICBExposeable {
     public readonly HashSet<TransformGroup> subGroups = [];
     public readonly HashSet<Judgeline> judgelines = [];
+    // the elements in subgroups and judgelines
+    // since the order matters
+    public readonly List<Node2D> childOrder = [];
     public readonly StringName name = name;
     public TransformGroup parentGroup;
 
