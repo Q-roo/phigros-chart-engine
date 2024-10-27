@@ -7,6 +7,39 @@ public partial class NotePlacementGridBackground : Panel {
     public delegate void ValueChanged();
     public event ValueChanged GridPositionChanged;
 
+    private partial class NoteDisplay : Node2D {
+        public NotePlacementGridBackground background;
+        public override void _Draw() {
+            DrawNotes();
+        }
+
+        private void DrawNotes() {
+        Judgeline judgeline = ChartContext.FocusedJudgeline;
+        if (judgeline is null)
+            return;
+
+        // test
+        if (judgeline.notes.Count == 0) {
+            new Note(NoteType.Tap, 0, 0, 1, true, 0).AttachTo(judgeline);
+            new Note(NoteType.Tap, 0.5, 0.5f, 1, true, 0).AttachTo(judgeline);
+            new Note(NoteType.Tap, 1, 1, 1, true, 0).AttachTo(judgeline);
+            new Note(NoteType.Tap, 2, -1, 1, true, 1).AttachTo(judgeline);
+        }
+
+        Rect2 rect = background.GetRect();
+        Vector2 rectCenter = rect.GetCenter();
+        float noteWidth = background.Columns != 1 ? rect.Size.X / (background.Columns - 1) : rect.Size.X;
+
+        foreach (Note note in judgeline.notes) {
+            double height = Mathf.Max(20, ChartContext.Chart.CalculateYPosition(note.holdTime, judgeline));
+            double yPosition = -ChartContext.Chart.CalculateYPosition(note.time, judgeline) - height + rect.Size.Y;
+            float xPosition = rectCenter.X + rectCenter.X * note.XOffset - noteWidth / 2f;
+            Vector2 position = new(xPosition, (float)yPosition);
+            DrawRect(new(position, noteWidth, (float)height), Colors.NavyBlue);
+        }
+    }
+    }
+
     private const float lineWidth = 5f;
     private const float baseLineOffset = lineWidth / 2f;
     private int _subBeatCount = 3;
@@ -31,14 +64,20 @@ public partial class NotePlacementGridBackground : Panel {
         set {
             _gridPosition = value;
             QueueRedraw();
+            display.Position = new(value.X, -value.Y);
             GridPositionChanged?.Invoke();
         }
     }
 
     private int VisibleBeats => Mathf.CeilToInt(GetRect().Size.Y / ChartGlobals.DistanceBetweenBeats);
+    private readonly NoteDisplay display;
 
     public NotePlacementGridBackground() {
         ClipContents = true;
+        display = new() {
+            background = this
+        };
+        AddChild(display);
     }
 
     public override void _Draw() {
@@ -67,7 +106,7 @@ public partial class NotePlacementGridBackground : Panel {
             }
         }
 
-        DrawNotes();
+        display.QueueRedraw();
     }
 
     public override void _GuiInput(InputEvent @event) {
@@ -76,32 +115,6 @@ public partial class NotePlacementGridBackground : Panel {
 
         GridPosition += new Vector2(mouse.Relative.X, -mouse.Relative.Y);
         AcceptEvent();
-    }
-
-    // TODO: flip y
-    private void DrawNotes() {
-        Judgeline judgeline = ChartContext.FocusedJudgeline;
-        if (judgeline is null)
-            return;
-
-        // test
-        if (judgeline.notes.Count == 0) {
-            new Note(NoteType.Tap, 0, 0, 1, true, 0).AttachTo(judgeline);
-            new Note(NoteType.Tap, 0.5, 0.5f, 1, true, 0).AttachTo(judgeline);
-            new Note(NoteType.Tap, 1, 1, 1, true, 0).AttachTo(judgeline);
-            new Note(NoteType.Tap, 2, -1, 1, true, 1).AttachTo(judgeline);
-        }
-
-        Rect2 rect = GetRect();
-        Vector2 rectCenter = rect.GetCenter();
-        float noteWidth = Columns != 1 ? rect.Size.X / (Columns - 1) : rect.Size.X;
-
-        foreach (Note note in judgeline.notes) {
-            double height = Mathf.Max(20, ChartContext.Chart.CalculateYPosition(note.holdTime, judgeline));
-            double yPosition = ChartContext.Chart.CalculateYPosition(note.time, judgeline);// + GetRect().Size.Y - height;
-            float xPosition = rectCenter.X + rectCenter.X * note.XOffset - noteWidth / 2f;
-            DrawRect(new(xPosition + GridPosition.X, (float)yPosition + GridPosition.Y, noteWidth, (float)height), Colors.NavyBlue);
-        }
     }
 
     private void DrawVLine(float x, Color color) {
