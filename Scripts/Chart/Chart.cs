@@ -87,7 +87,7 @@ public partial class Chart : Node2D, ICBExposeable {
             }
     }
 
-    private double CalculateYPosition(double time, Judgeline judgeline) {
+    public double CalculateYPosition(double time, Judgeline judgeline) {
         double y = 0;
 
         // times of bpm changes in seconds

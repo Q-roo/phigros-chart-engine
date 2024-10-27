@@ -21,6 +21,12 @@ config/icon="res://icon.svg"
 
 PCE_ErrorDialog="*res://Scripts/Scenes/Global/ErrorDialog.cs"
 
+[debug]
+
+file_logging/enable_file_logging=true
+file_logging/log_path="user://logs/pce.log"
+file_logging/max_log_files=10
+
 [display]
 
 window/size/viewport_width=1920

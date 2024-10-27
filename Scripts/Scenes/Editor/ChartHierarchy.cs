@@ -125,6 +125,7 @@ public partial class ChartHierarchy : Tree {
                     return;
                 GetSelected().SetEditable(0, true);
                 EditSelected();
+                AcceptEvent();
                 break;
             case InputEventMouseButton mouseButton:
                 if (mouseButton.ButtonIndex != MouseButton.Right || !mouseButton.Pressed)
@@ -134,6 +135,7 @@ public partial class ChartHierarchy : Tree {
                 SetSelected(item, 0);
                 item.Select(0);
                 ShowPopup((Vector2I)mouseButton.GlobalPosition);
+                AcceptEvent();
                 break;
         }
 

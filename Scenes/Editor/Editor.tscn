@@ -260,9 +260,6 @@ unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("9_7dakg")
 
-[node name="NoteGridNotes" type="Control" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/RightPanel"]
-layout_mode = 2
-
 [node name="BottomPanel" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout"]
 layout_mode = 2
 
