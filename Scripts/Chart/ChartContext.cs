@@ -18,10 +18,12 @@ public static class ChartContext {
     public static event OnTransformGroupAttachmentChanged TransformGroupDetached;
     public static event EventHandlerTransformGroup ChildOrderChanged;
     public static event EventHandlerJudgeline BPMListChanged;
+    public static event EventHandlerSimple FocusedJudgelineChanged;
 
     public static Chart Chart { get; private set; }
     public static int JudgelineCount { get; private set; }
     public static int NoteCount { get; private set; }
+    public static Judgeline FocusedJudgeline {get; private set;}
 
     public static void Reset() {
         Chart = null;
@@ -33,6 +35,11 @@ public static class ChartContext {
     public static void Initalize(Chart chart) {
         Chart = chart;
         Initalized?.Invoke();
+    }
+
+    public static void Focus(this Judgeline judgeline) {
+        FocusedJudgeline = judgeline;
+        FocusedJudgelineChanged?.Invoke();
     }
 
     public static void ChangeBPMChangeTime(this Judgeline judgeline, double currentTime, double newTime) {

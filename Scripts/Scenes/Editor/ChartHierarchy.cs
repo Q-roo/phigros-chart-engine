@@ -109,7 +109,7 @@ public partial class ChartHierarchy : Tree {
             Node node = GetNodeForItem(selected);
 
             if (node is Judgeline judgeline)
-                EditorContext.SelectedJudgeline = judgeline;
+                judgeline.Focus();
         };
         ItemEdited += () => {
             TreeItem edited = GetEdited();
