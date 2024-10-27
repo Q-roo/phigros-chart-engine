@@ -1,5 +1,4 @@
 using Godot;
-using PCE.Util;
 using System;
 
 namespace PCE.Editor;
@@ -56,6 +55,9 @@ public partial class MainMenuController : Control {
     }
 
     private static string[] GetProjects() {
+        if (!DirAccess.DirExistsAbsolute(Project.ProjectPathBase))
+            DirAccess.MakeDirAbsolute(Project.ProjectPathBase);
+
         return DirAccess.Open(Project.ProjectPathBase).GetDirectories();
     }
 
