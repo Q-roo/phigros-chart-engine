@@ -3,7 +3,7 @@ using PCE.Chart;
 
 namespace PCE.Editor;
 
-public partial class NotePlacementGrid : Panel {
+public partial class NotePlacementGridBackground : Panel {
     private const float lineWidth = 5f;
     private const float baseLineOffset = lineWidth / 2f;
     private int _subBeatCount = 3;
@@ -33,11 +33,9 @@ public partial class NotePlacementGrid : Panel {
 
     private int VisibleBeats => Mathf.CeilToInt(GetRect().Size.Y / ChartGlobals.DistanceBetweenBeats);
 
-    // public override void _Process(double delta) {
-    //     Vector2 position = GridPosition;
-    //     position.Y += (float)delta;
-    //     GridPosition = position;
-    // }
+    public NotePlacementGridBackground() {
+        ClipContents = true;
+    }
 
     public override void _Draw() {
         Rect2 rect = GetRect();
@@ -47,7 +45,7 @@ public partial class NotePlacementGrid : Panel {
         Vector2 offset = new(Mathf.Wrap(GridPosition.X, rect.Position.X, rect.End.X), Mathf.Wrap(GridPosition.Y, rect.Position.Y, rect.End.Y) + baseLineOffset);
         float subBeatDistance = ChartGlobals.DistanceBetweenBeats / (SubBeatCount + 1f);
 
-        DrawRect(rect, Colors.DimGray);
+        // DrawRect(rect, Colors.DimGray);
         if (Columns == 1)
             DrawVLine(rect.Size.X / 2f + offset.X, Colors.Yellow);
 

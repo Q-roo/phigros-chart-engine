@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://gusv6rnm1xsq"]
+[gd_scene load_steps=13 format=3 uid="uid://gusv6rnm1xsq"]
 
 [ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_4h052"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGridLineController.cs" id="6_5vtbr"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/GridPositionController.cs" id="7_bv0mt"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartHierarchy.cs" id="8_wy3jj"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGridBackground.cs" id="9_7dakg"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/BpmChanges.cs" id="9_whbfe"]
 
 [node name="Editor" type="Control"]
@@ -203,6 +204,7 @@ script = ExtResource("7_bv0mt")
 
 [node name="X" type="SpinBox" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar/HBoxContainer/VBoxContainer/GridPositionController"]
 layout_mode = 2
+size_flags_horizontal = 3
 step = 0.001
 allow_greater = true
 allow_lesser = true
@@ -210,7 +212,9 @@ prefix = "x"
 custom_arrow_step = 1.0
 
 [node name="Y" type="SpinBox" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/Bar/HBoxContainer/VBoxContainer/GridPositionController"]
+visible = false
 layout_mode = 2
+size_flags_horizontal = 3
 step = 0.001
 allow_greater = true
 allow_lesser = true
@@ -251,6 +255,14 @@ layout_mode = 2
 [node name="RightPanel" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer"]
 layout_mode = 2
 
+[node name="NotePlacementGridBackground" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/RightPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("9_7dakg")
+
+[node name="NoteGridNotes" type="Control" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/RightPanel"]
+layout_mode = 2
+
 [node name="BottomPanel" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout"]
 layout_mode = 2
 
@@ -263,6 +275,16 @@ tabs_position = 1
 layout_mode = 2
 script = ExtResource("9_whbfe")
 metadata/_tab_index = 0
+
+[node name="Judgeline events" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Note events" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
 
 [node name="Logs" type="Panel" parent="Controller/VBoxContainer/TabContainer"]
 visible = false
