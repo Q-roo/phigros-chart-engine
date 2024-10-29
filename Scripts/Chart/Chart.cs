@@ -85,6 +85,7 @@ public partial class Chart : Node2D, ICBExposeable {
 
     public void SeekTo(double timeInSeconds) {
         audioPlayer.Seek((float)timeInSeconds);
+        _previousMusicPlaybackPositionInSeconds = timeInSeconds;
     }
 
     public void SoftReset() {
@@ -93,6 +94,7 @@ public partial class Chart : Node2D, ICBExposeable {
         IsInitalized = false;
         CurrentTime = 0;
         DeltaTime = 0;
+        _previousMusicPlaybackPositionInSeconds = 0;
     }
 
     public void Reset() {

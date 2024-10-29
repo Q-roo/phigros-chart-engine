@@ -53,7 +53,7 @@ public partial class NotePlacementGridBackground : Panel {
 
         GridPosition = new(
             GridPosition.X,
-            (float)-chart.CalculateYPosition(chart.MusicPlaybackPositionInSeconds, ChartContext.FocusedJudgeline)
+            (float)chart.CalculateYPosition(chart.MusicPlaybackPositionInSeconds, ChartContext.FocusedJudgeline)
         );
     }
 
@@ -73,12 +73,13 @@ public partial class NotePlacementGridBackground : Panel {
             DrawVLine(distance.X * i + offset.X, Colors.Yellow);
 
         int visibleBeats = VisibleBeats;
-        for (int i = -visibleBeats; i < visibleBeats; i++) {
-            float y = i * ChartGlobals.DistanceBetweenBeats + offset.Y;
+        int visibleBeatsx2 = 2 * visibleBeats;
+        for (int i = 0; i < visibleBeatsx2; i++) {
+            float y = i * ChartGlobals.DistanceBetweenBeats - offset.Y;
             DrawHLine(y, Colors.Red);
 
             for (int j = 1; j <= SubBeatCount; j++) {
-                y += subBeatDistance;
+                y -= subBeatDistance;
                 DrawHLine(y, Colors.Green);
             }
         }
@@ -111,9 +112,14 @@ public partial class NotePlacementGridBackground : Panel {
         Vector2 rectCenter = rect.GetCenter();
         float noteWidth = Columns != 1 ? rect.Size.X / (Columns - 1) : rect.Size.X;
 
+        Transform2D transform = Transform2D.FlipY;
+        transform.Origin = new Vector2(0, Size.Y);
+
+        DrawSetTransformMatrix(transform);
+
         foreach (Note note in judgeline.notes) {
             double height = Mathf.Max(20, ChartContext.Chart.CalculateYPosition(note.holdTime, judgeline));
-            double yPosition = -ChartContext.Chart.CalculateYPosition(note.time, judgeline) + rect.Size.Y;
+            double yPosition = ChartContext.Chart.CalculateYPosition(note.time, judgeline);
             if (note.type != NoteType.Hold)
                 yPosition -= height / 2f;
 
