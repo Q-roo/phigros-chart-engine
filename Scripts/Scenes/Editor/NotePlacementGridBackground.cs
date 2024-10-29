@@ -12,6 +12,9 @@ public partial class NotePlacementGridBackground : Panel {
     private int _subBeatCount = 3;
     private int _columns = 8;
     private Vector2 _gridPosition;
+
+    private Transform2D UIToNote;
+
     public int SubBeatCount {
         get => _subBeatCount;
         set {
@@ -57,7 +60,23 @@ public partial class NotePlacementGridBackground : Panel {
         );
     }
 
+    public override void _GuiInput(InputEvent @event) {
+        switch (@event) {
+            case InputEventMouseButton mouseButton:
+                break;
+            case InputEventMouseMotion mouseMotion:
+                if ((mouseMotion.ButtonMask & MouseButtonMask.Middle) != 0) {
+                    GridPosition += new Vector2(mouseMotion.Relative.X, -mouseMotion.Relative.Y);
+                }
+
+                GD.Print(GetNoteIndexAtPosition(mouseMotion.Position));
+                AcceptEvent();
+                break;
+        }
+    }
+
     public override void _Draw() {
+        UpdateTransformMatrices();
         Rect2 rect = GetRect();
         Vector2 distance = rect.Size / new Vector2(Columns - 1, SubBeatCount);
         // do not add base line offset to x
@@ -87,12 +106,23 @@ public partial class NotePlacementGridBackground : Panel {
         DrawNotes();
     }
 
-    public override void _GuiInput(InputEvent @event) {
-        if (@event is not InputEventMouseMotion mouse || (mouse.ButtonMask & MouseButtonMask.Middle) == 0)
-            return;
+    private void UpdateTransformMatrices() {
+        UIToNote = new(Vector2.Right, Vector2.Up, new(0, Size.Y)); // flip y but origin is not at 0,0
+    }
 
-        GridPosition += new Vector2(mouse.Relative.X, -mouse.Relative.Y);
-        AcceptEvent();
+    private Rect2 GetNoteRect(Note note, Judgeline judgeline) {
+        Rect2 rect = GetRect();
+        Vector2 center = rect.GetCenter();
+
+        float noteWidth = Columns != 1 ? rect.Size.X / (Columns - 1) : rect.Size.X;
+        double height = Mathf.Max(20, ChartContext.Chart.CalculateYPosition(note.holdTime, judgeline));
+        float xPosition = center.X + center.X * note.XOffset - noteWidth / 2f;
+        double yPosition = ChartContext.Chart.CalculateYPosition(note.time, judgeline);
+
+        if (note.type != NoteType.Hold)
+            yPosition -= height / 2f;
+
+        return new(xPosition + GridPosition.X, (float)yPosition - GridPosition.Y, noteWidth, (float)height);
     }
 
     private void DrawNotes() {
@@ -108,24 +138,10 @@ public partial class NotePlacementGridBackground : Panel {
             new Note(NoteType.Tap, 2, -1, 1, true, 1).AttachTo(judgeline);
         }
 
-        Rect2 rect = GetRect();
-        Vector2 rectCenter = rect.GetCenter();
-        float noteWidth = Columns != 1 ? rect.Size.X / (Columns - 1) : rect.Size.X;
+        DrawSetTransformMatrix(UIToNote);
 
-        Transform2D transform = Transform2D.FlipY;
-        transform.Origin = new Vector2(0, Size.Y);
-
-        DrawSetTransformMatrix(transform);
-
-        foreach (Note note in judgeline.notes) {
-            double height = Mathf.Max(20, ChartContext.Chart.CalculateYPosition(note.holdTime, judgeline));
-            double yPosition = ChartContext.Chart.CalculateYPosition(note.time, judgeline);
-            if (note.type != NoteType.Hold)
-                yPosition -= height / 2f;
-
-            float xPosition = rectCenter.X + rectCenter.X * note.XOffset - noteWidth / 2f;
-            DrawRect(new(xPosition + GridPosition.X, (float)yPosition - GridPosition.Y, noteWidth, (float)height), Colors.NavyBlue);
-        }
+        foreach (Note note in judgeline.notes)
+            DrawRect(GetNoteRect(note, judgeline), Colors.NavyBlue);
     }
 
     private void DrawVLine(float x, Color color) {
@@ -139,5 +155,19 @@ public partial class NotePlacementGridBackground : Panel {
         // flip y
         y = rect.Size.Y - y;
         DrawLine(new(rect.Position.X, y), new(rect.End.X, y), color, lineWidth);
+    }
+
+    private int GetNoteIndexAtPosition(Vector2 position) {
+        Judgeline judgeline = ChartContext.FocusedJudgeline;
+        if (judgeline is null)
+            return -1;
+
+        for (int i = 0; i < judgeline.notes.Count; i++) {
+            Note note = judgeline.notes[i];
+            if (GetNoteRect(note, judgeline).HasPoint(UIToNote * position))
+                return i;
+        }
+
+        return -1;
     }
 }
