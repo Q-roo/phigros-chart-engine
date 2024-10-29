@@ -70,13 +70,17 @@ public partial class NotePlacementGridBackground : Panel {
                 if (mouseButton.ButtonIndex != MouseButton.Left)
                     return;
 
-                selectedIndex = mouseButton.Pressed ? GetNoteIndexAtPosition(mouseButton.Position) : -1;
                 if (mouseButton.Pressed) {
                     selectedIndex = GetNoteIndexAtPosition(mouseButton.Position);
                     if (selectedIndex != -1)
                         dragPosition = GetNoteRect(ChartContext.FocusedJudgeline.notes[selectedIndex], ChartContext.FocusedJudgeline).Position;
-                } else
+                } else {
+                    Note note = ChartContext.FocusedJudgeline[selectedIndex];
+                    Rect2 noteRect = GetNoteRect(note, ChartContext.FocusedJudgeline);
+                    noteRect.Position = dragPosition;
+                    note.XOffset = GetNoteXOffsetFromRect(noteRect);
                     selectedIndex = -1;
+                }
                 AcceptEvent();
                 break;
             case InputEventMouseMotion mouseMotion:
@@ -89,6 +93,7 @@ public partial class NotePlacementGridBackground : Panel {
                 else {
                     dragPosition += Transform2D.FlipY * mouseMotion.Relative;
                 }
+
                 AcceptEvent();
                 break;
         }
@@ -186,6 +191,13 @@ public partial class NotePlacementGridBackground : Panel {
             yPosition -= height / 2f;
 
         return new(xPosition + GridPosition.X, (float)yPosition - GridPosition.Y, noteWidth, (float)height);
+    }
+
+    private float GetNoteXOffsetFromRect(Rect2 noteRect) {
+        Rect2 rect = GetRect();
+        Vector2 center = rect.GetCenter();
+
+        return (noteRect.Position.X - GridPosition.X - center.X + noteRect.Size.X / 2f) / center.X;
     }
 
     private int GetNoteIndexAtPosition(Vector2 position) {
