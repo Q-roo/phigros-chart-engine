@@ -252,6 +252,21 @@ script = ExtResource("8_wy3jj")
 [node name="MiddlePanel" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/HSplitContainer"]
 layout_mode = 2
 
+[node name="ChartViewport" type="SubViewportContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/HSplitContainer/MiddlePanel"]
+layout_mode = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/HSplitContainer/MiddlePanel/ChartViewport"]
+disable_3d = true
+transparent_bg = true
+handle_input_locally = false
+gui_disable_input = true
+gui_embed_subwindows = true
+size = Vector2i(1592, 915)
+
+[node name="ChartRenderer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/HSplitContainer/MiddlePanel/ChartViewport/SubViewport" instance=ExtResource("5_dqvj3")]
+unique_name_in_owner = true
+
 [node name="RightPanel" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer"]
 layout_mode = 2
 
@@ -339,5 +354,3 @@ text = "Ln 0; Col 0"
 [node name="Tabs" type="TabBar" parent="Controller/VBoxContainer/Statusbar/HBoxContainer"]
 layout_mode = 2
 tab_alignment = 2
-
-[node name="ChartRenderer" parent="." instance=ExtResource("5_dqvj3")]

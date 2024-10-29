@@ -11,6 +11,6 @@ public partial class Editor : Control
     }
 
     public override void _Ready() {
-        EditorContext.Initalize(GetNode<Chart.Chart>("ChartRenderer"));
+        EditorContext.Initalize(GetNode<Chart.Chart>("%ChartRenderer"));
     }
 }
