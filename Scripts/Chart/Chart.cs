@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Godot;
 using PCE.Chart.Util;
 using PCE.Chartbuild.Bindings;
+using PCE.Editor;
 
 namespace PCE.Chart;
 
@@ -24,14 +25,46 @@ public partial class Chart : Node2D, ICBExposeable {
 
     private readonly AudioStreamPlayer audioPlayer = new();
 
-    public override void _Ready() {
+    public double MusicLengthInSeconds => audioPlayer.Stream.GetLength();
+    public double MusicPlaybackPositionInSeconds => audioPlayer.GetPlaybackPosition();
+    public float MusicVolume {
+        get => audioPlayer.VolumeDb;
+        set => audioPlayer.VolumeDb = value;
+    }
+
+    public Chart() {
         AddChild(audioPlayer);
         AddChild(rootGroup);
         Reset();
+        audioPlayer.Stream = Project.SelectedProject.Audio;
     }
 
-    public void SetMusic(AudioStream stream) {
-        audioPlayer.Stream = stream;
+    public void StartMusic() {
+        audioPlayer.Play();
+    }
+
+    public void StopMusic() {
+        audioPlayer.Stop();
+    }
+
+    public void PauseMusic() {
+        audioPlayer.StreamPaused = true;
+    }
+
+    public void ResumeMusic() {
+        audioPlayer.StreamPaused = false;
+    }
+
+    public void TogglePaused() {
+        audioPlayer.StreamPaused = !audioPlayer.StreamPaused;
+    }
+
+    public void TogglePlaying() {
+        audioPlayer.Playing = !audioPlayer.Playing;
+    }
+
+    public void SeekTo(double timeInSeconds) {
+        audioPlayer.Seek((float)timeInSeconds);
     }
 
     public void Reset() {
@@ -47,7 +80,6 @@ public partial class Chart : Node2D, ICBExposeable {
         activeEvents.Clear();
         signals.Clear();
         judgelines.Clear();
-        audioPlayer.Stream = null;
     }
 
     public void BeginRender() {

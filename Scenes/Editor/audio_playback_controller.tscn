@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://8gbqqb1g20bp"]
+[gd_scene load_steps=3 format=3 uid="uid://8gbqqb1g20bp"]
 
 [ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_7dbbo"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/AudioPlaybackController.cs" id="1_n6lak"]
 
 [node name="HBoxContainer" type="HBoxContainer"]
 custom_minimum_size = Vector2(300, 0)
@@ -11,6 +12,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+script = ExtResource("1_n6lak")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -28,6 +30,13 @@ ignore_texture_size = true
 stretch_mode = 5
 
 [node name="StartStop" type="TextureButton" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+texture_normal = ExtResource("1_7dbbo")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="PauseUnpause" type="TextureButton" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 texture_normal = ExtResource("1_7dbbo")

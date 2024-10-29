@@ -37,7 +37,6 @@ public static class EditorContext {
         ChartContext.Reset();
         ChartContext.Initalize(Chart);
         Chart.Reset();
-        Chart.SetMusic(Project.SelectedProject.Audio);
         // TODO: transform groups
         foreach (Judgeline judgeline in judgelineList) {
             judgeline.AttachTo(Chart.rootGroup);
