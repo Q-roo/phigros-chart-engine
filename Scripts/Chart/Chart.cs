@@ -18,6 +18,9 @@ public partial class Chart : Node2D, ICBExposeable {
     public bool IsInitalized { get; private set; }
     // TODO: current score
 
+    private ulong timeBegin;
+    private double audioDelay;
+
     private readonly List<Event> inactiveEvents = [];
     private readonly List<Event> activeEvents = [];
     public readonly HashSet<StringName> signals  = [];
@@ -26,7 +29,18 @@ public partial class Chart : Node2D, ICBExposeable {
     private readonly AudioStreamPlayer audioPlayer = new();
 
     public double MusicLengthInSeconds => audioPlayer.Stream.GetLength();
-    public double MusicPlaybackPositionInSeconds => audioPlayer.GetPlaybackPosition();
+
+    private double _previousMusicPlaybackPositionInSeconds;
+    public double MusicPlaybackPositionInSeconds {
+        get {
+            double time = audioPlayer.GetPlaybackPosition() + AudioServer.GetTimeSinceLastMix() - AudioServer.GetOutputLatency();
+            if (time < _previousMusicPlaybackPositionInSeconds)
+                return _previousMusicPlaybackPositionInSeconds;
+
+            _previousMusicPlaybackPositionInSeconds = time;
+            return time;
+        }
+    }
     public float MusicVolume {
         get => audioPlayer.VolumeDb;
         set => audioPlayer.VolumeDb = value;
@@ -41,6 +55,8 @@ public partial class Chart : Node2D, ICBExposeable {
 
     public void StartMusic() {
         audioPlayer.Play();
+        SoftReset();
+        BeginRender();
     }
 
     public void StopMusic() {
@@ -61,21 +77,30 @@ public partial class Chart : Node2D, ICBExposeable {
 
     public void TogglePlaying() {
         audioPlayer.Playing = !audioPlayer.Playing;
+        if (audioPlayer.Playing) {
+            SoftReset();
+            BeginRender();
+        }
     }
 
     public void SeekTo(double timeInSeconds) {
         audioPlayer.Seek((float)timeInSeconds);
     }
 
-    public void Reset() {
-        foreach (Node child in rootGroup.GetChildren()) {
-            child.Free(); // the script's execution will start in this frame
-        }
-
+    public void SoftReset() {
         SetProcess(false);
         JustStarted = false;
         IsInitalized = false;
         CurrentTime = 0;
+        DeltaTime = 0;
+    }
+
+    public void Reset() {
+        SoftReset();
+        foreach (Node child in rootGroup.GetChildren()) {
+            child.Free(); // the script's execution will start in this frame
+        }
+
         inactiveEvents.Clear();
         activeEvents.Clear();
         signals.Clear();
@@ -83,6 +108,8 @@ public partial class Chart : Node2D, ICBExposeable {
     }
 
     public void BeginRender() {
+        timeBegin = Time.GetTicksUsec();
+        audioDelay = AudioServer.GetTimeToNextMix() + AudioServer.GetOutputLatency();
         SetProcess(true);
         // add on start events
         JustStarted = true;
@@ -151,8 +178,13 @@ public partial class Chart : Node2D, ICBExposeable {
     }
 
     public override void _Process(double delta) {
-        CurrentTime += delta;
-        DeltaTime = delta;
+        double time = (Time.GetTicksUsec() - timeBegin) / 1000000.0;
+        time -= audioDelay;
+        if (time < 0)
+            return;
+
+        DeltaTime = time - CurrentTime;
+        CurrentTime = time;
         AddActiveEvents();
         signals.Clear();
         FlushEvents();

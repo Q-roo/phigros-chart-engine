@@ -35,10 +35,26 @@ public partial class NotePlacementGridBackground : Panel {
         }
     }
 
+    private Chart.Chart chart;
+
     private int VisibleBeats => Mathf.CeilToInt(GetRect().Size.Y / ChartGlobals.DistanceBetweenBeats);
 
     public NotePlacementGridBackground() {
         ClipContents = true;
+    }
+
+    public override void _Ready() {
+        chart = GetNode<Chart.Chart>("%ChartRenderer");
+    }
+
+    public override void _Process(double delta) {
+        if (chart is null || ChartContext.FocusedJudgeline is null)
+            return;
+
+        GridPosition = new(
+            GridPosition.X,
+            (float)-chart.CalculateYPosition(chart.MusicPlaybackPositionInSeconds, ChartContext.FocusedJudgeline)
+        );
     }
 
     public override void _Draw() {
