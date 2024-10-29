@@ -60,16 +60,35 @@ public partial class NotePlacementGridBackground : Panel {
         );
     }
 
+    private int hoveredIndex = -1;
+    private int selectedIndex = -1;
+    private Vector2 dragPosition;
+
     public override void _GuiInput(InputEvent @event) {
         switch (@event) {
             case InputEventMouseButton mouseButton:
+                if (mouseButton.ButtonIndex != MouseButton.Left)
+                    return;
+
+                selectedIndex = mouseButton.Pressed ? GetNoteIndexAtPosition(mouseButton.Position) : -1;
+                if (mouseButton.Pressed) {
+                    selectedIndex = GetNoteIndexAtPosition(mouseButton.Position);
+                    if (selectedIndex != -1)
+                        dragPosition = GetNoteRect(ChartContext.FocusedJudgeline.notes[selectedIndex], ChartContext.FocusedJudgeline).Position;
+                } else
+                    selectedIndex = -1;
+                AcceptEvent();
                 break;
             case InputEventMouseMotion mouseMotion:
                 if ((mouseMotion.ButtonMask & MouseButtonMask.Middle) != 0) {
                     GridPosition += new Vector2(mouseMotion.Relative.X, -mouseMotion.Relative.Y);
                 }
 
-                GD.Print(GetNoteIndexAtPosition(mouseMotion.Position));
+                if (selectedIndex == -1)
+                    hoveredIndex = GetNoteIndexAtPosition(mouseMotion.Position);
+                else {
+                    dragPosition += Transform2D.FlipY * mouseMotion.Relative;
+                }
                 AcceptEvent();
                 break;
         }
@@ -106,25 +125,6 @@ public partial class NotePlacementGridBackground : Panel {
         DrawNotes();
     }
 
-    private void UpdateTransformMatrices() {
-        UIToNote = new(Vector2.Right, Vector2.Up, new(0, Size.Y)); // flip y but origin is not at 0,0
-    }
-
-    private Rect2 GetNoteRect(Note note, Judgeline judgeline) {
-        Rect2 rect = GetRect();
-        Vector2 center = rect.GetCenter();
-
-        float noteWidth = Columns != 1 ? rect.Size.X / (Columns - 1) : rect.Size.X;
-        double height = Mathf.Max(20, ChartContext.Chart.CalculateYPosition(note.holdTime, judgeline));
-        float xPosition = center.X + center.X * note.XOffset - noteWidth / 2f;
-        double yPosition = ChartContext.Chart.CalculateYPosition(note.time, judgeline);
-
-        if (note.type != NoteType.Hold)
-            yPosition -= height / 2f;
-
-        return new(xPosition + GridPosition.X, (float)yPosition - GridPosition.Y, noteWidth, (float)height);
-    }
-
     private void DrawNotes() {
         Judgeline judgeline = ChartContext.FocusedJudgeline;
         if (judgeline is null)
@@ -140,8 +140,24 @@ public partial class NotePlacementGridBackground : Panel {
 
         DrawSetTransformMatrix(UIToNote);
 
-        foreach (Note note in judgeline.notes)
-            DrawRect(GetNoteRect(note, judgeline), Colors.NavyBlue);
+        for (int i = 0; i < judgeline.notes.Count; i++) {
+            Note note = judgeline.notes[i];
+            Rect2 noteRect = GetNoteRect(note, judgeline);
+
+            if (i == selectedIndex) {
+                DrawRect(noteRect.Grow(1), Colors.Crimson, false);
+                Rect2 dragRect = noteRect;
+                dragRect.Position = dragPosition;
+                DrawRect(dragRect, Colors.NavyBlue / 1.5f);
+            } else if (i == hoveredIndex)
+                DrawRect(noteRect.Grow(1), Colors.Cyan, false);
+
+            DrawRect(noteRect, Colors.NavyBlue);
+        }
+    }
+
+    private void UpdateTransformMatrices() {
+        UIToNote = new(Vector2.Right, Vector2.Up, new(0, Size.Y)); // flip y but origin is not at 0,0
     }
 
     private void DrawVLine(float x, Color color) {
@@ -155,6 +171,21 @@ public partial class NotePlacementGridBackground : Panel {
         // flip y
         y = rect.Size.Y - y;
         DrawLine(new(rect.Position.X, y), new(rect.End.X, y), color, lineWidth);
+    }
+
+    private Rect2 GetNoteRect(Note note, Judgeline judgeline) {
+        Rect2 rect = GetRect();
+        Vector2 center = rect.GetCenter();
+
+        float noteWidth = Columns != 1 ? rect.Size.X / (Columns - 1) : rect.Size.X;
+        double height = Mathf.Max(20, ChartContext.Chart.CalculateYPosition(note.holdTime, judgeline));
+        float xPosition = center.X + center.X * note.XOffset - noteWidth / 2f;
+        double yPosition = ChartContext.Chart.CalculateYPosition(note.time, judgeline);
+
+        if (note.type != NoteType.Hold)
+            yPosition -= height / 2f;
+
+        return new(xPosition + GridPosition.X, (float)yPosition - GridPosition.Y, noteWidth, (float)height);
     }
 
     private int GetNoteIndexAtPosition(Vector2 position) {
