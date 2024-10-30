@@ -11,6 +11,8 @@ public partial class NotePlacementGrid : Panel {
 
     private const float lineWidth = 5f;
     private const float baseLineOffset = lineWidth / 2f;
+    private const float minNoteWidth = 20;
+
     private int _subBeatCount = 3;
     private int _columns = 8;
     private Vector2 _gridPosition;
@@ -72,13 +74,30 @@ public partial class NotePlacementGrid : Panel {
                 if (mouseButton.ButtonIndex != MouseButton.Left)
                     return;
 
+                Judgeline judgeline = ChartContext.FocusedJudgeline;
+                if (judgeline is null) {
+                    AcceptEvent();
+                    return;
+                }
+
                 if (mouseButton.Pressed) {
                     selectedIndex = GetNoteIndexAtPosition(mouseButton.Position);
                     if (selectedIndex != -1)
-                        dragPosition = GetNoteRect(ChartContext.FocusedJudgeline.notes[selectedIndex], ChartContext.FocusedJudgeline).Position;
+                        dragPosition = GetNoteRect(judgeline.notes[selectedIndex], judgeline).Position;
+                    else {
+                        Rect2 noteRect = new(UIToNote * mouseButton.Position, Vector2.Zero);
+                        Note note = new(NoteType.Tap, GetNoteTimeFromRect(noteRect, false), GetNoteXOffsetFromRect(noteRect), 1, true, 0);
+                        note.AttachTo(judgeline);
+                        selectedIndex = judgeline.notes.Count - 1;
+                        dragPosition = noteRect.Position;
+                        // by making the width of the rect 0, the center of the note will be at the mouse
+                        // but now, the drag position has to be offset manually
+                        dragPosition.X -= GetNoteDrawWidth() / 2f;
+                        dragPosition.Y -= minNoteWidth / 2f;
+                    }
                 } else {
-                    Note note = ChartContext.FocusedJudgeline[selectedIndex];
-                    Rect2 noteRect = GetNoteRect(note, ChartContext.FocusedJudgeline);
+                    Note note = judgeline.notes[selectedIndex];
+                    Rect2 noteRect = GetNoteRect(note, judgeline);
                     noteRect.Position = dragPosition;
                     note.XOffset = GetNoteXOffsetFromRect(noteRect);
                     note.time = GetNoteTimeFromRect(noteRect, note.type != NoteType.Hold);
@@ -181,14 +200,16 @@ public partial class NotePlacementGrid : Panel {
         DrawLine(new(rect.Position.X, y), new(rect.End.X, y), color, lineWidth);
     }
 
+    private float GetNoteDrawWidth() => Columns != 1 ? Size.X / (Columns - 1) : Size.X;
+
     private Rect2 GetNoteRect(Note note, Judgeline judgeline) {
         Rect2 rect = GetRect();
         Vector2 center = rect.GetCenter();
 
-        float noteWidth = Columns != 1 ? rect.Size.X / (Columns - 1) : rect.Size.X;
-        double height = Mathf.Max(20, ChartContext.Chart.CalculateYPosition(note.holdTime, judgeline));
+        float noteWidth = GetNoteDrawWidth();
         float xPosition = center.X + center.X * note.XOffset - noteWidth / 2f;
         double yPosition = ChartContext.Chart.CalculateYPosition(note.time, judgeline);
+        double height = Mathf.Max(minNoteWidth, ChartContext.Chart.CalculateYPosition(note.time + note.holdTime, judgeline) - yPosition);
 
         if (note.type != NoteType.Hold)
             yPosition -= height / 2f;
