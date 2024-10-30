@@ -11,7 +11,7 @@ public partial class NotePlacementGrid : Panel {
 
     private const float lineWidth = 5f;
     private const float baseLineOffset = lineWidth / 2f;
-    private const float minNoteWidth = 20;
+    private const float minNoteHeight = 20;
 
     private int _subBeatCount = 3;
     private int _columns = 8;
@@ -68,6 +68,8 @@ public partial class NotePlacementGrid : Panel {
     private int hoveredIndex = -1;
     private int selectedIndex = -1;
     private Vector2 dragPosition;
+    private NoteType placementType = NoteType.Tap;
+    private bool holdTimeMove;
 
     public override void _GuiInput(InputEvent @event) {
         if (@event is InputEventMouse mouse && GetRect().HasPoint(mouse.Position) && !HasFocus())
@@ -78,6 +80,18 @@ public partial class NotePlacementGrid : Panel {
                 if (key.Keycode == Key.Escape && key.Pressed) {
                     selectedIndex = -1;
                     hoveredIndex = -1;
+                    AcceptEvent();
+                } else if (key.Keycode == Key.Key1) {
+                    placementType = NoteType.Tap;
+                    AcceptEvent();
+                } else if (key.Keycode == Key.Key2) {
+                    placementType = NoteType.Drag;
+                    AcceptEvent();
+                } else if (key.Keycode == Key.Key3) {
+                    placementType = NoteType.Hold;
+                    AcceptEvent();
+                } else if (key.Keycode == Key.Key4) {
+                    placementType = NoteType.Flick;
                     AcceptEvent();
                 }
                 break;
@@ -93,25 +107,43 @@ public partial class NotePlacementGrid : Panel {
 
                 if (mouseButton.Pressed) {
                     selectedIndex = GetNoteIndexAtPosition(mouseButton.Position);
-                    if (selectedIndex != -1)
-                        dragPosition = GetNoteRect(judgeline.notes[selectedIndex], judgeline).Position;
-                    else {
-                        Rect2 noteRect = new(UIToNote * mouseButton.Position, Vector2.Zero);
-                        Note note = new(NoteType.Tap, GetNoteTimeFromRect(noteRect, false), GetNoteXOffsetFromRect(noteRect), 1, true, 0);
+                    Note note;
+                    Rect2 noteRect;
+
+                    if (selectedIndex != -1) {
+                        note = judgeline.notes[selectedIndex];
+                        noteRect = GetNoteRect(note, judgeline);
+                        dragPosition = noteRect.Position;
+                    } else {
+                        noteRect = new(UIToNote * mouseButton.Position, Vector2.Zero);
+                        note = new(placementType, GetNoteTimeFromRect(noteRect, false), GetNoteXOffsetFromRect(noteRect), 1, true, 0);
                         note.AttachTo(judgeline);
                         selectedIndex = judgeline.notes.Count - 1;
                         dragPosition = noteRect.Position;
                         // by making the width of the rect 0, the center of the note will be at the mouse
                         // but now, the drag position has to be offset manually
                         dragPosition.X -= GetNoteDrawWidth() / 2f;
-                        dragPosition.Y -= minNoteWidth / 2f;
+                        dragPosition.Y -= minNoteHeight / 2f;
                     }
-                } else if (selectedIndex != -1){
+
+                    holdTimeMove = note.type == NoteType.Hold && mouseButton.ShiftPressed;
+                    if (holdTimeMove)
+                        dragPosition.Y = noteRect.Size.Y;
+                } else if (selectedIndex != -1) {
                     Note note = judgeline.notes[selectedIndex];
                     Rect2 noteRect = GetNoteRect(note, judgeline);
-                    noteRect.Position = dragPosition;
-                    note.XOffset = GetNoteXOffsetFromRect(noteRect);
-                    note.time = GetNoteTimeFromRect(noteRect, note.type != NoteType.Hold);
+
+                    if (holdTimeMove) {
+                        Vector2 size = noteRect.Size;
+                        size.Y = Mathf.Max(0, dragPosition.Y);
+                        noteRect.Size = size;
+                        note.holdTime = GetNoteTimeFromRect(new(noteRect.End, noteRect.Size), false) - note.time;
+                    } else {
+                        noteRect.Position = dragPosition;
+                        note.XOffset = GetNoteXOffsetFromRect(noteRect);
+                        note.time = GetNoteTimeFromRect(noteRect, note.type != NoteType.Hold);
+                    }
+
                     selectedIndex = -1;
                 }
                 AcceptEvent();
@@ -123,9 +155,8 @@ public partial class NotePlacementGrid : Panel {
 
                 if (selectedIndex == -1)
                     hoveredIndex = GetNoteIndexAtPosition(mouseMotion.Position);
-                else {
+                else
                     dragPosition += Transform2D.FlipY * mouseMotion.Relative;
-                }
 
                 AcceptEvent();
                 break;
@@ -173,7 +204,7 @@ public partial class NotePlacementGrid : Panel {
             new Note(NoteType.Tap, 0, 0, 1, true, 0).AttachTo(judgeline);
             new Note(NoteType.Tap, 0.5, 0.5f, 1, true, 0).AttachTo(judgeline);
             new Note(NoteType.Tap, 1, 1, 1, true, 0).AttachTo(judgeline);
-            new Note(NoteType.Tap, 2, -1, 1, true, 1).AttachTo(judgeline);
+            new Note(NoteType.Hold, 2, -1, 1, true, 1).AttachTo(judgeline);
         }
 
         DrawSetTransformMatrix(UIToNote);
@@ -181,16 +212,24 @@ public partial class NotePlacementGrid : Panel {
         for (int i = 0; i < judgeline.notes.Count; i++) {
             Note note = judgeline.notes[i];
             Rect2 noteRect = GetNoteRect(note, judgeline);
+            Color color = GetNoteColor(note.type);
+
+            DrawRect(noteRect, color);
 
             if (i == selectedIndex) {
                 DrawRect(noteRect.Grow(1), Colors.Crimson, false);
                 Rect2 dragRect = noteRect;
-                dragRect.Position = dragPosition;
-                DrawRect(dragRect, Colors.NavyBlue / 1.5f);
+
+                if (holdTimeMove) {
+                    Vector2 size = dragRect.Size;
+                    size.Y = Mathf.Max(minNoteHeight, dragPosition.Y);
+                    dragRect.Size = size;
+                } else
+                    dragRect.Position = dragPosition;
+
+                DrawRect(dragRect, color / 1.5f);
             } else if (i == hoveredIndex)
                 DrawRect(noteRect.Grow(1), Colors.Cyan, false);
-
-            DrawRect(noteRect, Colors.NavyBlue);
         }
     }
 
@@ -220,7 +259,7 @@ public partial class NotePlacementGrid : Panel {
         float noteWidth = GetNoteDrawWidth();
         float xPosition = center.X + center.X * note.XOffset - noteWidth / 2f;
         double yPosition = ChartContext.Chart.CalculateYPosition(note.time, judgeline);
-        double height = Mathf.Max(minNoteWidth, ChartContext.Chart.CalculateYPosition(note.time + note.holdTime, judgeline) - yPosition);
+        double height = Mathf.Max(minNoteHeight, ChartContext.Chart.CalculateYPosition(note.time + note.holdTime, judgeline) - yPosition);
 
         if (note.type != NoteType.Hold)
             yPosition -= height / 2f;
@@ -264,6 +303,13 @@ public partial class NotePlacementGrid : Panel {
 
         throw new UnreachableException();
     }
+
+    private Color GetNoteColor(NoteType type) => type switch {
+        NoteType.Tap or NoteType.Hold => Colors.NavyBlue,
+        NoteType.Drag => Colors.Yellow,
+        NoteType.Flick => Colors.Red,
+        _ => Colors.Black
+    };
 
     private int GetNoteIndexAtPosition(Vector2 position) {
         Judgeline judgeline = ChartContext.FocusedJudgeline;
