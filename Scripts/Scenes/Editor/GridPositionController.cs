@@ -5,12 +5,12 @@ namespace PCE.Editor;
 public partial class GridPositionController : HBoxContainer {
     private SpinBox x;
     private SpinBox y;
-    private NotePlacementGridBackground grid;
+    private NotePlacementGrid grid;
 
     public override void _Ready() {
         x = GetNode<SpinBox>("X");
         y = GetNode<SpinBox>("Y");
-        grid = GetNode<NotePlacementGridBackground>("%NotePlacementGridBackground");
+        grid = GetNode<NotePlacementGrid>("%NotePlacementGridBackground");
 
         x.SetValueNoSignal(grid.GridPosition.X);
         y.SetValueNoSignal(grid.GridPosition.Y);

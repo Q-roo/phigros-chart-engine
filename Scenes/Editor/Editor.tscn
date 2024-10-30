@@ -10,8 +10,8 @@
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGridLineController.cs" id="6_5vtbr"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/GridPositionController.cs" id="7_bv0mt"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartHierarchy.cs" id="8_wy3jj"]
-[ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGridBackground.cs" id="9_7dakg"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/BpmChanges.cs" id="9_whbfe"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGrid.cs" id="10_r7pcq"]
 
 [node name="Editor" type="Control"]
 layout_mode = 3
@@ -275,7 +275,7 @@ layout_mode = 2
 [node name="NotePlacementGridBackground" type="Panel" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/RightPanel"]
 unique_name_in_owner = true
 layout_mode = 2
-script = ExtResource("9_7dakg")
+script = ExtResource("10_r7pcq")
 
 [node name="BottomPanel" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout"]
 layout_mode = 2

@@ -5,7 +5,7 @@ using PCE.Chart.Util;
 
 namespace PCE.Editor;
 
-public partial class NotePlacementGridBackground : Panel {
+public partial class NotePlacementGrid : Panel {
     public delegate void ValueChanged();
     public event ValueChanged GridPositionChanged;
 
@@ -44,7 +44,7 @@ public partial class NotePlacementGridBackground : Panel {
 
     private int VisibleBeats => Mathf.CeilToInt(GetRect().Size.Y / ChartGlobals.DistanceBetweenBeats);
 
-    public NotePlacementGridBackground() {
+    public NotePlacementGrid() {
         ClipContents = true;
     }
 

@@ -6,12 +6,12 @@ public partial class NotePlacementGridLineController : HBoxContainer
 {
     private SpinBox rows;
     private SpinBox columns;
-    private NotePlacementGridBackground grid;
+    private NotePlacementGrid grid;
 
     public override void _Ready() {
         rows = GetNode<SpinBox>("Rows");
         columns = GetNode<SpinBox>("Columns");
-        grid = GetNode<NotePlacementGridBackground>("%NotePlacementGridBackground");
+        grid = GetNode<NotePlacementGrid>("%NotePlacementGridBackground");
 
         rows.SetValueNoSignal(grid.SubBeatCount);
         columns.SetValueNoSignal(grid.Columns);
