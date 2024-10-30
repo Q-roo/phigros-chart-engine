@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using Godot;
 using PCE.Chart;
+using PCE.Chart.Util;
 
 namespace PCE.Editor;
 
@@ -79,6 +81,7 @@ public partial class NotePlacementGridBackground : Panel {
                     Rect2 noteRect = GetNoteRect(note, ChartContext.FocusedJudgeline);
                     noteRect.Position = dragPosition;
                     note.XOffset = GetNoteXOffsetFromRect(noteRect);
+                    note.time = GetNoteTimeFromRect(noteRect, note.type != NoteType.Hold);
                     selectedIndex = -1;
                 }
                 AcceptEvent();
@@ -198,6 +201,36 @@ public partial class NotePlacementGridBackground : Panel {
         Vector2 center = rect.GetCenter();
 
         return (noteRect.Position.X - GridPosition.X - center.X + noteRect.Size.X / 2f) / center.X;
+    }
+
+    private double GetNoteTimeFromRect(Rect2 noteRect, bool isNotHold) {
+        double distance = noteRect.Position.Y + GridPosition.Y;
+        if (isNotHold)
+            distance += noteRect.Size.Y / 2f;
+
+        Judgeline judgeline = ChartContext.FocusedJudgeline;
+        double[] keys = [.. judgeline.bpmChanges.Keys];
+        double accHeight = 0;
+        double accTime = 0;
+
+        if (keys.Length == 1)
+            return (distance / ChartGlobals.DistanceBetweenBeats).ToSecond(judgeline.bpmChanges[0]);
+
+        for (int i = 0; i < keys.Length; i++) {
+            double key = keys[i];
+            double range = i == keys.Length - 1 ? double.PositiveInfinity : keys[i + 1] - key;
+            double maxHeight = range.ToBeat(judgeline.bpmChanges[key]) * ChartGlobals.DistanceBetweenBeats;
+
+            if (accHeight + maxHeight > distance) {
+                double height = distance - accHeight;
+                return accTime + (height / ChartGlobals.DistanceBetweenBeats).ToSecond(judgeline.bpmChanges[key]);
+            }
+
+            accHeight += maxHeight;
+            accTime += range;
+        }
+
+        throw new UnreachableException();
     }
 
     private int GetNoteIndexAtPosition(Vector2 position) {
