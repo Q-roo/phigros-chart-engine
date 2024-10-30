@@ -48,6 +48,7 @@ public partial class NotePlacementGrid : Panel {
 
     public NotePlacementGrid() {
         ClipContents = true;
+        FocusMode = FocusModeEnum.All;
     }
 
     public override void _Ready() {
@@ -69,7 +70,17 @@ public partial class NotePlacementGrid : Panel {
     private Vector2 dragPosition;
 
     public override void _GuiInput(InputEvent @event) {
+        if (@event is InputEventMouse mouse && GetRect().HasPoint(mouse.Position) && !HasFocus())
+            GrabFocus();
+
         switch (@event) {
+            case InputEventKey key:
+                if (key.Keycode == Key.Escape && key.Pressed) {
+                    selectedIndex = -1;
+                    hoveredIndex = -1;
+                    AcceptEvent();
+                }
+                break;
             case InputEventMouseButton mouseButton:
                 if (mouseButton.ButtonIndex != MouseButton.Left)
                     return;
@@ -95,7 +106,7 @@ public partial class NotePlacementGrid : Panel {
                         dragPosition.X -= GetNoteDrawWidth() / 2f;
                         dragPosition.Y -= minNoteWidth / 2f;
                     }
-                } else {
+                } else if (selectedIndex != -1){
                     Note note = judgeline.notes[selectedIndex];
                     Rect2 noteRect = GetNoteRect(note, judgeline);
                     noteRect.Position = dragPosition;
