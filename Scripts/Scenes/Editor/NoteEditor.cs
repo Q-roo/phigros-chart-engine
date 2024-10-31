@@ -95,6 +95,7 @@ public partial class NoteEditor : PanelContainer {
         speed.Editable = isNotNull;
         xOffset.Editable = isNotNull;
         xOffsetSlider.Editable = isNotNull;
+        isAbove.Disabled = isNull;
 
         if (isNull)
             return;
