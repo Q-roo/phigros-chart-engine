@@ -44,6 +44,16 @@ public partial class Note : NineSliceSprite, ICBExposeable {
         this.holdTime = holdTime;
     }
 
+    public override bool _Set(StringName property, Variant value) {
+        bool success = base._Set(property, value);
+        if (success)
+            NotifyPropertyListChanged();
+        
+        GD.Print($"[success={success}]set \"{property}\" to {value}");
+
+        return success;
+    }
+
     public override void _Ready() {
         // TODO: note sprites
         Texture = GD.Load<Texture2D>("res://icon.svg");

@@ -164,6 +164,10 @@ public partial class NotePlacementGrid : Panel {
                         note.time = GetNoteTimeFromRect(noteRect, note.type != NoteType.Hold);
                     }
 
+                    // note editor updates when the focused note changes
+                    // and this is less of a pain to do than implementing on property list changed
+                    note.Focus();
+
                     selectedIndex = -1;
                 }
                 AcceptEvent();
@@ -279,9 +283,11 @@ public partial class NotePlacementGrid : Panel {
         float noteWidth = GetNoteDrawWidth();
         float xPosition = center.X + center.X * note.XOffset - noteWidth / 2f;
         double yPosition = ChartContext.Chart.CalculateYPosition(note.time, judgeline);
-        double height = Mathf.Max(minNoteHeight, ChartContext.Chart.CalculateYPosition(note.time + note.holdTime, judgeline) - yPosition);
+        double height = minNoteHeight;
 
-        if (note.type != NoteType.Hold)
+        if (note.type == NoteType.Hold)
+            height = Mathf.Max(minNoteHeight, ChartContext.Chart.CalculateYPosition(note.time + note.holdTime, judgeline) - yPosition);
+        else
             yPosition -= height / 2f;
 
         return new(xPosition + GridPosition.X, (float)yPosition - GridPosition.Y, noteWidth, (float)height);

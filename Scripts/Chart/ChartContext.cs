@@ -20,7 +20,7 @@ public static class ChartContext {
     public static event EventHandlerTransformGroup ChildOrderChanged;
     public static event EventHandlerJudgeline BPMListChanged;
     public static event EventHandlerSimple FocusedJudgelineChanged;
-    public static event EventHandlerNote FocusedNoteChanged;
+    public static event EventHandlerSimple FocusedNoteChanged;
 
     public static Chart Chart { get; private set; }
     public static int JudgelineCount { get; private set; }
@@ -47,7 +47,7 @@ public static class ChartContext {
 
     public static void Focus(this Note note) {
         FocusedNote = note;
-        FocusedNoteChanged?.Invoke(note);
+        FocusedNoteChanged?.Invoke();
     }
 
     public static void ChangeBPMChangeTime(this Judgeline judgeline, double currentTime, double newTime) {
