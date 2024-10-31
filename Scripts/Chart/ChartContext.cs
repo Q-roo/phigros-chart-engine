@@ -6,6 +6,7 @@ namespace PCE.Chart;
 public static class ChartContext {
     public delegate void EventHandlerSimple();
     public delegate void EventHandlerJudgeline(Judgeline judgeline);
+    public delegate void EventHandlerNote(Note note);
     public delegate void EventHandlerTransformGroup(TransformGroup transformGroup);
     public delegate void OnJudgelineAttachmentChanged(Judgeline judgeline, TransformGroup parent);
     public delegate void OnTransformGroupAttachmentChanged(TransformGroup transformGroup, TransformGroup parent);
@@ -19,11 +20,13 @@ public static class ChartContext {
     public static event EventHandlerTransformGroup ChildOrderChanged;
     public static event EventHandlerJudgeline BPMListChanged;
     public static event EventHandlerSimple FocusedJudgelineChanged;
+    public static event EventHandlerNote FocusedNoteChanged;
 
     public static Chart Chart { get; private set; }
     public static int JudgelineCount { get; private set; }
     public static int NoteCount { get; private set; }
     public static Judgeline FocusedJudgeline {get; private set;}
+    public static Note FocusedNote {get; private set;}
 
     public static void Reset() {
         Chart = null;
@@ -40,6 +43,11 @@ public static class ChartContext {
     public static void Focus(this Judgeline judgeline) {
         FocusedJudgeline = judgeline;
         FocusedJudgelineChanged?.Invoke();
+    }
+
+    public static void Focus(this Note note) {
+        FocusedNote = note;
+        FocusedNoteChanged?.Invoke(note);
     }
 
     public static void ChangeBPMChangeTime(this Judgeline judgeline, double currentTime, double newTime) {

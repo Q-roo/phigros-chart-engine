@@ -96,11 +96,18 @@ public partial class NotePlacementGrid : Panel {
                     placementType = NoteType.Flick;
                     AcceptEvent();
                 } else if (key.Keycode == Key.Delete || key.Keycode == Key.Backspace) {
+                    Note note = null;
                     if (judgeline is not null)
                         if (selectedIndex != -1)
-                            judgeline.notes[selectedIndex].Detach();
+                            note = judgeline.notes[selectedIndex];
                         else if (hoveredIndex != -1)
-                            judgeline.notes[hoveredIndex].Detach();
+                            note = judgeline.notes[hoveredIndex];
+
+                    if (note is not null) {
+                        note.Detach();
+                        if (ChartContext.FocusedNote == note)
+                            ChartContext.Focus((Note)null);
+                    }
 
                     selectedIndex = -1;
                     hoveredIndex = -1;
@@ -136,6 +143,8 @@ public partial class NotePlacementGrid : Panel {
                         dragPosition.X -= GetNoteDrawWidth() / 2f;
                         dragPosition.Y -= minNoteHeight / 2f;
                     }
+
+                    note.Focus();
 
                     holdTimeMove = note.type == NoteType.Hold && mouseButton.ShiftPressed;
                     if (holdTimeMove)
