@@ -330,7 +330,7 @@ public partial class NotePlacementGrid : Panel {
         throw new UnreachableException();
     }
 
-    private Color GetNoteColor(NoteType type) => type switch {
+    private static Color GetNoteColor(NoteType type) => type switch {
         NoteType.Tap or NoteType.Hold => Colors.NavyBlue,
         NoteType.Drag => Colors.Yellow,
         NoteType.Flick => Colors.Red,
