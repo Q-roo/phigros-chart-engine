@@ -74,15 +74,15 @@ theme_override_constants/margin_bottom = 3
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
 layout_mode = 2
 
-[node name="HSlider" type="HSlider" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HBoxContainer"]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HBoxContainer"]
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
 layout_mode = 2
 
 [node name="HoldTime" type="PanelContainer" parent="VBoxContainer"]
@@ -112,15 +112,15 @@ theme_override_constants/margin_bottom = 3
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
 layout_mode = 2
 
-[node name="HSlider" type="HSlider" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HBoxContainer"]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HBoxContainer"]
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
 layout_mode = 2
 
 [node name="Speed" type="PanelContainer" parent="VBoxContainer"]
@@ -180,15 +180,15 @@ theme_override_constants/margin_bottom = 3
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
 layout_mode = 2
 
-[node name="HSlider" type="HSlider" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HBoxContainer"]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HBoxContainer"]
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
 layout_mode = 2
 
 [node name="IsAbove" type="PanelContainer" parent="VBoxContainer"]
