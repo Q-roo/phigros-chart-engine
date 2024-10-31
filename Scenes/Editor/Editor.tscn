@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://gusv6rnm1xsq"]
+[gd_scene load_steps=14 format=3 uid="uid://gusv6rnm1xsq"]
 
 [ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_4h052"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartHierarchy.cs" id="8_wy3jj"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/BpmChanges.cs" id="9_whbfe"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGrid.cs" id="10_r7pcq"]
+[ext_resource type="PackedScene" uid="uid://dt374elckkfxn" path="res://Scenes/Editor/note_editor.tscn" id="12_oqaka"]
 
 [node name="Editor" type="Control"]
 layout_mode = 3
@@ -295,10 +296,14 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
+[node name="Note editor" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer" instance=ExtResource("12_oqaka")]
+visible = false
+layout_mode = 2
+
 [node name="Note events" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer"]
 visible = false
 layout_mode = 2
-metadata/_tab_index = 2
+metadata/_tab_index = 3
 
 [node name="Logs" type="Panel" parent="Controller/VBoxContainer/TabContainer"]
 visible = false
