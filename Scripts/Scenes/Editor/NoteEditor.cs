@@ -1,5 +1,6 @@
 using Godot;
 using PCE.Chart;
+using PCE.Chart.Util;
 
 namespace PCE.Editor;
 
@@ -13,17 +14,19 @@ public partial class NoteEditor : PanelContainer {
     private HSlider xOffsetSlider;
     private SpinBox xOffset;
     private CheckBox isAbove;
+    private Label test;
 
     public override void _Ready() {
         type = GetNode<OptionButton>("VBoxContainer/Type/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/OptionButton");
-        timeSlider = GetNode<HSlider>("VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer/HSlider");
-        time = GetNode<SpinBox>("VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer/SpinBox");
-        holdTimeSlider = GetNode<HSlider>("VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer/HSlider");
-        holdTime = GetNode<SpinBox>("VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer/SpinBox");
+        timeSlider = GetNode<HSlider>("VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/HSlider");
+        time = GetNode<SpinBox>("VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/SpinBox");
+        holdTimeSlider = GetNode<HSlider>("VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/HSlider");
+        holdTime = GetNode<SpinBox>("VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/SpinBox");
         speed = GetNode<SpinBox>("VBoxContainer/Speed/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/SpinBox");
-        xOffsetSlider = GetNode<HSlider>("VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer/HSlider");
-        xOffset = GetNode<SpinBox>("VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer/SpinBox");
+        xOffsetSlider = GetNode<HSlider>("VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/HSlider");
+        xOffset = GetNode<SpinBox>("VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/SpinBox");
         isAbove = GetNode<CheckBox>("VBoxContainer/IsAbove/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/CheckBox");
+        test = GetNode<Label>("VBoxContainer/Test/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/Label");
 
         type.ItemSelected += TypeChanged;
         timeSlider.ValueChanged += TimeSliderChanged;
@@ -71,6 +74,8 @@ public partial class NoteEditor : PanelContainer {
             xOffset.AllowLesser = true;
             xOffset.Step = 0;
             xOffset.CustomArrowStep = 0.1;
+
+            test.Text = new Triple().ToString();
         };
 
         ChartContext.FocusedNoteChanged += () => {
@@ -103,6 +108,7 @@ public partial class NoteEditor : PanelContainer {
         xOffset.SetValueNoSignal(note.XOffset);
         xOffsetSlider.SetValueNoSignal(note.XOffset);
         isAbove.SetPressedNoSignal(note.isAbove);
+        test.Text = note.time.ToTriple(note.Parent).ToString();
 
         bool isHold = note.type == NoteType.Hold;
         holdTime.Editable = isHold;

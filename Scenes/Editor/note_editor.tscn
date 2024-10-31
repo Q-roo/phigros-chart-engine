@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://dt374elckkfxn"]
+[gd_scene load_steps=3 format=3 uid="uid://dt374elckkfxn"]
 
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NoteEditor.cs" id="1_let51"]
+[ext_resource type="Theme" uid="uid://b3a5myjko68kj" path="res://Themes/pce_editor_theme.tres" id="1_w7arq"]
 
 [node name="Note editor" type="PanelContainer"]
 anchors_preset = 15
@@ -10,6 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme = ExtResource("1_w7arq")
 script = ExtResource("1_let51")
 metadata/_tab_index = 2
 
@@ -18,6 +20,7 @@ layout_mode = 2
 
 [node name="Type" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
+theme_type_variation = &"PropertyEditorBackground"
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Type"]
 layout_mode = 2
@@ -42,6 +45,7 @@ theme_override_constants/margin_bottom = 3
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/Type/MarginContainer/HBoxContainer/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"PropertyEditorFieldBackgroundPanel"
 
 [node name="OptionButton" type="OptionButton" parent="VBoxContainer/Type/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
 layout_mode = 2
@@ -49,6 +53,7 @@ size_flags_horizontal = 3
 
 [node name="Time" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
+theme_type_variation = &"PropertyEditorBackground"
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Time"]
 layout_mode = 2
@@ -73,20 +78,26 @@ theme_override_constants/margin_bottom = 3
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"PropertyEditorFieldBackgroundPanel"
 
-[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer"]
 layout_mode = 2
 
-[node name="HSlider" type="HSlider" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
 layout_mode = 2
 
 [node name="HoldTime" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
+theme_type_variation = &"PropertyEditorBackground"
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/HoldTime"]
 layout_mode = 2
@@ -111,20 +122,26 @@ theme_override_constants/margin_bottom = 3
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"PropertyEditorFieldBackgroundPanel"
 
-[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer"]
 layout_mode = 2
 
-[node name="HSlider" type="HSlider" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
 layout_mode = 2
 
 [node name="Speed" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
+theme_type_variation = &"PropertyEditorBackground"
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Speed"]
 layout_mode = 2
@@ -149,12 +166,14 @@ theme_override_constants/margin_bottom = 3
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/Speed/MarginContainer/HBoxContainer/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"PropertyEditorFieldBackgroundPanel"
 
 [node name="SpinBox" type="SpinBox" parent="VBoxContainer/Speed/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
 layout_mode = 2
 
 [node name="XOffset" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
+theme_type_variation = &"PropertyEditorBackground"
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/XOffset"]
 layout_mode = 2
@@ -179,20 +198,26 @@ theme_override_constants/margin_bottom = 3
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"PropertyEditorFieldBackgroundPanel"
 
-[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer"]
 layout_mode = 2
 
-[node name="HSlider" type="HSlider" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/HSplitContainer"]
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
 layout_mode = 2
 
 [node name="IsAbove" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
+theme_type_variation = &"PropertyEditorBackground"
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/IsAbove"]
 layout_mode = 2
@@ -217,7 +242,38 @@ theme_override_constants/margin_bottom = 3
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/IsAbove/MarginContainer/HBoxContainer/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"PropertyEditorFieldBackgroundPanel"
 
 [node name="CheckBox" type="CheckBox" parent="VBoxContainer/IsAbove/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
 layout_mode = 2
 size_flags_horizontal = 8
+
+[node name="Test" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Test"]
+layout_mode = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 1
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Test/MarginContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Test/MarginContainer/HBoxContainer"]
+layout_mode = 2
+text = "Test"
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Test/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/Test/MarginContainer/HBoxContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/Test/MarginContainer/HBoxContainer/MarginContainer/PanelContainer"]
+layout_mode = 2
