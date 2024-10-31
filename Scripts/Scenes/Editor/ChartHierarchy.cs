@@ -19,6 +19,7 @@ public partial class ChartHierarchy : Tree {
         menu.AddItem("Insert group before");
         menu.AddItem("Insert group");
         menu.AddItem("Delete");
+        menu.Theme = Theme;
 
         menu.IndexPressed += idx => {
             Node node = GetNodeForItem(GetSelected());

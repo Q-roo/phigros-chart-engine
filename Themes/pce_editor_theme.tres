@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=5 format=3 uid="uid://b3a5myjko68kj"]
+[gd_resource type="Theme" load_steps=6 format=3 uid="uid://b3a5myjko68kj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ujfhi"]
 bg_color = Color(0.137255, 0.137255, 0.137255, 0.721569)
@@ -6,20 +6,30 @@ corner_detail = 1
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ilysm"]
 bg_color = Color(0.0862745, 0.0862745, 0.0862745, 1)
+corner_detail = 1
 expand_margin_left = 5.0
 expand_margin_top = 5.0
 expand_margin_right = 5.0
 expand_margin_bottom = 5.0
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wxv36"]
+bg_color = Color(0.099986, 0.099986, 0.099986, 1)
+corner_detail = 1
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i08op"]
 bg_color = Color(0.140447, 0.140447, 0.140447, 1)
+corner_detail = 1
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8sjq4"]
 bg_color = Color(0.205117, 0.205117, 0.205117, 1)
+corner_radius_top_left = 3
+corner_radius_bottom_left = 3
+corner_detail = 2
 
 [resource]
 Panel/styles/panel = SubResource("StyleBoxFlat_ujfhi")
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_ilysm")
+PopupMenu/styles/panel = SubResource("StyleBoxFlat_wxv36")
 PropertyEditorBackground/base_type = &"PanelContainer"
 PropertyEditorBackground/styles/panel = SubResource("StyleBoxFlat_i08op")
 PropertyEditorFieldBackgroundPanel/base_type = &"PanelContainer"

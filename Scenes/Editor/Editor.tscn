@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://gusv6rnm1xsq"]
+[gd_scene load_steps=15 format=3 uid="uid://gusv6rnm1xsq"]
 
 [ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_4h052"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://8gbqqb1g20bp" path="res://Scenes/Editor/audio_playback_controller.tscn" id="5_fpgqx"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGridLineController.cs" id="6_5vtbr"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/GridPositionController.cs" id="7_bv0mt"]
+[ext_resource type="Theme" uid="uid://b3a5myjko68kj" path="res://Themes/pce_editor_theme.tres" id="8_doy3b"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartHierarchy.cs" id="8_wy3jj"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/BpmChanges.cs" id="9_whbfe"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGrid.cs" id="10_r7pcq"]
@@ -21,6 +22,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("8_doy3b")
 script = ExtResource("1_bmyri")
 
 [node name="Controller" type="Panel" parent="."]
@@ -248,6 +250,7 @@ layout_mode = 2
 [node name="ChartHierarchy" type="Tree" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/HSplitContainer/LeftPanel"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
+theme = ExtResource("8_doy3b")
 script = ExtResource("8_wy3jj")
 
 [node name="MiddlePanel" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/HSplitContainer"]
