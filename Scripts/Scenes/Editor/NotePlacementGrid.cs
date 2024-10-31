@@ -72,6 +72,8 @@ public partial class NotePlacementGrid : Panel {
     private bool holdTimeMove;
 
     public override void _GuiInput(InputEvent @event) {
+        Judgeline judgeline = ChartContext.FocusedJudgeline;
+
         if (@event is InputEventMouse mouse && GetRect().HasPoint(mouse.Position) && !HasFocus())
             GrabFocus();
 
@@ -93,13 +95,22 @@ public partial class NotePlacementGrid : Panel {
                 } else if (key.Keycode == Key.Key4) {
                     placementType = NoteType.Flick;
                     AcceptEvent();
+                } else if (key.Keycode == Key.Delete || key.Keycode == Key.Backspace) {
+                    if (judgeline is not null)
+                        if (selectedIndex != -1)
+                            judgeline.notes[selectedIndex].Detach();
+                        else if (hoveredIndex != -1)
+                            judgeline.notes[hoveredIndex].Detach();
+
+                    selectedIndex = -1;
+                    hoveredIndex = -1;
+                    AcceptEvent();
                 }
                 break;
             case InputEventMouseButton mouseButton:
                 if (mouseButton.ButtonIndex != MouseButton.Left)
                     return;
 
-                Judgeline judgeline = ChartContext.FocusedJudgeline;
                 if (judgeline is null) {
                     AcceptEvent();
                     return;

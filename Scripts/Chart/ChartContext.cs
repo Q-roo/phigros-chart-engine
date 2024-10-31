@@ -95,6 +95,12 @@ public static class ChartContext {
         ChildOrderChanged(group);
     }
 
+    public static void Detach(this Note note) {
+        note.Parent.RemoveChild(note);
+        note.Parent.notes.Remove(note);
+        note.Parent = null;
+    }
+
     public static void Detach(this TransformGroup group) {
         TransformGroup parentGroup = group.parentGroup;
         parentGroup.subGroups.Remove(group);
