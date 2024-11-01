@@ -65,7 +65,7 @@ public partial class Note : NineSliceSprite, ICBExposeable {
     public override void _Process(double delta) {
         Vector2 position = Position;
         // TODO: add the note speed into the equation as well
-        position.Y += (float)(delta.ToBeat(Parent.GetCurrentBpm()) * ChartGlobals.baseNoteSpeed);
+        position.Y += (float)(delta.ToBeat(ChartContext.Chart.CurrentBPM) * ChartGlobals.baseNoteSpeed);
         Position = position;
     }
 

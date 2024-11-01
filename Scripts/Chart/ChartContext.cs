@@ -18,15 +18,15 @@ public static class ChartContext {
     public static event OnTransformGroupAttachmentChanged TransformGroupAttached;
     public static event OnTransformGroupAttachmentChanged TransformGroupDetached;
     public static event EventHandlerTransformGroup ChildOrderChanged;
-    public static event EventHandlerJudgeline BPMListChanged;
+    public static event EventHandlerSimple BPMListChanged;
     public static event EventHandlerSimple FocusedJudgelineChanged;
     public static event EventHandlerSimple FocusedNoteChanged;
 
     public static Chart Chart { get; private set; }
     public static int JudgelineCount { get; private set; }
     public static int NoteCount { get; private set; }
-    public static Judgeline FocusedJudgeline {get; private set;}
-    public static Note FocusedNote {get; private set;}
+    public static Judgeline FocusedJudgeline { get; private set; }
+    public static Note FocusedNote { get; private set; }
 
     public static void Reset() {
         Chart = null;
@@ -50,20 +50,19 @@ public static class ChartContext {
         FocusedNoteChanged?.Invoke();
     }
 
-    public static void ChangeBPMChangeTime(this Judgeline judgeline, double currentTime, double newTime) {
-        judgeline.bpmChanges[newTime] = judgeline.bpmChanges[currentTime];
-        judgeline.bpmChanges.Remove(currentTime);
-        BPMListChanged?.Invoke(judgeline);
+    public static void ChangeBPMChangeTime(this Chart chart, double fromBeat, double toBeat) {
+        chart.bpmList.UpdateStartBeats(fromBeat, toBeat);
+        BPMListChanged?.Invoke();
     }
 
-    public static void AddOrModifyBPMChange(this Judgeline judgeline, double time, float bpm) {
-        judgeline.bpmChanges[time] = bpm;
-        BPMListChanged?.Invoke(judgeline);
+    public static void AddOrModifyBPMChange(this Chart chart, double beat, float bpm) {
+        chart.bpmList.UpsertBpm(beat, bpm);
+        BPMListChanged?.Invoke();
     }
 
-    public static void RemoveBPMChange(this Judgeline judgeline, double time) {
-        judgeline.bpmChanges.Remove(time);
-        BPMListChanged?.Invoke(judgeline);
+    public static void RemoveBPMChange(this Chart chart, double time) {
+        if (chart.bpmList.Remove(time))
+            BPMListChanged?.Invoke();
     }
 
     public static void AttachTo(this Judgeline judgeline, TransformGroup group) {

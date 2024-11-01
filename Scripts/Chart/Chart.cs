@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Godot;
-using PCE.Chart.Util;
 using PCE.Chartbuild.Bindings;
 using PCE.Chartbuild.Runtime;
 using PCE.Editor;
@@ -17,6 +15,8 @@ public partial class Chart : Node2D, ICBExposeable {
     public double DeltaTime { get; private set; }
     public bool JustStarted { get; private set; }
     public bool IsInitalized { get; private set; }
+    public float CurrentBPM { get; private set; }
+    public double CurrentBeat { get; private set; }
     // TODO: current score
 
     private ulong timeBegin;
@@ -26,7 +26,7 @@ public partial class Chart : Node2D, ICBExposeable {
     private readonly List<Event> activeEvents = [];
     public readonly HashSet<StringName> signals  = [];
     public readonly List<Judgeline> judgelines = [];
-    public readonly BPMList bpmList = new();
+    public readonly BPMList bpmList = [];
 
     private readonly AudioStreamPlayer audioPlayer = new();
 
@@ -109,6 +109,7 @@ public partial class Chart : Node2D, ICBExposeable {
         activeEvents.Clear();
         signals.Clear();
         judgelines.Clear();
+        bpmList.Clear();
     }
 
     public void BeginRender() {
@@ -129,12 +130,12 @@ public partial class Chart : Node2D, ICBExposeable {
             foreach (Note note in judgeline.notes) {
                 Vector2 position = note.Position;
 
-                double y = CalculateYPosition(note.time, judgeline);
+                double y = CalculateYPosition(note.time);
 
                 position.Y -= (float)y;
 
                 if (note.type == NoteType.Hold) {
-                    double heigth = CalculateYPosition(note.time + note.holdTime, judgeline) - y;
+                    double heigth = CalculateYPosition(note.time + note.holdTime) - y;
                     Vector2 scale = note.Scale;
                     // scale.Y = (float)(heigth / note.Texture.GetSize().Y);
                     scale.Y = (float)(heigth / note.Texture.GetSize().Y);
@@ -150,35 +151,8 @@ public partial class Chart : Node2D, ICBExposeable {
             }
     }
 
-    public double CalculateYPosition(double time, Judgeline judgeline) {
-        double y = 0;
-
-        // times of bpm changes in seconds
-        double[] keys = [..judgeline.bpmChanges.Keys];
-
-        Debug.Assert(keys.Length != 0 || keys[0] != 0, "a judgeline should have at least one bpm change at time 0");
-
-        // it's more clear this way
-        if (keys.Length == 1)
-            return time.ToBeat(judgeline.GetClosestBpm(time)) * ChartGlobals.baseNoteSpeed;
-
-        for (int i = 0; i < keys.Length; i++) {
-            double key = keys[i];
-            // the last key
-            // treat this case similarly to when there's only one key
-            if (i == keys.Length - 1)
-                return y + (time - key).ToBeat(judgeline.GetClosestBpm(time)) * ChartGlobals.baseNoteSpeed;
-
-            double nextKey = keys[i + 1];
-            // the next kext bpm change will occour only after `time`
-            // so this can be trated as if this was the last key
-            if (nextKey > time)
-                return y + (time - key).ToBeat(judgeline.GetClosestBpm(time)) * ChartGlobals.baseNoteSpeed;
-
-            y += (nextKey - key).ToBeat(judgeline.GetClosestBpm(time)) * ChartGlobals.baseNoteSpeed;
-        }
-
-        return y;
+    public double CalculateYPosition(double timeInSeconds) {
+        return bpmList.SecondToBeat(timeInSeconds) * ChartGlobals.DistanceBetweenBeats;
     }
 
     public override void _Process(double delta) {
@@ -186,6 +160,9 @@ public partial class Chart : Node2D, ICBExposeable {
         time -= audioDelay;
         if (time < 0)
             return;
+
+        CurrentBeat = bpmList.SecondToBeat(time);
+        CurrentBPM = bpmList.Current.bpm;
 
         DeltaTime = time - CurrentTime;
         CurrentTime = time;
@@ -259,7 +236,7 @@ public partial class Chart : Node2D, ICBExposeable {
             if (!bpmList.HasTime(beat))
                 bpmList.Add(beat, 120); // default bpm
 
-            return new SetGetProperty(@this, beat, (_, _) => bpmList.GetAt(beat).bpm, (_, _, value) => bpmList.Update(beat, value));
+            return new SetGetProperty(@this, beat, (_, _) => bpmList.GetAt(beat).bpm, (_, _, value) => bpmList.UpdateBpm(beat, value));
         })
         .Build();
     }
