@@ -36,6 +36,16 @@ public partial class NoteEditor : PanelContainer {
         xOffsetSlider.ValueChanged += XOffsetSliderChanged;
         xOffset.ValueChanged += XOffsetInputChanged;
         isAbove.Toggled += IsAboveChanged;
+        // do not update these while dragging
+        // because they might resize themselves
+        timeSlider.DragEnded += (valueChanged) => {
+            if (valueChanged)
+            time.SetValueNoSignal(ChartContext.FocusedNote.time.ToTriple(ChartContext.Chart));
+        };
+        holdTimeSlider.DragEnded += (valueChanged) => {
+            if (valueChanged)
+            time.SetValueNoSignal(ChartContext.FocusedNote.holdTime.ToTriple(ChartContext.Chart));
+        };
 
         SetToNote(null);
 
@@ -120,7 +130,6 @@ public partial class NoteEditor : PanelContainer {
 
     private void TimeSliderChanged(double value) {
         ChartContext.FocusedNote.time = timeSlider.Value;
-        time.SetValueNoSignal(value.ToTriple(ChartContext.Chart));
     }
 
     private void TimeInputChanged() {
@@ -131,7 +140,6 @@ public partial class NoteEditor : PanelContainer {
 
     private void HoldTimeSliderChanged(double value) {
         ChartContext.FocusedNote.holdTime = holdTimeSlider.Value;
-        holdTime.SetValueNoSignal(value.ToTriple(ChartContext.Chart));
     }
 
     private void HoldTimeInputChanged() {
