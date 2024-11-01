@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Godot;
 using PCE.Chart.Util;
 
 namespace PCE.Chart;
@@ -54,7 +55,7 @@ public class BPMList : IEnumerable<Entry> {
     }
 
     public double BeatToSecond(double beat) {
-        for (; cursor < elements.Count; cursor++)
+        for (; cursor < elements.Count - 1; cursor++)
             if (Current.beats > beat)
                 break;
 
@@ -69,7 +70,7 @@ public class BPMList : IEnumerable<Entry> {
     }
 
     public double SecondToBeat(double second) {
-        for (; cursor < elements.Count; cursor++)
+        for (; cursor < elements.Count - 1; cursor++)
             if (Current.timeInSeconds > second)
                 break;
 
@@ -146,6 +147,10 @@ public class BPMList : IEnumerable<Entry> {
 
     public Entry GetClosestAt(double beats) {
         return elements[GetClosestIndexAt(beats)];
+    }
+
+    public Entry Last() {
+        return elements[^1];
     }
 
     private void UpdateBpm(Entry entry, float bpm) {

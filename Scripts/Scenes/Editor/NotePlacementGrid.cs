@@ -61,7 +61,7 @@ public partial class NotePlacementGrid : Panel {
 
         GridPosition = new(
             GridPosition.X,
-            (float)chart.CalculateYPosition(chart.MusicPlaybackPositionInSeconds, ChartContext.FocusedJudgeline)
+            (float)chart.CalculateYPosition(chart.MusicPlaybackPositionInSeconds)
         );
     }
 
@@ -282,11 +282,11 @@ public partial class NotePlacementGrid : Panel {
 
         float noteWidth = GetNoteDrawWidth();
         float xPosition = center.X + center.X * note.XOffset - noteWidth / 2f;
-        double yPosition = ChartContext.Chart.CalculateYPosition(note.time, judgeline);
+        double yPosition = ChartContext.Chart.CalculateYPosition(note.time);
         double height = minNoteHeight;
 
         if (note.type == NoteType.Hold)
-            height = Mathf.Max(minNoteHeight, ChartContext.Chart.CalculateYPosition(note.time + note.holdTime, judgeline) - yPosition);
+            height = Mathf.Max(minNoteHeight, ChartContext.Chart.CalculateYPosition(note.time + note.holdTime) - yPosition);
         else
             yPosition -= height / 2f;
 
@@ -305,29 +305,7 @@ public partial class NotePlacementGrid : Panel {
         if (isNotHold)
             distance += noteRect.Size.Y / 2f;
 
-        Judgeline judgeline = ChartContext.FocusedJudgeline;
-        double[] keys = [.. judgeline.bpmChanges.Keys];
-        double accHeight = 0;
-        double accTime = 0;
-
-        if (keys.Length == 1)
-            return (distance / ChartGlobals.DistanceBetweenBeats).ToSecond(judgeline.bpmChanges[0]);
-
-        for (int i = 0; i < keys.Length; i++) {
-            double key = keys[i];
-            double range = i == keys.Length - 1 ? double.PositiveInfinity : keys[i + 1] - key;
-            double maxHeight = range.ToBeat(judgeline.bpmChanges[key]) * ChartGlobals.DistanceBetweenBeats;
-
-            if (accHeight + maxHeight > distance) {
-                double height = distance - accHeight;
-                return accTime + (height / ChartGlobals.DistanceBetweenBeats).ToSecond(judgeline.bpmChanges[key]);
-            }
-
-            accHeight += maxHeight;
-            accTime += range;
-        }
-
-        throw new UnreachableException();
+        return (distance / ChartGlobals.DistanceBetweenBeats).ToSecond(ChartContext.Chart);
     }
 
     private static Color GetNoteColor(NoteType type) => type switch {

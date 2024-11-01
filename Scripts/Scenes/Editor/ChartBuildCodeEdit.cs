@@ -180,9 +180,15 @@ public partial class ChartBuildCodeEdit : CodeEdit {
                     chart.signals.Add(args[0].ToString());
                 }))
                 .InsertValue(true, "beat", new Callable(args => {
+                    if (args.Length == 1)
+                        return (float)chart.bpmList.SecondToBeat(args[0]);
+
                     return (float)((double)args[0].ToF32()).ToBeat(args[1]);
                 }))
                 .InsertValue(true, "second", new Callable(args => {
+                    if (args.Length == 1)
+                        return (float)chart.bpmList.BeatToSecond(args[0]);
+
                     return (float)((double)args[0].ToF32()).ToSecond(args[1]);
                 }));
 
@@ -225,7 +231,6 @@ public partial class ChartBuildCodeEdit : CodeEdit {
     private static Note NoteConstructor(NoteType type, float defaultSpeed, bool defaultIsAbove, params Chartbuild.Runtime.Object[] args) {
         // signature: (time, x_offset, speed=default, is_above=default, ...rest)
 
-
         float speed = defaultSpeed;
         bool isAbove = defaultIsAbove;
         bool isHold = type == NoteType.Hold;
@@ -235,14 +240,18 @@ public partial class ChartBuildCodeEdit : CodeEdit {
         if (args.Length < 2 + argOffset)
             throw new ArgumentException("insufficient arguments");
 
+        // (time, x_offset, speed/is_above)
+        // or (time, hold_time, x_offset, speed/is_above)
         if (args.Length == 3 + argOffset) {
             if (args[2 + argOffset] is Bool b)
                 isAbove = b;
             else
                 speed = args[2 + argOffset];
         } else if (args.Length > 3 + argOffset) {
-            speed = args[3 + argOffset];
-            isAbove = args[4 + argOffset];
+            // (time, x_offset, speed, is_above)
+            // or (time, hold_time, x_offset, speed, is_above)
+            speed = args[2 + argOffset];
+            isAbove = args[3 + argOffset];
         }
 
         return new Note(type, args[0], args[1 + argOffset], speed, isAbove, isHold ? args[1] : 0);

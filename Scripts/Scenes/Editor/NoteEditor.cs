@@ -102,7 +102,7 @@ public partial class NoteEditor : PanelContainer {
         xOffset.SetValueNoSignal(note.XOffset);
         xOffsetSlider.SetValueNoSignal(note.XOffset);
         isAbove.SetPressedNoSignal(note.isAbove);
-        test.Text = note.time.ToTriple(note.Parent).ToString();
+        test.Text = note.time.ToTriple(ChartContext.Chart).ToString();
 
         bool isHold = note.type == NoteType.Hold;
         holdTime.Editable = isHold;
