@@ -9,7 +9,8 @@ public partial class TripleInput : LineEdit {
     [Signal]
     public delegate void ValueChangedEventHandler();
 
-    private Triple _value;
+    // it would be 0, 0, 0 insetad of 0, 0, 1 otherwise
+    private Triple _value = new();
     public Triple Value { get => _value; set => SetValue(value, true); }
 
     public TripleInput() {
@@ -53,7 +54,6 @@ public partial class TripleInput : LineEdit {
             }
 
             if (c == ':') {
-                GD.Print(phase);
                 // invalid syntax (e.g.: a::b/c)
                 if (phase != 0) {
                     DeleteCharAtCaret();
@@ -102,6 +102,7 @@ public partial class TripleInput : LineEdit {
 
             // reset it to the last valid value
             Text = Value.ToString();
+            return;
         }
 
         // the characters should are valid
@@ -133,8 +134,10 @@ public partial class TripleInput : LineEdit {
     }
 
     private void SetValue(Triple value, bool notify) {
+        CallDeferred(MethodName.SetCaretColumn, CaretColumn); // it already does the length checks
         _value = value;
-        Text = value.ToString();
+        Text = Value.ToString();
+
         if (notify)
             OnValueChanged();
     }
