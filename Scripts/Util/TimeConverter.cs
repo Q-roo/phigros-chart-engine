@@ -15,7 +15,7 @@ public static class TimeConverter {
     public static double ToBeat(this double second, Chart chart) => ToBeat(second, chart.bpmList);
     public static double ToSecond(this double beat, Chart chart) => ToSecond(beat, chart.bpmList);
 
-    public static Triple ToTriple(this double beat) {
+    private static Triple ToTriple(this double beat) {
         int bar = (int)Math.Truncate(beat);
         double fraction = beat - bar;
         (long mantissa, int exponent) = fraction.GetMantissaAndExponent();

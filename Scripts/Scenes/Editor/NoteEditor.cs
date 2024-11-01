@@ -94,9 +94,9 @@ public partial class NoteEditor : PanelContainer {
             return;
 
         type.Select((int)note.type - 1);
-        // time.SetValueNoSignal(note.time.ToTriple());
+        time.SetValueNoSignal(note.time.ToTriple(ChartContext.Chart));
         timeSlider.SetValueNoSignal(note.time);
-        // holdTime.SetValueNoSignal(note.holdTime.ToTriple());
+        holdTime.SetValueNoSignal(note.holdTime.ToTriple(ChartContext.Chart));
         holdTimeSlider.SetValueNoSignal(note.holdTime);
         speed.SetValueNoSignal(note.speed);
         xOffset.SetValueNoSignal(note.XOffset);
@@ -120,22 +120,24 @@ public partial class NoteEditor : PanelContainer {
 
     private void TimeSliderChanged(double value) {
         ChartContext.FocusedNote.time = timeSlider.Value;
-        // time.SetValueNoSignal(value.ToTriple());
+        time.SetValueNoSignal(value.ToTriple(ChartContext.Chart));
     }
 
     private void TimeInputChanged() {
-        // ChartContext.FocusedNote.time = time.Value;
-        // timeSlider.SetValueNoSignal(value);
+        double second = time.Value.ToBeat().ToSecond(ChartContext.Chart);
+        ChartContext.FocusedNote.time = second;
+        timeSlider.SetValueNoSignal(second);
     }
 
     private void HoldTimeSliderChanged(double value) {
         ChartContext.FocusedNote.holdTime = holdTimeSlider.Value;
-        // holdTime.SetValueNoSignal(value.ToTriple());
+        holdTime.SetValueNoSignal(value.ToTriple(ChartContext.Chart));
     }
 
     private void HoldTimeInputChanged() {
-        // ChartContext.FocusedNote.holdTime = holdTime.Value;
-        // holdTimeSlider.SetValueNoSignal(value);
+        double second = holdTime.Value.ToBeat().ToSecond(ChartContext.Chart);
+        ChartContext.FocusedNote.holdTime = second;
+        holdTimeSlider.SetValueNoSignal(second);
     }
 
     private void SpeedChanged(double value) {
