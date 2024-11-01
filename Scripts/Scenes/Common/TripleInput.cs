@@ -48,29 +48,22 @@ public partial class TripleInput : LineEdit {
             return;
         }
 
-        int barNumber;
-        uint numerator;
-        uint denominator;
-
         // groups[0] is the matched string
 
-        if (!int.TryParse(match.Groups[1].ToString(), out int _beat)) {
+        if (!int.TryParse(match.Groups[1].ToString(), out int barNumber)) {
             barNumber = int.MaxValue;
             GD.PushWarning("[part a] ", match.Groups[1], " is too big for int. using ", int.MaxValue);
-        } else
-            barNumber = _beat;
+        }
 
-        if (!uint.TryParse(match.Groups[2].ToString(), out uint _numerator)) {
+        if (!uint.TryParse(match.Groups[2].ToString(), out uint numerator)) {
             numerator = uint.MaxValue;
             GD.PushWarning("[part b] ", match.Groups[2], " is too big for uint. using ", uint.MaxValue);
-        } else
-            numerator = _numerator;
+        }
 
-        if (!uint.TryParse(match.Groups[3].ToString(), out uint _denominator)) {
+        if (!uint.TryParse(match.Groups[3].ToString(), out uint denominator)) {
             denominator = uint.MaxValue;
             GD.PushWarning("[part c] ", match.Groups[3], " is too big for uint. using ", uint.MaxValue);
-        } else
-            denominator = _denominator;
+        }
 
         Value = new(barNumber, numerator, denominator);
     }
