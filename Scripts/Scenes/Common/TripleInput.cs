@@ -94,7 +94,6 @@ public partial class TripleInput : LineEdit {
     }
 
     private void SetValue(Triple value, bool notify) {
-        CallDeferred(MethodName.SetCaretColumn, CaretColumn); // it already does the length checks
         _value = value;
         Text = Value.ToString();
 
