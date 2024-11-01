@@ -198,6 +198,9 @@ public class BPMList : IEnumerable<Entry> {
     public bool Remove(double beats) {
         int idx = GetIndexAt(beats);
         if (idx != invalidIndex) {
+            if (cursor == elements.Count - 1)
+                cursor--;
+
             elements.RemoveAt(idx);
             Recalculate();
             return true;

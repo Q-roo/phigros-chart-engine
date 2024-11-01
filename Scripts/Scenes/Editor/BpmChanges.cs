@@ -12,7 +12,7 @@ public partial class BpmChanges : PanelContainer {
     public override void _Ready() {
         add = GetNode<Button>("VBoxContainer/Add");
         list = GetNode<GridContainer>("VBoxContainer/ScrollContainer/GridContainer");
-        ChartContext.BPMListChanged += () => CallDeferred(MethodName.Refresh);
+        ChartContext.BPMListChanged += Refresh;
         ChartContext.Initalized += Refresh;
         add.Pressed += () => {
             Entry entry = ChartContext.Chart.bpmList.Last();
@@ -22,8 +22,9 @@ public partial class BpmChanges : PanelContainer {
 
     private void Refresh() {
         // first 3 are column headers
-        foreach (Node child in list.GetChildren().Skip(3))
+        foreach (Node child in list.GetChildren().Skip(3)) {
             child.QueueFree();
+        }
 
         foreach (Entry entry in ChartContext.Chart.bpmList) {
             Triple startTimeAsTriple = entry.timeInSeconds.ToTriple(ChartContext.Chart);
