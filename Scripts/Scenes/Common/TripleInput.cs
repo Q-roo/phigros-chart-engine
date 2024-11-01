@@ -104,7 +104,31 @@ public partial class TripleInput : LineEdit {
             Text = Value.ToString();
         }
 
-        Value = new(int.Parse(parts[0].ToString()), uint.Parse(parts[1].ToString()), uint.Parse(parts[2].ToString()));
+        // the characters should are valid
+        // but the user could still input numbers that are too large
+        int barNumber;
+        uint numerator;
+        uint denominator;
+
+        if (!int.TryParse(parts[0].ToString(), out int _beat)) {
+            barNumber = int.MaxValue;
+            GD.PushWarning("[part a] ", parts[0], " is too big for int. using ", int.MaxValue);
+        } else
+            barNumber = _beat;
+
+        if (!uint.TryParse(parts[1].ToString(), out uint _numerator)) {
+            numerator = uint.MaxValue;
+            GD.PushWarning("[part b] ", parts[1], " is too big for uint. using ", uint.MaxValue);
+        } else
+            numerator = _numerator;
+
+        if (!uint.TryParse(parts[2].ToString(), out uint _denominator)) {
+            denominator = uint.MaxValue;
+            GD.PushWarning("[part c] ", parts[2], " is too big for uint. using ", uint.MaxValue);
+        } else
+            denominator = _denominator;
+
+        Value = new(barNumber, numerator, denominator);
         CaretColumn = Text.Length;
     }
 
