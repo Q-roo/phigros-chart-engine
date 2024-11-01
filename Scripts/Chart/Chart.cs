@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Godot;
 using PCE.Chart.Util;
 using PCE.Chartbuild.Bindings;
+using PCE.Chartbuild.Runtime;
 using PCE.Editor;
 
 namespace PCE.Chart;
@@ -25,6 +26,7 @@ public partial class Chart : Node2D, ICBExposeable {
     private readonly List<Event> activeEvents = [];
     public readonly HashSet<StringName> signals  = [];
     public readonly List<Judgeline> judgelines = [];
+    public readonly BPMList bpmList = new();
 
     private readonly AudioStreamPlayer audioPlayer = new();
 
@@ -246,6 +248,18 @@ public partial class Chart : Node2D, ICBExposeable {
                 throw new ArgumentException("first argument needs to be an event");
 
             ChartContext.AddEvent(this, @event);
+        })
+        .SetFallbackGetter(@this => key => {
+            double beat = key switch {
+                int i => i,
+                float f => f,
+                _ => throw new ArgumentException($"cannot turn {key} into a double")
+            };
+
+            if (!bpmList.HasTime(beat))
+                bpmList.Add(beat, 120); // default bpm
+
+            return new SetGetProperty(@this, beat, (_, _) => bpmList.GetAt(beat).bpm, (_, _, value) => bpmList.Update(beat, value));
         })
         .Build();
     }
