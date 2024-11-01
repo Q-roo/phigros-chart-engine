@@ -5,7 +5,7 @@ using PCE.Chart.Util;
 
 namespace PCE.Editor;
 
-public partial class BpmChanges : PanelContainer {
+public partial class BpmListEditor : PanelContainer {
     private GridContainer list;
     private Button add;
 

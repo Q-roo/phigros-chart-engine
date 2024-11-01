@@ -11,9 +11,9 @@
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/GridPositionController.cs" id="7_bv0mt"]
 [ext_resource type="Theme" uid="uid://b3a5myjko68kj" path="res://Themes/pce_editor_theme.tres" id="8_doy3b"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/ChartHierarchy.cs" id="8_wy3jj"]
-[ext_resource type="Script" path="res://Scripts/Scenes/Editor/BpmChanges.cs" id="9_whbfe"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGrid.cs" id="10_r7pcq"]
 [ext_resource type="PackedScene" uid="uid://dt374elckkfxn" path="res://Scenes/Editor/note_editor.tscn" id="12_oqaka"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/BpmListEditor.cs" id="12_pbnbl"]
 
 [node name="Editor" type="Control"]
 layout_mode = 3
@@ -289,36 +289,36 @@ layout_mode = 2
 current_tab = 0
 tabs_position = 1
 
-[node name="BPM changes" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer"]
+[node name="BPM list" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer"]
 layout_mode = 2
-script = ExtResource("9_whbfe")
+script = ExtResource("12_pbnbl")
 metadata/_tab_index = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM changes"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM list"]
 layout_mode = 2
 
-[node name="Add" type="Button" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM changes/VBoxContainer"]
+[node name="Add" type="Button" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM list/VBoxContainer"]
 layout_mode = 2
 text = "add"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM changes/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM list/VBoxContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="GridContainer" type="GridContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM changes/VBoxContainer/ScrollContainer"]
+[node name="GridContainer" type="GridContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM list/VBoxContainer/ScrollContainer"]
 layout_mode = 2
 columns = 3
 
-[node name="filler" type="Control" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM changes/VBoxContainer/ScrollContainer/GridContainer"]
+[node name="filler" type="Control" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM list/VBoxContainer/ScrollContainer/GridContainer"]
 layout_mode = 2
 
-[node name="BPMColumnHeader" type="Label" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM changes/VBoxContainer/ScrollContainer/GridContainer"]
+[node name="BPMColumnHeader" type="Label" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM list/VBoxContainer/ScrollContainer/GridContainer"]
 layout_mode = 2
 text = "BPM"
 horizontal_alignment = 1
 
-[node name="TimeColumnHeader" type="Label" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM changes/VBoxContainer/ScrollContainer/GridContainer"]
+[node name="TimeColumnHeader" type="Label" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer/BPM list/VBoxContainer/ScrollContainer/GridContainer"]
 layout_mode = 2
 text = "Time"
 horizontal_alignment = 1
