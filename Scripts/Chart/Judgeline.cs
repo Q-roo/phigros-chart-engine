@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using PCE.Chartbuild.Bindings;
-using PCE.Chartbuild.Runtime;
 
 namespace PCE.Chart;
 
@@ -31,13 +30,11 @@ public partial class Judgeline : Line2D, ICBExposeable {
         }
     }
 
-    public float InitalBPM => bpmChanges[0];
     public readonly List<Note> notes;
     // time in seconds, bpm
     // this should become read-only once the chart starts
     // to be able to calculate note y positions and hold heights
     // keys are in ascending order
-    public readonly SortedDictionary<double, float> bpmChanges;
 
     public Note this[int index] {
         get => notes[index];
@@ -50,9 +47,6 @@ public partial class Judgeline : Line2D, ICBExposeable {
         Name = name;
         Antialiased = true;
         notes = [];
-        bpmChanges = new() {
-            { 0, bpm }
-        };
     }
 
     public Judgeline()
@@ -78,7 +72,6 @@ public partial class Judgeline : Line2D, ICBExposeable {
         .AddChangeableProperty("size", () => Size, value => Size = value)
         .AddChangeableProperty("position", () => ScreenPosition, value => ScreenPosition = value)
         .AddChangeableProperty("rotation", () => RotationDegrees, value => RotationDegrees = value)
-        .AddReadOnlyValue("bpm", () => GetCurrentBpm())
         .AddCallable("add_event", args => {
             if (args.Length == 0)
                 throw new ArgumentException("insufficient arguments");
@@ -97,40 +90,8 @@ public partial class Judgeline : Line2D, ICBExposeable {
 
             note.AttachTo(this);
         })
-        .SetFallbackGetter(@this => key => {
-            double time = key switch {
-                int i => i,
-                float f => f,
-                _ => throw new ArgumentException($"cannot turn {key} into a double")
-            };
-            return new SetGetProperty(@this, time, (_, _) => GetClosestBpm(time), (_, _, value) => bpmChanges[time] = value);
-        })
         .Build();
     }
-
-    public float GetClosestBpm(double time) {
-        if (bpmChanges.TryGetValue(time, out float bpm))
-            return bpm;
-
-        bpm = bpmChanges[0];
-
-        double[] keys = [.. bpmChanges.Keys];
-
-        for (int i = 0; i < keys.Length - 1; i++) {
-            double current = keys[i];
-            double next = keys[i + 1];
-
-            if (next > time)
-                return bpmChanges[current];
-
-            bpm = bpmChanges[next];
-        }
-
-        // there should always be a bpm at 0
-        return bpm;
-    }
-
-    public float GetCurrentBpm() => GetClosestBpm(ChartContext.Chart.CurrentTime);
 
     private void SetPositionToScreenPosition() {
         Rect2 rect = GetViewportRect();
@@ -146,6 +107,6 @@ public partial class Judgeline : Line2D, ICBExposeable {
         return Name.GetHashCode();
     }
     public override string ToString() {
-        return $"judgeline({Name} ({InitalBPM})";
+        return $"judgeline({Name}";
     }
 }
