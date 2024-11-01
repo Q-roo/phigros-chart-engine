@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Godot;
 using PCE.Chart.Util;
 
 namespace PCE.Chart;
