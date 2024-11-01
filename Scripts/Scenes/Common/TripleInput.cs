@@ -72,11 +72,6 @@ public partial class TripleInput : LineEdit {
         if (string.IsNullOrEmpty(text))
             return;
 
-        // char c = text[CaretColumn - 1];
-        // GD.Print(c);
-        // if (!char.IsAsciiDigit(c) && c != ':' && c != '/')
-        //     DeleteCharAtCaret();
-
         bool colonFound = false;
         bool slashFound = false;
 
