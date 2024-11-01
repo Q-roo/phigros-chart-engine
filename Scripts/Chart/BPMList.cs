@@ -1,23 +1,24 @@
+using System.Collections;
 using System.Collections.Generic;
 using PCE.Chart.Util;
 
 namespace PCE.Chart;
 
-public class BPMList {
+public class Entry(double beats, double timeInSeconds, float bpm) {
+    // end beats of the previous entry
+    // or the start time of this in beats
+    // but since beats are accumlated
+    // it makes more write to say end beats
+    // NOTE: use beats when recalculating values
+    public double beats = beats;
+    // start time
+    public double timeInSeconds = timeInSeconds;
+    public float bpm = bpm;
+}
+
+public class BPMList : IEnumerable<Entry> {
     private const float defaultBpm = 120;
     public const int invalidIndex = -1;
-
-    public class Entry(double beats, double timeInSeconds, float bpm) {
-        // end beats of the previous entry
-        // or the start time of this in beats
-        // but since beats are accumlated
-        // it makes more write to say end beats
-        // NOTE: use beats when recalculating values
-        public double beats = beats;
-        // start time
-        public double timeInSeconds = timeInSeconds;
-        public float bpm = bpm;
-    }
 
     private readonly List<Entry> elements;
     public Entry Current => elements[cursor];
@@ -50,6 +51,32 @@ public class BPMList {
             lastBpm = bpm;
             elements.Add(new(nowBeats, time, bpm));
         }
+    }
+
+    public double BeatToSecond(double beat) {
+        for (; cursor < elements.Count; cursor++)
+            if (Current.beats > beat)
+                break;
+
+        while (cursor >= 0 && Current.beats > beat)
+            cursor--;
+
+        return Current.timeInSeconds + (beat - Current.beats).ToSecond(Current.bpm);
+    }
+
+    public double TripleToSecond(Triple triple) {
+        return BeatToSecond(triple.ToBeat());
+    }
+
+    public double SecondToBeat(double second) {
+        for (; cursor < elements.Count; cursor++)
+            if (Current.timeInSeconds > second)
+                break;
+
+        while (cursor >= 0 && Current.timeInSeconds > second)
+            cursor--;
+
+        return Current.beats + (second - Current.timeInSeconds).ToBeat(Current.bpm);
     }
 
     public int GetIndexAt(double beats) {
@@ -90,13 +117,62 @@ public class BPMList {
         return idx;
     }
 
+    public IEnumerable<float> GetBpms() {
+        foreach (Entry entry in elements)
+            yield return entry.bpm;
+    }
+
+    public IEnumerable<double> GetStartTimesInSeconds() {
+        foreach (Entry entry in elements)
+            yield return entry.timeInSeconds;
+    }
+
+    public IEnumerable<double> GetStartTimesInBeats() {
+        foreach (Entry entry in elements)
+            yield return entry.beats;
+    }
+
+    public IEnumerator<Entry> GetEnumerator() {
+        return elements.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
+
     public Entry GetAt(double beats) {
         return elements[GetIndexAt(beats)];
     }
 
-    public void Update(double beats, float bpm) {
-        GetAt(beats).bpm = bpm;
+    public Entry GetClosestAt(double beats) {
+        return elements[GetClosestIndexAt(beats)];
+    }
+
+    private void UpdateBpm(Entry entry, float bpm) {
+        entry.bpm = bpm;
         Recalculate();
+    }
+
+    public void UpdateBpm(double beats, float bpm) {
+        UpdateBpm(GetAt(beats), bpm);
+    }
+
+    public void UpsertBpm(double beats, float bpm) {
+        int idx = GetIndexAt(beats);
+        if (idx == invalidIndex)
+            Add(beats, bpm);
+        else
+            UpdateBpm(elements[idx], bpm);
+    }
+
+    public void UpdateStartBeats(double fromBeats, double toBeats) {
+        int idx = GetIndexAt(fromBeats);
+        if (idx != invalidIndex) {
+            Entry entry = elements[idx];
+            elements.RemoveAt(idx);
+            entry.beats = toBeats;
+            Add(entry);
+        }
     }
 
     private void Add(Entry entry) {
@@ -113,6 +189,22 @@ public class BPMList {
 
     public void Add(double beats, float bpm) {
         Add(new(beats, 0, bpm)); // seconds will be calculated
+    }
+
+    public bool Remove(double beats) {
+        int idx = GetIndexAt(beats);
+        if (idx != invalidIndex) {
+            elements.RemoveAt(idx);
+            Recalculate();
+            return true;
+        }
+
+        return false;
+    }
+
+    public void Clear() {
+        elements.Clear();
+        elements.Add(new(0, 0, defaultBpm));
     }
 
     public bool HasTime(double beats) {
