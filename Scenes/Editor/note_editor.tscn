@@ -85,15 +85,15 @@ theme_type_variation = &"PropertyEditorFieldBackgroundPanel"
 layout_mode = 2
 theme_override_constants/margin_left = 5
 
-[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer"]
 layout_mode = 2
 
-[node name="HSlider" type="HSlider" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="TripleInput" type="LineEdit" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
+[node name="TripleInput" type="LineEdit" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 script = ExtResource("3_xsnaa")
 
@@ -130,15 +130,15 @@ theme_type_variation = &"PropertyEditorFieldBackgroundPanel"
 layout_mode = 2
 theme_override_constants/margin_left = 5
 
-[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer"]
 layout_mode = 2
 
-[node name="HSlider" type="HSlider" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="TripleInput" type="LineEdit" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
+[node name="TripleInput" type="LineEdit" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 script = ExtResource("3_xsnaa")
 
@@ -207,16 +207,18 @@ theme_type_variation = &"PropertyEditorFieldBackgroundPanel"
 layout_mode = 2
 theme_override_constants/margin_left = 5
 
-[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer"]
 layout_mode = 2
 
-[node name="HSlider" type="HSlider" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
+alignment = 1
 
 [node name="IsAbove" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2

@@ -15,16 +15,15 @@ public partial class NoteEditor : PanelContainer {
     private SpinBox xOffset;
     private CheckBox isAbove;
     private Label test;
-
     public override void _Ready() {
         type = GetNode<OptionButton>("VBoxContainer/Type/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/OptionButton");
-        timeSlider = GetNode<HSlider>("VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/HSlider");
-        time = GetNode<TripleInput>("VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/TripleInput");
-        holdTimeSlider = GetNode<HSlider>("VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/HSlider");
-        holdTime = GetNode<TripleInput>("VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/TripleInput");
+        timeSlider = GetNode<HSlider>("VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/HSlider");
+        time = GetNode<TripleInput>("VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/TripleInput");
+        holdTimeSlider = GetNode<HSlider>("VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/HSlider");
+        holdTime = GetNode<TripleInput>("VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/TripleInput");
         speed = GetNode<SpinBox>("VBoxContainer/Speed/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/SpinBox");
-        xOffsetSlider = GetNode<HSlider>("VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/HSlider");
-        xOffset = GetNode<SpinBox>("VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer/SpinBox");
+        xOffsetSlider = GetNode<HSlider>("VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/HSlider");
+        xOffset = GetNode<SpinBox>("VBoxContainer/XOffset/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/SpinBox");
         isAbove = GetNode<CheckBox>("VBoxContainer/IsAbove/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/CheckBox");
         test = GetNode<Label>("VBoxContainer/Test/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/Label");
 
