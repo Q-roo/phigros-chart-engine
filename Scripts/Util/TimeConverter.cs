@@ -9,28 +9,15 @@ public static class TimeConverter {
     public static double ToBeat(this double second, float bpm) => SecondToBeat(second, bpm);
     public static double ToSecond(this double beat, float bpm) => BeatToSecond(beat, bpm);
 
-    public static Triple ToTriple(this double second, Judgeline judgeline) {
-        double bar = 0;
-        float? lastBpm = null;
-        double endTime = 0;
+    public static double ToBeat(this double second, BPMList bpmList) => bpmList.SecondToBeat(second);
+    public static double ToSecond(this double beat, BPMList bpmList) => bpmList.BeatToSecond(beat);
 
-        if (judgeline.bpmChanges.Count == 1)
-            bar = second.ToBeat(judgeline.bpmChanges[0]);
+    public static double ToBeat(this double second, Chart chart) => ToBeat(second, chart.bpmList);
+    public static double ToSecond(this double beat, Chart chart) => ToSecond(beat, chart.bpmList);
 
-        foreach ((double startTimeInSeconds, float bpm) in judgeline.bpmChanges) {
-            if (startTimeInSeconds > second) {
-                bar += (second - endTime).ToBeat(lastBpm.Value);
-                break;
-            }
-            if (lastBpm is float _bpm) {
-                bar += (startTimeInSeconds - endTime).ToBeat(_bpm);
-            }
-            endTime = startTimeInSeconds;
-            lastBpm = bpm;
-        }
-
-        int barNumber = (int)Math.Truncate(bar);
-        double fraction = bar - barNumber;
+    public static Triple ToTriple(this double beat) {
+        int bar = (int)Math.Truncate(beat);
+        double fraction = beat - bar;
         (long mantissa, int exponent) = fraction.GetMantissaAndExponent();
 
         mantissa = Math.Abs(mantissa);
@@ -39,8 +26,11 @@ public static class TimeConverter {
 
         ulong gdc = GCD((ulong)mantissa, (ulong)exponent);
 
-        return new(barNumber, (uint)mantissa / (uint)gdc, (uint)exponent / (uint)gdc);
+        return new(bar, (uint)mantissa / (uint)gdc, (uint)exponent / (uint)gdc);
     }
+
+    public static Triple ToTriple(this double second, BPMList bpmList) => ToTriple(second.ToBeat(bpmList));
+    public static Triple ToTriple(this double second, Chart chart) => ToTriple(second, chart.bpmList);
 
     // https://stackoverflow.com/a/41766138
     public static ulong GCD(ulong a, ulong b) {
