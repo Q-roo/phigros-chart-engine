@@ -23,8 +23,8 @@ public partial class TripleInput : LineEdit {
         TextSubmitted += Submit;
         TextChanged += RemoveIllegalCharacters;
         // TextChanged += text => SetValue(text, false);
-        // input let's the user input anything with valid characters (e.g: a, a:, a:b, a:b/, a//c/:b)
-        // (even if the result wold be invalid)
+        // input let's the user input anything with valid characters (e.g: a, a:, a:b, a:b/)
+        // (it still prevents cases like //, /:, ...etc)
         // while they are writing it
         // but once they submit it, it get's validated properly
         // treat clicking away as submitting
@@ -81,9 +81,9 @@ public partial class TripleInput : LineEdit {
             bool isSlash = c == '/';
 
             if (
-                (isColon && colonFound)
-                || (isSlash && (slashFound || !colonFound))
-                || (!char.IsAsciiDigit(c) && !isColon && !isSlash)
+                (isColon && colonFound) // cases like ::
+                || (isSlash && (slashFound || !colonFound)) // cases like // and /:
+                || (!char.IsAsciiDigit(c) && !isColon && !isSlash) // illegal character
             )
                 DeleteText(i, i + 1);
             else if (isColon)
