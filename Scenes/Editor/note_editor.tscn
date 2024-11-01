@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://dt374elckkfxn"]
+[gd_scene load_steps=4 format=3 uid="uid://dt374elckkfxn"]
 
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NoteEditor.cs" id="1_let51"]
 [ext_resource type="Theme" uid="uid://b3a5myjko68kj" path="res://Themes/pce_editor_theme.tres" id="1_w7arq"]
+[ext_resource type="Script" path="res://Scripts/Scenes/Common/TripleInput.cs" id="3_xsnaa"]
 
 [node name="Note editor" type="PanelContainer"]
 anchors_preset = 15
@@ -92,8 +93,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
+[node name="TripleInput" type="LineEdit" parent="VBoxContainer/Time/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
 layout_mode = 2
+script = ExtResource("3_xsnaa")
 
 [node name="HoldTime" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -136,8 +138,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
+[node name="TripleInput" type="LineEdit" parent="VBoxContainer/HoldTime/MarginContainer/HBoxContainer/MarginContainer/PanelContainer/MarginContainer/HSplitContainer"]
 layout_mode = 2
+script = ExtResource("3_xsnaa")
 
 [node name="Speed" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
