@@ -8,6 +8,10 @@ public struct Triple(int barNumber, uint numerator, uint denominator) {
     public uint Numerator { get; set; } = numerator;
     public uint Denominator { get; set; } = denominator;
 
+    public readonly double ToBeat() {
+        return BarNumber + Numerator / (double)Denominator;
+    }
+
     public override readonly string ToString() {
         return $"{BarNumber}:{Numerator}/{Denominator}";
     }
