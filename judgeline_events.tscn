@@ -1,7 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://5lae6e0tjghq"]
+[gd_scene load_steps=5 format=3 uid="uid://5lae6e0tjghq"]
 
-[ext_resource type="Script" path="res://Scripts/Scenes/Editor/EventGrid.cs" id="1_mk7u2"]
-[ext_resource type="Script" path="res://Scripts/Scenes/Editor/AnimationTrackTimelineEdit.cs" id="2_1u6gj"]
+[ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_x1hba"]
 [ext_resource type="Animation" uid="uid://4bhti57kcs2w" path="res://test.res" id="2_yxggp"]
 
 [sub_resource type="Animation" id="Animation_cm7d5"]
@@ -54,73 +53,75 @@ layout_mode = 2
 [node name="StandardEvents" type="PanelContainer" parent="VSplitContainer"]
 layout_mode = 2
 
-[node name="Timeline" type="Range" parent="VSplitContainer/StandardEvents"]
-_import_path = NodePath("")
-unique_name_in_owner = false
-process_mode = 0
-process_priority = 0
-process_physics_priority = 0
-process_thread_group = 0
-physics_interpolation_mode = 2
-auto_translate_mode = 0
-editor_description = ""
-visible = true
-modulate = Color(1, 1, 1, 1)
-self_modulate = Color(1, 1, 1, 1)
-show_behind_parent = false
-top_level = false
-clip_children = 0
-light_mask = 1
-visibility_layer = 1
-z_index = 0
-z_as_relative = true
-y_sort_enabled = false
-texture_filter = 0
-texture_repeat = 0
-material = null
-use_parent_material = false
-clip_contents = false
-custom_minimum_size = Vector2(0, 0)
-layout_direction = 0
+[node name="HSplitContainer" type="HSplitContainer" parent="VSplitContainer/StandardEvents"]
 layout_mode = 2
-size_flags_horizontal = 1
-size_flags_vertical = 1
-size_flags_stretch_ratio = 1.0
-localize_numeral_system = true
-tooltip_text = ""
-tooltip_auto_translate_mode = 0
-focus_neighbor_left = NodePath("")
-focus_neighbor_top = NodePath("")
-focus_neighbor_right = NodePath("")
-focus_neighbor_bottom = NodePath("")
-focus_next = NodePath("")
-focus_previous = NodePath("")
-focus_mode = 0
-mouse_filter = 0
-mouse_force_pass_scroll_events = true
-mouse_default_cursor_shape = 0
-theme = null
-theme_type_variation = &""
-min_value = 0.0
-max_value = 100.0
-step = 1.0
-page = 0.0
-value = 0.0
-exp_edit = false
-rounded = false
-allow_greater = false
-allow_lesser = false
-script = ExtResource("2_1u6gj")
 
-[node name="EventGrid" type="Panel" parent="VSplitContainer/StandardEvents/Timeline"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="Properties" type="VBoxContainer" parent="VSplitContainer/StandardEvents/HSplitContainer"]
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="VSplitContainer/StandardEvents/HSplitContainer/Properties"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VSplitContainer/StandardEvents/HSplitContainer/Properties/PanelContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+text = "properties"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PropertyList" type="PanelContainer" parent="VSplitContainer/StandardEvents/HSplitContainer/Properties"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VSplitContainer/StandardEvents/HSplitContainer/Properties/PropertyList"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VSplitContainer/StandardEvents/HSplitContainer/Properties/PropertyList/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VSplitContainer/StandardEvents/HSplitContainer/Properties/PropertyList/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "property:name"
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="VSplitContainer/StandardEvents/HSplitContainer/Properties/PropertyList/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("1_x1hba")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="TextureButton2" type="TextureButton" parent="VSplitContainer/StandardEvents/HSplitContainer/Properties/PropertyList/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("1_x1hba")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="TextureButton3" type="TextureButton" parent="VSplitContainer/StandardEvents/HSplitContainer/Properties/PropertyList/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("1_x1hba")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Timeline" type="VBoxContainer" parent="VSplitContainer/StandardEvents/HSplitContainer"]
+layout_mode = 2
 size_flags_horizontal = 3
-script = ExtResource("1_mk7u2")
+
+[node name="TimeMarkings" type="Panel" parent="VSplitContainer/StandardEvents/HSplitContainer/Timeline"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+
+[node name="BezierTrackEditor" type="Panel" parent="VSplitContainer/StandardEvents/HSplitContainer/Timeline"]
+layout_mode = 2
+size_flags_vertical = 3
 
 [node name="Reference" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true

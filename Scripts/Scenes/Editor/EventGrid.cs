@@ -85,31 +85,22 @@ public partial class EventGrid : Panel {
 
     }
 
-    private void Init() {
+    public override void _Ready() {
         panner = new();
-        // panner.SetScrollZoomFactor(1.1f);
         panner.SetCallbacks(PanCallback, ZoomCallback);
-        // panner.PanAxis = ViewPanner.PanAxisEnum.Horizontal;
         panner.Setup(ViewPanner.ControlSchemeEnum.ScrollPans, new Shortcut() { Events = [new InputEventKey() { Keycode = Key.Space }] }, false);
         LayoutDirection = LayoutDirectionEnum.Rtl;
-        timeline = GetParent<AnimationTrackTimelineEdit>();//new();
+        timeline = GetParent<AnimationTrackTimelineEdit>();
         timeline.Zoom = new() { Value = 0.1, MinValue = 0, MaxValue = 1 };
-        // timeline.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         timeline.CustomMinimumSize = new(600, 40);
         HScrollBar bar = new();
         AddChild(bar);
         timeline.SetHscroll(bar);
-        // AddChild(timeline);
         SetTimeline(timeline);
-        var player = GetNode<AnimationPlayer>("%Reference");
-        var anim = player.GetAnimation("new_animation");
-        GD.Print('[', string.Join(", ", player.GetAnimationList()), ']');
-        GD.Print(anim);
-        timeline.SetAnimation(anim, false); // everything feezes
-    }
-
-    public override void _Ready() {
-        Init();
+        // test
+        AnimationPlayer player = GetNode<AnimationPlayer>("%Reference");
+        Animation anim = player.GetAnimation("new_animation");
+        timeline.SetAnimation(anim, false);
     }
 
     public void SetTimeline(AnimationTrackTimelineEdit timeline) {
