@@ -691,8 +691,6 @@ public partial class AnimationTrackTimelineEdit : Range {
 
         DrawLine(new(0, Size.Y), Size, hLineColor, Mathf.Round(EDSCALE));
         UpdateValues();
-        DrawRect(new(new(), Size), Colors.Yellow, false);
-        GD.Print('a');
     }
 
     public override void _Notification(int what) {

@@ -90,8 +90,8 @@ public partial class EventGrid : Panel {
         panner.SetCallbacks(PanCallback, ZoomCallback);
         panner.Setup(ViewPanner.ControlSchemeEnum.ScrollPans, new Shortcut() { Events = [new InputEventKey() { Keycode = Key.Space }] }, false);
         LayoutDirection = LayoutDirectionEnum.Rtl;
-        timeline = GetParent<AnimationTrackTimelineEdit>();
-        timeline.Zoom = new() { Value = 0.1, MinValue = 0, MaxValue = 1 };
+        timeline = GetNode<AnimationTrackTimelineEdit>("../TimeMarkings/Timeline");
+        timeline.Zoom = new() { Value = 0.1, MinValue = 0, MaxValue = 1, Step = 0 };
         timeline.CustomMinimumSize = new(600, 40);
         HScrollBar bar = new();
         AddChild(bar);
