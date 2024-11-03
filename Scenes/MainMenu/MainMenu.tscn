@@ -252,6 +252,7 @@ grow_vertical = 2
 layout_mode = 2
 PlaceholderText = "Unknown"
 Title = "Name"
+Value = ""
 
 [node name="MusicPath" parent="NewProjectPopup/Control/VBoxContainer" instance=ExtResource("5_xny5b")]
 layout_mode = 2
@@ -262,6 +263,7 @@ allowedFileExtensions = PackedStringArray("*.mp3,*.ogg,*.wav")
 layout_mode = 2
 PlaceholderText = "Unknown"
 Title = "Composer"
+Value = ""
 
 [node name="Background" parent="NewProjectPopup/Control/VBoxContainer" instance=ExtResource("5_xny5b")]
 layout_mode = 2
@@ -272,6 +274,7 @@ allowedFileExtensions = PackedStringArray("*.png,*.jpg")
 layout_mode = 2
 PlaceholderText = "Unknown"
 Title = "Illustrator"
+Value = ""
 
 [node name="Difficulty" type="HBoxContainer" parent="NewProjectPopup/Control/VBoxContainer"]
 layout_mode = 2
@@ -280,11 +283,13 @@ layout_mode = 2
 layout_mode = 2
 PlaceholderText = "Unknown"
 Title = "Difficulty"
+Value = ""
 
 [node name="Level" parent="NewProjectPopup/Control/VBoxContainer/Difficulty" instance=ExtResource("5_35lbn")]
 layout_mode = 2
 PlaceholderText = "Unknown"
 Title = "Level"
+Value = ""
 
 [node name="Target" type="HBoxContainer" parent="NewProjectPopup/Control/VBoxContainer"]
 layout_mode = 2

@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://gusv6rnm1xsq"]
+[gd_scene load_steps=16 format=3 uid="uid://gusv6rnm1xsq"]
 
 [ext_resource type="Texture2D" uid="uid://bd3q6xomo7pbi" path="res://icon.svg" id="1_4h052"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/Editor.cs" id="1_bmyri"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/NotePlacementGrid.cs" id="10_r7pcq"]
 [ext_resource type="PackedScene" uid="uid://dt374elckkfxn" path="res://Scenes/Editor/note_editor.tscn" id="12_oqaka"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/BpmListEditor.cs" id="12_pbnbl"]
+[ext_resource type="PackedScene" uid="uid://5lae6e0tjghq" path="res://judgeline_events.tscn" id="13_waeh0"]
 
 [node name="Editor" type="Control"]
 layout_mode = 3
@@ -267,8 +268,8 @@ handle_input_locally = false
 audio_listener_enable_2d = true
 gui_disable_input = true
 gui_embed_subwindows = true
-size = Vector2i(1592, 850)
-render_target_update_mode = 4
+size = Vector2i(2, 2)
+render_target_update_mode = 0
 
 [node name="ChartRenderer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/HSplitContainer/HSplitContainer/MiddlePanel/ChartViewport/SubViewport" instance=ExtResource("5_dqvj3")]
 unique_name_in_owner = true
@@ -323,10 +324,9 @@ layout_mode = 2
 text = "Time"
 horizontal_alignment = 1
 
-[node name="Judgeline events" type="PanelContainer" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer"]
+[node name="Judgeline events" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer" instance=ExtResource("13_waeh0")]
 visible = false
 layout_mode = 2
-metadata/_tab_index = 1
 
 [node name="Note editor" parent="Controller/VBoxContainer/TabContainer/GUI/VBoxContainer/MarginContainer/Layout/BottomPanel/TabContainer" instance=ExtResource("12_oqaka")]
 visible = false
