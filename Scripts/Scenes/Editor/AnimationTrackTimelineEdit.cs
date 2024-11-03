@@ -38,6 +38,7 @@ namespace PCE.Editor;
 // https://github.com/godotengine/godot/blob/master/editor/animation_track_editor.h#L186
 // https://github.com/godotengine/godot/blob/master/editor/animation_bezier_editor.cpp
 
+[GlobalClass]
 public partial class AnimationTrackTimelineEdit : Range {
     public const float ScrollZoomFactorIn = 1.02f; // Zoom factor per mouse scroll in the animation editor when zooming in. The closer to 1.0, the finer the control.
     public const float ScrollZoomFactorOut = 0.98f; // Zoom factor when zooming out. Similar to SCROLL_ZOOM_FACTOR_IN but less than 1.0.
@@ -940,9 +941,9 @@ public partial class AnimationTrackTimelineEdit : Range {
                 DrawRect(new(new(), Size), Colors.Yellow, false);
             }
             break;
-            case 1005 or NotificationWMWindowFocusOut: // the exact same
-                throw new Exception("an exception has been thrown or it would freeze");
-                // break;
+            // case 1005 or NotificationWMWindowFocusOut: // the exact same
+            //     throw new Exception("an exception has been thrown or it would freeze");
+            //     // break;
         }
     }
 

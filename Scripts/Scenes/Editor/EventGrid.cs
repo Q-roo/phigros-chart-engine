@@ -92,20 +92,20 @@ public partial class EventGrid : Panel {
         // panner.PanAxis = ViewPanner.PanAxisEnum.Horizontal;
         panner.Setup(ViewPanner.ControlSchemeEnum.ScrollPans, new Shortcut() { Events = [new InputEventKey() { Keycode = Key.Space }] }, false);
         LayoutDirection = LayoutDirectionEnum.Rtl;
-        timeline = new();
+        timeline = GetParent<AnimationTrackTimelineEdit>();//new();
         timeline.Zoom = new() { Value = 0.1, MinValue = 0, MaxValue = 1 };
+        // timeline.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         timeline.CustomMinimumSize = new(600, 40);
         HScrollBar bar = new();
         AddChild(bar);
         timeline.SetHscroll(bar);
-        AddChild(timeline);
+        // AddChild(timeline);
         SetTimeline(timeline);
-        // timeline.SetAnimation(GetNode<AnimationPlayer>("%Reference").GetAnimation("new_animation"), false);
         var player = GetNode<AnimationPlayer>("%Reference");
         var anim = player.GetAnimation("new_animation");
         GD.Print('[', string.Join(", ", player.GetAnimationList()), ']');
         GD.Print(anim);
-        // timeline.SetAnimation(anim, false); // everything feezes
+        timeline.SetAnimation(anim, false); // everything feezes
     }
 
     public override void _Ready() {
@@ -222,7 +222,7 @@ public partial class EventGrid : Panel {
     }
 
     private void DrawTrack(BezierTrack track, Color color) {
-        float scale = timeline.ZoomScale;GD.Print(scale);
+        float scale = timeline.ZoomScale;
 
         float limit = timeline.NameLimit;
         float rightLimit = Size.X;
