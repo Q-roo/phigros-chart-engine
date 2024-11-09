@@ -36,6 +36,9 @@ namespace PCE.Editor;
 
 [GlobalClass]
 public partial class Timeline : Range {
+    public const float ScrollZoomFactorIn = 1.02f; // Zoom factor per mouse scroll in the animation editor when zooming in. The closer to 1.0, the finer the control.
+	public const float ScrollZoomFactorOut = 0.98f; // Zoom factor when zooming out. Similar to SCROLL_ZOOM_FACTOR_IN but less than 1.0.
+    private const float ScAdj = 100f;
     private readonly ViewPanner panner;
     private readonly Range zoom;
     public float ZoomScale => GetZoomScale(zoom.Value);
@@ -53,9 +56,9 @@ public partial class Timeline : Range {
         Step = 0;
         AllowGreater = true;
         panner = new();
-        panner.SetCallbacks(OnPan, OnZoom);
+        panner.SetCallbacks(PanCallback, ZoomCallback);
         panner.PanAxis = ViewPanner.PanAxisEnum.Horizontal;
-        panner.SetScrollZoomFactor(1.02f);
+        panner.SetScrollZoomFactor(ScrollZoomFactorIn);
         zoom = new() {
             Value = 1, // 0.5 steps by default
             MaxValue = 2, // max 200 steps
@@ -78,23 +81,23 @@ public partial class Timeline : Range {
             return;
 
         Font font = GetThemeFont("font", "Label");
-        int font_size = GetThemeFontSize("font_size", "Label");
+        int fontSize = GetThemeFontSize("font_size", "Label");
 
-        StyleBox stylebox_time_unavailable = GetThemeStylebox("time_unavailable", "AnimationTimelineEdit");
-        StyleBox stylebox_time_available = GetThemeStylebox("time_available", "AnimationTimelineEdit");
+        StyleBox styleboxTimeUnavailable = GetThemeStylebox("time_unavailable", "AnimationTimelineEdit");
+        StyleBox styleboxTimeAvailable = GetThemeStylebox("time_available", "AnimationTimelineEdit");
 
-        Color v_line_primary_color = GetThemeColor("v_line_primary_color", "AnimationTimelineEdit");
-        Color v_line_secondary_color = GetThemeColor("v_line_secondary_color", "AnimationTimelineEdit");
-        Color h_line_color = GetThemeColor("h_line_color", "AnimationTimelineEdit");
-        Color font_primary_color = GetThemeColor("font_primary_color", "AnimationTimelineEdit");
-        Color font_secondary_color = GetThemeColor("font_secondary_color", "AnimationTimelineEdit");
+        Color vLinePrimaryColor = GetThemeColor("v_line_primary_color", "AnimationTimelineEdit");
+        Color vLineSecondaryColor = GetThemeColor("v_line_secondary_color", "AnimationTimelineEdit");
+        Color hLineColor = GetThemeColor("h_line_color", "AnimationTimelineEdit");
+        Color FontPrimaryColor = GetThemeColor("font_primary_color", "AnimationTimelineEdit");
+        Color FontSecondaryColor = GetThemeColor("font_secondary_color", "AnimationTimelineEdit");
 
-        int v_line_primary_margin = GetThemeConstant("v_line_primary_margin", "AnimationTimelineEdit");
-        int v_line_secondary_margin = GetThemeConstant("v_line_secondary_margin", "AnimationTimelineEdit");
-        int v_line_primary_width = GetThemeConstant("v_line_primary_width", "AnimationTimelineEdit");
-        int v_line_secondary_width = GetThemeConstant("v_line_secondary_width", "AnimationTimelineEdit");
-        int text_primary_margin = GetThemeConstant("text_primary_margin", "AnimationTimelineEdit");
-        int text_secondary_margin = GetThemeConstant("text_secondary_margin", "AnimationTimelineEdit");
+        int vLinePrimaryMargin = GetThemeConstant("v_line_primary_margin", "AnimationTimelineEdit");
+        int vLineSecondaryMargin = GetThemeConstant("v_line_secondary_margin", "AnimationTimelineEdit");
+        int vLinePrimaryWidth = GetThemeConstant("v_line_primary_width", "AnimationTimelineEdit");
+        int vLineSecondaryWidth = GetThemeConstant("v_line_secondary_width", "AnimationTimelineEdit");
+        int textPrimaryMargin = GetThemeConstant("text_primary_margin", "AnimationTimelineEdit");
+        int textSecondaryMargin = GetThemeConstant("text_secondary_margin", "AnimationTimelineEdit");
 
         int keyRange = (int)Size.X;
 
@@ -109,43 +112,43 @@ public partial class Timeline : Range {
 
         // update min & max value
         {
-            float time_min = 0;
-            float time_max = animation.Length;
+            float timeMin = 0;
+            float timeMax = animation.Length;
             for (int i = 0; i < animation.GetTrackCount(); i++) {
                 if (animation.TrackGetKeyCount(i) > 0) {
                     float beg = (float)animation.TrackGetKeyTime(i, 0);
 
-                    if (beg < time_min) {
-                        time_min = beg;
+                    if (beg < timeMin) {
+                        timeMin = beg;
                     }
 
                     float end = (float)animation.TrackGetKeyTime(i, animation.TrackGetKeyCount(i) - 1);
 
-                    if (end > time_max) {
-                        time_max = end;
+                    if (end > timeMax) {
+                        timeMax = end;
                     }
                 }
             }
 
             string[] markers = animation.GetMarkerNames();
             if (markers.Length > 0) {
-                float min_marker = (float)animation.GetMarkerTime(markers[0]);
-                float max_marker = (float)animation.GetMarkerTime(markers[^1]);
-                if (min_marker < time_min) {
-                    time_min = min_marker;
+                float minMarker = (float)animation.GetMarkerTime(markers[0]);
+                float maxMarker = (float)animation.GetMarkerTime(markers[^1]);
+                if (minMarker < timeMin) {
+                    timeMin = minMarker;
                 }
-                if (max_marker > time_max) {
-                    time_max = max_marker;
+                if (maxMarker > timeMax) {
+                    timeMax = maxMarker;
                 }
             }
 
-            float extra = (zoomw / scale) * 0.5f;
+            float extra = zoomw / scale * 0.5f;
 
-            time_max += extra;
-            MinValue = time_min;
-            MaxValue = time_max;
+            timeMax += extra;
+            MinValue = timeMin;
+            MaxValue = timeMax;
 
-            if (zoomw / scale < (time_max - time_min)) {
+            if (zoomw / scale < (timeMax - timeMin)) {
                 // hscroll.show();
 
             } else {
@@ -160,22 +163,22 @@ public partial class Timeline : Range {
         //     hscroll_on_zoom_buffer = -1.0;
         // }
 
-        int end_px = (int)((l - Value) * scale);
-        int begin_px = (int)(-Value * scale);
+        int endPx = (int)((l - Value) * scale);
+        int beginPx = (int)(-Value * scale);
 
         // outline
         {
-            DrawStyleBox(stylebox_time_unavailable, new(new(0, 0), new(zoomw - 1, h)));
+            DrawStyleBox(styleboxTimeUnavailable, new(new(0, 0), new(zoomw - 1, h)));
 
-            if (begin_px < zoomw && end_px > 0) {
-                if (begin_px < 0) {
-                    begin_px = 0;
+            if (beginPx < zoomw && endPx > 0) {
+                if (beginPx < 0) {
+                    beginPx = 0;
                 }
-                if (end_px > zoomw) {
-                    end_px = zoomw;
+                if (endPx > zoomw) {
+                    endPx = zoomw;
                 }
 
-                DrawStyleBox(stylebox_time_available, new(new(0 + begin_px, 0), new(end_px - begin_px, h)));
+                DrawStyleBox(styleboxTimeAvailable, new(new(0 + beginPx, 0), new(endPx - beginPx, h)));
             }
         }
 
@@ -184,33 +187,33 @@ public partial class Timeline : Range {
             int dec = 1;
             int step = 1;
             int decimals = 2;
-            bool step_found = false;
+            bool stepFound = false;
 
-            float period_width = font.GetCharSize('.', font_size).X;
-            float max_digit_width = "0123456789".Max(it => font.GetCharSize(it, font_size).X);
+            float periodWidth = font.GetCharSize('.', fontSize).X;
+            float maxDigitWidth = "0123456789".Max(it => font.GetCharSize(it, fontSize).X);
 
-            int max_sc = Mathf.CeilToInt(zoomw / scale);
-            int max_sc_width =max_sc.ToString().Length * Mathf.CeilToInt(max_digit_width);
+            int maxSc = Mathf.CeilToInt(zoomw / scale);
+            int maxScWidth = maxSc.ToString().Length * Mathf.CeilToInt(maxDigitWidth);
 
-            int min_margin = Mathf.Max(text_secondary_margin, text_primary_margin);
+            int minMargin = Mathf.Max(textSecondaryMargin, textPrimaryMargin);
 
-            while (!step_found) {
-                int min = max_sc_width;
+            while (!stepFound) {
+                int min = maxScWidth;
                 if (decimals > 0) {
-                    min += Mathf.CeilToInt(period_width + max_digit_width * decimals);
+                    min += Mathf.CeilToInt(periodWidth + maxDigitWidth * decimals);
                 }
 
-                min += min_margin * 2;
+                min += minMargin * 2;
 
                 int[] _multp = [1, 2, 5];
                 for (int i = 0; i < 3; i++) {
-                    step = (_multp[i] * dec);
-                    if (step * scale / 100f > min) {
-                        step_found = true;
+                    step = _multp[i] * dec;
+                    if (step * scale / ScAdj > min) {
+                        stepFound = true;
                         break;
                     }
                 }
-                if (step_found) {
+                if (stepFound) {
                     break;
                 }
                 dec *= 10;
@@ -224,32 +227,32 @@ public partial class Timeline : Range {
                 float pos = (float)(Value + i / scale);
                 float prev = (float)(Value + (i - 1.0) / scale);
 
-                int sc = Mathf.FloorToInt(pos * 100f);
-                int prev_sc = Mathf.FloorToInt(prev * 100f);
+                int sc = Mathf.FloorToInt(pos * ScAdj);
+                int prev_sc = Mathf.FloorToInt(prev * ScAdj);
 
                 if ((sc / step) != (prev_sc / step) || (prev_sc < 0 && sc >= 0)) {
                     int scd = sc < 0 ? prev_sc : sc;
                     bool sub = ((scd - (scd % step)) % (dec * 10)) != 0;
 
-                    int line_margin = sub ? v_line_secondary_margin : v_line_primary_margin;
-                    int line_width = sub ? v_line_secondary_width : v_line_primary_width;
-                    Color line_color = sub ? v_line_secondary_color : v_line_primary_color;
+                    int lineMargin = sub ? vLineSecondaryMargin : vLinePrimaryMargin;
+                    int lineWidth = sub ? vLineSecondaryWidth : vLinePrimaryWidth;
+                    Color lineColor = sub ? vLineSecondaryColor : vLinePrimaryColor;
 
-                    DrawLine(new(i, line_margin), new(i, h - line_margin), line_color, line_width);
+                    DrawLine(new(i, lineMargin), new(i, h - lineMargin), lineColor, lineWidth);
 
-                    int text_margin = sub ? text_secondary_margin : text_primary_margin;
+                    int textMargin = sub ? textSecondaryMargin : textPrimaryMargin;
 
-                    DrawString(font, new Vector2(i + text_margin, (h - font.GetHeight(font_size)) / 2 + font.GetAscent(font_size)).Floor(), ((scd - (scd % step)) / 100d).ToString($"F{decimals}", CultureInfo.InvariantCulture), HorizontalAlignment.Left, zoomw - i, font_size, sub ? font_secondary_color : font_primary_color);
+                    DrawString(font, new Vector2(i + textMargin, (h - font.GetHeight(fontSize)) / 2 + font.GetAscent(fontSize)).Floor(), ((scd - (scd % step)) / (double)ScAdj).ToString($"F{decimals}", CultureInfo.InvariantCulture), HorizontalAlignment.Left, zoomw - i, fontSize, sub ? FontSecondaryColor : FontPrimaryColor);
                 }
             }
         }
     }
 
-    private void OnPan(Vector2 scroll, InputEvent @event) {
+    private void PanCallback(Vector2 scroll, InputEvent @event) {
         Value -= scroll.X / ZoomScale;
     }
 
-    private void OnZoom(float zoomFactor, Vector2 origin, InputEvent @event) {
+    public void ZoomCallback(float zoomFactor, Vector2 origin, InputEvent @event) {
         zoom.Value = Mathf.Max(0.01, zoom.Value - (1.0 - zoomFactor));
     }
 
