@@ -1,0 +1,73 @@
+[gd_resource type="Animation" format=3 uid="uid://dmgxrquq8k4sm"]
+
+[resource]
+resource_name = "new_animation"
+length = 200.0
+markers = [{
+"color": Color(1, 1, 1, 1),
+"name": &"new_marker",
+"time": 1.0
+}, {
+"color": Color(1, 1, 1, 1),
+"name": &"new_marker_2",
+"time": 0.293431
+}, {
+"color": Color(1, 1, 1, 1),
+"name": &"new_marker_3",
+"time": 1.48954
+}]
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("VSplitContainer:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0, 0),
+"points": PackedFloat32Array(16, -0.433333, 2, 0.9, -261, 294, -0.25, 0, 0.25, 0, 113, -1.66667, 51, 0.0999999, -6, 395, -0.25, 0, 0.25, 0, -1, -0.266666, -66, 0.25, 0),
+"times": PackedFloat32Array(0.166667, 1.19539, 3.7, 3.88899, 5.53333)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VSplitContainer:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(85, -0.25, 0, 0.25, 0, -101, -0.25, 0, 0.25, 0, 46, -0.25, 0, 0.233333, 13),
+"times": PackedFloat32Array(0.8, 4, 5.76667)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("VSplitContainer:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0, 0),
+"points": PackedFloat32Array(-157, -0.25, 0, 0.25, 0, 123.862, -0.25, 0, 0.25, 0, 123.5, -0.25, 0, 2.7, -505, 220.5, -6.33333, 231, 0.25, 0, 95.5, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(1.83333, 6.53333, 10.3667, 14.0667, 15.1)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("VSplitContainer:position:x")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(),
+"points": PackedFloat32Array(),
+"times": PackedFloat32Array()
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("VSplitContainer:position:y")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(190, -0.25, 0, 0.25, 0, -74, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0.9, 1.06667)
+}

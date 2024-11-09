@@ -1,8 +1,8 @@
 [gd_scene load_steps=6 format=3 uid="uid://5lae6e0tjghq"]
 
+[ext_resource type="Script" path="res://Scripts/Scenes/Editor/Timeline.cs" id="1_dfmsv"]
 [ext_resource type="Script" path="res://Scripts/Scenes/Editor/EventGrid.cs" id="1_mk7u2"]
-[ext_resource type="Script" path="res://Scripts/Scenes/Editor/AnimationTrackTimelineEdit.cs" id="2_1u6gj"]
-[ext_resource type="Animation" uid="uid://4bhti57kcs2w" path="res://test.res" id="2_yxggp"]
+[ext_resource type="Animation" uid="uid://dmgxrquq8k4sm" path="res://test.tres" id="3_ittql"]
 
 [sub_resource type="Animation" id="Animation_cm7d5"]
 length = 0.001
@@ -32,7 +32,7 @@ tracks/1/keys = {
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_fv0hj"]
 _data = {
 &"RESET": SubResource("Animation_cm7d5"),
-&"new_animation": ExtResource("2_yxggp")
+&"new_animation": ExtResource("3_ittql")
 }
 
 [node name="Judgeline events" type="PanelContainer"]
@@ -132,12 +132,26 @@ exp_edit = false
 rounded = false
 allow_greater = false
 allow_lesser = false
-script = ExtResource("2_1u6gj")
+script = ExtResource("1_dfmsv")
 
 [node name="BezierTrackEditor" type="Panel" parent="VSplitContainer/StandardEvents/Timeline"]
 layout_mode = 2
 size_flags_vertical = 3
 script = ExtResource("1_mk7u2")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VSplitContainer/StandardEvents/Timeline"]
+layout_mode = 2
+
+[node name="HScrollBar" type="HScrollBar" parent="VSplitContainer/StandardEvents/Timeline/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VSeparator" type="VSeparator" parent="VSplitContainer/StandardEvents/Timeline/HBoxContainer"]
+layout_mode = 2
+
+[node name="HScrollBar2" type="HScrollBar" parent="VSplitContainer/StandardEvents/Timeline/HBoxContainer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
 
 [node name="Reference" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true

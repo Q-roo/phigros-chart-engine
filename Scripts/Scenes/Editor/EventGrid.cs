@@ -83,23 +83,25 @@ public partial class EventGrid : Panel {
 
     public EventGrid() {
 
-    }
+    }//https://github.com/godotengine/godot/blob/1bffd6c73b44b85e5889f54e14b2193940cf5bb1/editor/animation_track_editor.cpp#L7450
 
     public override void _Ready() {
+        AnimationPlayer player = GetNode<AnimationPlayer>("%Reference");
+        Animation anim = player.GetAnimation("new_animation");
+        Timeline tme = GetNode<Timeline>("../TimeMarkings/Timeline");
+        // tme.SetHScroll(GetNode<HScrollBar>("../HBoxContainer/HScrollBar2"));
+        tme.Animation = anim;
         panner = new();
         panner.SetCallbacks(PanCallback, ZoomCallback);
         panner.Setup(ViewPanner.ControlSchemeEnum.ScrollPans, new Shortcut() { Events = [new InputEventKey() { Keycode = Key.Space }] }, false);
         LayoutDirection = LayoutDirectionEnum.Rtl;
-        timeline = GetNode<AnimationTrackTimelineEdit>("../TimeMarkings/Timeline");
-        timeline.Zoom = new() { Value = 0.1, MinValue = 0, MaxValue = 1, Step = 0 };
-        timeline.CustomMinimumSize = new(600, 40);
-        HScrollBar bar = new();
-        AddChild(bar);
+        timeline = new();//GetNode<AnimationTrackTimelineEdit>("../TimeMarkings/Timeline");
+        timeline.Zoom = new() { Value = 0, MinValue = 0, MaxValue = 1, Step = 0 };
+        GD.Print(timeline.ZoomScale);
+        HScrollBar bar = GetNode<HScrollBar>("../HBoxContainer/HScrollBar");
         timeline.SetHscroll(bar);
         SetTimeline(timeline);
         // test
-        AnimationPlayer player = GetNode<AnimationPlayer>("%Reference");
-        Animation anim = player.GetAnimation("new_animation");
         timeline.SetAnimation(anim, false);
     }
 
@@ -172,12 +174,12 @@ public partial class EventGrid : Panel {
                 prev_iv = iv;
             }
 
-            step = ChartGlobals.DistanceBetweenBeats; // timeline can take care of this's scaling
-            int visibleBeats = Mathf.CeilToInt(Size.X / step);
+            // step = ChartGlobals.DistanceBetweenBeats; // timeline can take care of this's scaling
+            // int visibleBeats = Mathf.CeilToInt(Size.X / step);
 
-            for (int i = 0; i < visibleBeats; i++) {
-                DrawLine(new(limit + i * step + (float)timeline.Value, 0), new(limit + i * step + (float)timeline.Value, Size.Y), Colors.Red);
-            }
+            // for (int i = 0; i < visibleBeats; i++) {
+            //     DrawLine(new(limit + i * step + (float)timeline.Value, 0), new(limit + i * step + (float)timeline.Value, Size.Y), Colors.Red);
+            // }
         }
 
         //test
